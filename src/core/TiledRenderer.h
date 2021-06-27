@@ -39,7 +39,6 @@ namespace GLSLPT
         GLuint pathTraceFBOLowRes;
         GLuint accumFBO;
         GLuint outputFBO;
-        GLuint rawFBO;
 
         // Shaders
         Program* pathTraceShader;
@@ -47,14 +46,12 @@ namespace GLSLPT
         Program* accumShader;
         Program* outputShader;
         Program* tonemapShader;
-        Program* rawfbShader;
 
         // Textures
         GLuint pathTraceTexture;
         GLuint pathTraceTextureLowRes;
         GLuint accumTexture;
-        GLuint rawTexture;
-        GLuint tileOutputTexture[2];
+        GLuint tileOutputTexture[3];
         GLuint denoisedTexture;
 
         int tileX;

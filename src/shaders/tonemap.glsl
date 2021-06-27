@@ -46,6 +46,6 @@ vec4 ToneMap(in vec4 c, float limit1)
 
 void main()
 {
-    color = texture(pathTraceTexture, TexCoords) * invSampleCounter;
+    color = texture(pathTraceTexture, TexCoords);
     color = pow(ToneMap(color, 0.66666666666666666666666666666667), vec4(0.45454545454545454545454545454545));
 }
