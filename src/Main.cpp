@@ -137,23 +137,18 @@ void SaveFrame(const std::string filename)
 
 void SaveRawFrame(const std::string filename)
 {
-	printf("SaveRawFrame start...\n");
-    float* data = nullptr;
+	float* data = nullptr;
     int w, h;
     renderer->GetRawOutputBuffer(&data, w, h);	
-	
-	printf("SaveRawFrame try to save exr...\n");
 	
 	const char* err = NULL;
 	int ret;
 	
-	ret = SaveEXR(data, w, h, 4 // =RGBA
-					,
-					1 // = save as fp16 format, else fp32 bit
-					, 
-					filename.c_str(), &err);
-	
-	printf("Save EXR err: %s(code %d)\n", err, ret);
+	ret = SaveEXR(data, w, h, 3 // =RGB
+					,1 // = save as fp16 format, else fp32 bit
+					,filename.c_str()
+                    ,&err
+				);
 					
 	  if (ret != TINYEXR_SUCCESS) {
 		if (err) {
@@ -219,21 +214,6 @@ void EditTransform(const float* view, const float* projection, float* matrix)
 {
     static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::TRANSLATE);
     static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::WORLD);
-
-    if (ImGui::IsKeyPressed(90))
-    {
-        mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
-    }
-
-    if (ImGui::IsKeyPressed(69))
-    {
-        mCurrentGizmoOperation = ImGuizmo::ROTATE;
-    }
-
-    if (ImGui::IsKeyPressed(82))
-    {
-        mCurrentGizmoOperation = ImGuizmo::SCALE;
-    }
 
     if (ImGui::RadioButton("Translate", mCurrentGizmoOperation == ImGuizmo::TRANSLATE))
     {

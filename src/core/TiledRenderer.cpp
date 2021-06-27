@@ -443,12 +443,44 @@ namespace GLSLPT
         w = scene->renderOptions.resolution.x;
         h = scene->renderOptions.resolution.y;
 
-        *data = new float[w * h * 4];
+        *data = new float[w * h * 3];
 
         glBindTexture(GL_TEXTURE_2D, tileOutputTexture[1 - currentBuffer]);
 
-        glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_FLOAT, *data);
+        glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_FLOAT, *data);
+		
+		flipVertical(*data, w, h);
     }
+	
+	void TiledRenderer::flipVertical(float* array, unsigned int cols, unsigned int rows)
+	{
+		int top = 0;
+		int cols3 = cols*3;
+		int bottom = (rows - 1) * cols3;
+		
+		float temp;
+
+		while (top < bottom)
+		{
+			size_t ii = 0;
+			for (int c = 0; c < cols; c++) {
+				temp = array[top + ii];
+				array[top + ii] = array[bottom + ii];
+				array[bottom + ii] = temp;
+				ii++;
+				temp = array[top + ii];
+				array[top + ii] = array[bottom + ii];
+				array[bottom + ii] = temp;
+				ii++;
+				temp = array[top + ii];
+				array[top + ii] = array[bottom + ii];
+				array[bottom + ii] = temp;
+				ii++;				
+			}
+			top += cols3;
+			bottom -= cols3;
+		}
+	}
 
     int TiledRenderer::GetSampleCount() const
     {
