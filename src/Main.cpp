@@ -39,9 +39,11 @@
 #include "imgui_impl_opengl3.h"
 
 #include "Loader.h"
-#include "boyTestScene.h"
 #include "ajaxTestScene.h"
+
+#include "boyTestScene.h"
 #include "cornellTestScene.h"
+
 #include "ImGuizmo.h"
 #include "tinydir.h"
 
@@ -69,6 +71,11 @@ std::string shadersDir = "../src/shaders/";
 std::string assetsDir = "../assets/";
 
 RenderOptions renderOptions;
+
+int maxSPP = -1;
+float maxRenderTime = -1.0f;
+
+bool oldDefaultMaterial = false;
 
 struct LoopData
 {
@@ -125,6 +132,40 @@ void SaveFrame(const std::string filename)
     delete data;
 }
 
+
+#include "tinyexr.h"
+
+void SaveRawFrame(const std::string filename)
+{
+	printf("SaveRawFrame start...\n");
+    float* data = nullptr;
+    int w, h;
+    renderer->GetRawOutputBuffer(&data, w, h);	
+	
+	printf("SaveRawFrame try to save exr...\n");
+	
+	const char* err = NULL;
+	int ret;
+	
+	ret = SaveEXR(data, w, h, 4 // =RGBA
+					,
+					1 // = save as fp16 format, else fp32 bit
+					, 
+					filename.c_str(), &err);
+	
+	printf("Save EXR err: %s(code %d)\n", err, ret);
+					
+	  if (ret != TINYEXR_SUCCESS) {
+		if (err) {
+		  fprintf(stderr, "Save EXR err: %s(code %d)\n", err, ret);
+		} else {
+		  fprintf(stderr, "Failed to save EXR image. code = %d\n", ret);
+		}
+	}
+	
+    delete data;
+}
+
 void Render()
 {
     auto io = ImGui::GetIO();
@@ -165,6 +206,11 @@ void Update(float secondsElapsed)
         }
         scene->camera->isMoving = true;
     }
+	
+	/*
+	if (g.IO.KeyCtrl && IsKeyPressedMap(ImGuiKey_C))
+                LogToClipboard();
+	*/
 
     renderer->Update(secondsElapsed);
 }
@@ -267,8 +313,20 @@ void MainLoop(void* arg)
     ImGuizmo::BeginFrame();
     {
         ImGui::Begin("Settings");
+		
+		int samplesNow = renderer->GetSampleCount();
+		float renderTimeNow = renderer->GetRenderTime();
 
-        ImGui::Text("Samples: %d ", renderer->GetSampleCount());
+        ImGui::Text("Samples: %d ", samplesNow);
+        ImGui::Text("Render time: %.1fs", renderTimeNow);
+		
+		if( maxSPP == samplesNow || (renderTimeNow > maxRenderTime && maxRenderTime>0.0f))
+		{
+			printf("%d samples. render time: %.1fs\n", samplesNow, renderTimeNow);
+			SaveFrame("./img_" + to_string(samplesNow) + ".png");
+			SaveRawFrame("./img_" + to_string(samplesNow) + ".exr");
+            done = true;
+		}
 
         ImGui::BulletText("LMB + drag to rotate");
         ImGui::BulletText("MMB + drag to pan");
@@ -277,6 +335,7 @@ void MainLoop(void* arg)
         if (ImGui::Button("Save Screenshot"))
         {
             SaveFrame("./img_" + to_string(renderer->GetSampleCount()) + ".png");
+            SaveRawFrame("./img_" + to_string(renderer->GetSampleCount()) + ".exr");
         }
 
         std::vector<const char*> scenes;
@@ -374,7 +433,7 @@ void MainLoop(void* arg)
 
             objectPropChanged |= ImGui::ColorEdit3("Albedo", (float*)albedo, 0);
             objectPropChanged |= ImGui::SliderFloat("Metallic",  &scene->materials[scene->meshInstances[selectedInstance].materialID].metallic, 0.0f, 1.0f);
-            objectPropChanged |= ImGui::SliderFloat("Roughness", &scene->materials[scene->meshInstances[selectedInstance].materialID].roughness, 0.001f, 1.0f);
+            objectPropChanged |= ImGui::SliderFloat("Roughness", &scene->materials[scene->meshInstances[selectedInstance].materialID].roughness, 0.0f, 1.0f);
             objectPropChanged |= ImGui::SliderFloat("Specular", &scene->materials[scene->meshInstances[selectedInstance].materialID].specular, 0.0f, 1.0f);
             objectPropChanged |= ImGui::SliderFloat("SpecularTint", &scene->materials[scene->meshInstances[selectedInstance].materialID].specularTint, 0.0f, 1.0f);
             objectPropChanged |= ImGui::SliderFloat("Subsurface", &scene->materials[scene->meshInstances[selectedInstance].materialID].subsurface, 0.0f, 1.0f);
@@ -387,6 +446,8 @@ void MainLoop(void* arg)
             objectPropChanged |= ImGui::SliderFloat("Ior", &scene->materials[scene->meshInstances[selectedInstance].materialID].ior, 1.001f, 2.0f);
             objectPropChanged |= ImGui::SliderFloat("atDistance", &scene->materials[scene->meshInstances[selectedInstance].materialID].atDistance, 0.05f, 10.0f);
             objectPropChanged |= ImGui::ColorEdit3("Extinction", (float*)extinction, 0);
+            // objectPropChanged |= ImGui::ColorEdit3("Emission", (float*)emission, 0);
+			// SliderFloat3(const char* label, float v[3], float v_min, float v_max, const char* format = "%.3f", float power = 1.0f);
 
             // Transforms Properties
             ImGui::Separator();
@@ -431,6 +492,8 @@ int main(int argc, char** argv)
     srand((unsigned int)time(0));
 
     std::string sceneFile;
+    bool testAjax = false;
+    bool testBoy = false;
 
     for (int i = 1; i < argc; ++i)
     {
@@ -439,6 +502,31 @@ int main(int argc, char** argv)
         {
             sceneFile = argv[++i];
         }
+        else 
+        if (arg == "-spp")
+        {
+            maxSPP = atoi(argv[++i]);
+        }
+        else 
+        if (arg == "-time")
+        {
+            maxRenderTime = atof(argv[++i]);
+        }
+        else 
+        if (arg == "-testAjax")
+        {
+            testAjax = true;
+        }
+        else 
+        if (arg == "-testBoy")
+        {
+            testBoy = true;
+        }
+        else
+        if (arg == "-oldDefaultMaterial")
+        {
+            oldDefaultMaterial = true;
+        }
         else if (arg[0] == '-')
         {
             printf("Unknown option %s \n'", arg.c_str());
@@ -446,21 +534,36 @@ int main(int argc, char** argv)
         }
     }
 
-    if (!sceneFile.empty())
-    {
-        scene = new Scene();
+	if (testAjax) 
+	{
+			scene = new Scene();
+			loadAjaxTestScene(scene, renderOptions);
 
-        if (!LoadSceneFromFile(sceneFile, scene, renderOptions))
-            exit(0);
+			scene->renderOptions = renderOptions;
+	} else 
+	if (testBoy) 
+	{
+			scene = new Scene();
+			loadBoyTestScene(scene, renderOptions);
 
-        scene->renderOptions = renderOptions;
-        std::cout << "Scene Loaded\n\n";
-    }
-    else
-    {
-        GetSceneFiles();
-        LoadScene(sceneFiles[sampleSceneIndex]);
-    }
+			scene->renderOptions = renderOptions;
+	} else {
+		if (!sceneFile.empty())
+		{
+			scene = new Scene();
+
+			if (!LoadSceneFromFile(sceneFile, scene, renderOptions))
+				exit(0);
+
+			scene->renderOptions = renderOptions;
+			std::cout << "Scene Loaded\n\n";
+		}
+		else
+		{
+			GetSceneFiles();
+			LoadScene(sceneFiles[sampleSceneIndex]);
+		}
+	}
 
     // Setup SDL
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0)
@@ -539,6 +642,8 @@ int main(int argc, char** argv)
     {
         MainLoop(&loopdata);
     }
+	
+	fflush(stdout);
         
     delete renderer;
     delete scene;

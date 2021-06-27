@@ -40,6 +40,7 @@ namespace GLSLPT
         Vec3 operator+(const Vec3& b) const;
         Vec3 operator-(const Vec3& b) const;
         Vec3 operator*(float b) const;
+        Vec3 operator *= (const float d) const;
 
         float operator[](int i) const;
         float& operator[](int i);
@@ -91,6 +92,11 @@ namespace GLSLPT
     };
 
     inline Vec3 Vec3::operator*(float b) const
+    {
+        return Vec3(x * b, y * b, z * b);
+    };
+
+    inline Vec3 Vec3::operator *= (const float b) const
     {
         return Vec3(x * b, y * b, z * b);
     };
@@ -169,7 +175,7 @@ namespace GLSLPT
 
     inline Vec3 Vec3::Normalize(const Vec3& a)
     {
-        float l = Length(a);
-        return Vec3(a.x / l, a.y / l, a.z / l);
+        float l = 1.0f / Length(a);
+        return Vec3(a.x * l, a.y * l, a.z * l);
     };
 }

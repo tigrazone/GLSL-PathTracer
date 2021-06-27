@@ -23,12 +23,15 @@
  */
 
 //-----------------------------------------------------------------------
-void Onb(in vec3 N, inout vec3 T, inout vec3 B)
+void Onb(in vec3 N, out vec3 T, out vec3 B)
 //-----------------------------------------------------------------------
 {
-    vec3 UpVector = abs(N.z) < 0.999 ? vec3(0, 0, 1) : vec3(1, 0, 0);
-    T = normalize(cross(UpVector, N));
-    B = cross(N, T);
+	float sgn = (N.z > 0.0f) ? 1.0f : -1.0f;
+	float aa = - 1.0f / (sgn + N.z);
+	float bb = N.x * N.y * aa;	
+	
+	T = vec3(1.0f + sgn * N.x * N.x * aa, sgn * bb, -sgn * N.x);
+	B = vec3(bb, sgn + N.y * N.y * aa, -N.y);
 }
 
 //-----------------------------------------------------------------------
@@ -45,30 +48,28 @@ void GetNormalsAndTexCoord(inout State state, inout Ray r)
 
     state.texCoord = t1 * state.bary.x + t2 * state.bary.y + t3 * state.bary.z;
 
-    vec3 normal = normalize(n1.xyz * state.bary.x + n2.xyz * state.bary.y + n3.xyz * state.bary.z);
+    vec3 normal = (n1.xyz * state.bary.x + n2.xyz * state.bary.y + n3.xyz * state.bary.z);
 
     mat3 normalMatrix = transpose(inverse(mat3(transform)));
-    normal = normalize(normalMatrix * normal);
-    state.normal = normal;
-    state.ffnormal = dot(normal, r.direction) <= 0.0 ? normal : normal * -1.0;
-
-    Onb(state.ffnormal, state.tangent, state.bitangent);
+   
+    state.normal = normalize(normalMatrix * normal);
 }
 
 //-----------------------------------------------------------------------
 void GetMaterialsAndTextures(inout State state, in Ray r)
 //-----------------------------------------------------------------------
 {
-    int index = state.matID;
+    int index7 = state.matID * 8;
     Material mat;
 
-    vec4 param1 = texelFetch(materialsTex, ivec2(index * 7 + 0, 0), 0);
-    vec4 param2 = texelFetch(materialsTex, ivec2(index * 7 + 1, 0), 0);
-    vec4 param3 = texelFetch(materialsTex, ivec2(index * 7 + 2, 0), 0);
-    vec4 param4 = texelFetch(materialsTex, ivec2(index * 7 + 3, 0), 0);
-    vec4 param5 = texelFetch(materialsTex, ivec2(index * 7 + 4, 0), 0);
-    vec4 param6 = texelFetch(materialsTex, ivec2(index * 7 + 5, 0), 0);
-    vec4 param7 = texelFetch(materialsTex, ivec2(index * 7 + 6, 0), 0);
+    vec4 param1 = texelFetch(materialsTex, ivec2(index7, 0), 0);
+    vec4 param2 = texelFetch(materialsTex, ivec2(index7 + 1, 0), 0);
+    vec4 param3 = texelFetch(materialsTex, ivec2(index7 + 2, 0), 0);
+    vec4 param4 = texelFetch(materialsTex, ivec2(index7 + 3, 0), 0);
+    vec4 param5 = texelFetch(materialsTex, ivec2(index7 + 4, 0), 0);
+    vec4 param6 = texelFetch(materialsTex, ivec2(index7 + 5, 0), 0);
+    vec4 param7 = texelFetch(materialsTex, ivec2(index7 + 6, 0), 0);
+    vec4 param8 = texelFetch(materialsTex, ivec2(index7 + 7, 0), 0);
 
     mat.albedo         = param1.xyz;
     mat.specular       = param1.w;
@@ -95,6 +96,8 @@ void GetMaterialsAndTextures(inout State state, in Ray r)
 
     mat.texIDs         = param7.xyz;
 
+    mat.extinction1    = param8.xyz;
+	
     vec2 texUV = state.texCoord;
     texUV.y = 1.0 - texUV.y;
 
@@ -114,19 +117,20 @@ void GetMaterialsAndTextures(inout State state, in Ray r)
     // Normal Map
     if (int(mat.texIDs.z) >= 0)
     {
-        vec3 nrm = texture(textureMapsArrayTex, vec3(texUV, int(mat.texIDs.z))).xyz;
-        nrm = normalize(nrm * 2.0 - 1.0);
-
+        vec3 nrm = normalize(2.0 * texture(textureMapsArrayTex, vec3(texUV, int(mat.texIDs.z))).xyz - 1.0);
+				
         // Orthonormal Basis
         vec3 T, B;
+		
+		state.ffnormal = dot(state.normal, r.direction) <= 0.0 ? state.normal : -state.normal;
         Onb(state.ffnormal, T, B);
 
         nrm = T * nrm.x + B * nrm.y + state.ffnormal * nrm.z;
         state.normal = normalize(nrm);
-        state.ffnormal = dot(state.normal, r.direction) <= 0.0 ? state.normal : state.normal * -1.0;
-
-        Onb(state.ffnormal, state.tangent, state.bitangent);
     }
+	
+    state.ffnormal = dot(state.normal, r.direction) <= 0.0 ? state.normal : -state.normal;
+	Onb(state.ffnormal, state.tangent, state.bitangent);
 
     // Calculate anisotropic roughness along the tangent and bitangent directions
     float aspect = sqrt(1.0 - mat.anisotropic * 0.9);
@@ -180,38 +184,42 @@ vec3 DirectLight(in Ray r, in State state)
         Light light;
 
         //Pick a light to sample
-        int index = int(rand() * float(numOfLights));
+        int indexx = int(rand() * float(numOfLights)) * 8;
 
         // Fetch light Data
-        vec3 position = texelFetch(lightsTex, ivec2(index * 5 + 0, 0), 0).xyz;
-        vec3 emission = texelFetch(lightsTex, ivec2(index * 5 + 1, 0), 0).xyz;
-        vec3 u        = texelFetch(lightsTex, ivec2(index * 5 + 2, 0), 0).xyz; // u vector for rect
-        vec3 v        = texelFetch(lightsTex, ivec2(index * 5 + 3, 0), 0).xyz; // v vector for rect
-        vec3 params   = texelFetch(lightsTex, ivec2(index * 5 + 4, 0), 0).xyz;
+        vec3 position = texelFetch(lightsTex, ivec2(indexx, 0), 0).xyz;
+        vec3 emission = texelFetch(lightsTex, ivec2(indexx + 1, 0), 0).xyz;
+        vec3 u        = texelFetch(lightsTex, ivec2(indexx + 2, 0), 0).xyz; // u vector for rect
+        vec3 v        = texelFetch(lightsTex, ivec2(indexx + 3, 0), 0).xyz; // v vector for rect
+        vec3 nrm      = texelFetch(lightsTex, ivec2(indexx + 4, 0), 0).xyz; // v vector for rect
+        vec3 uu       = texelFetch(lightsTex, ivec2(indexx + 5, 0), 0).xyz; // v vector for rect
+        vec3 vv       = texelFetch(lightsTex, ivec2(indexx + 6, 0), 0).xyz; // v vector for rect
+        vec3 params   = texelFetch(lightsTex, ivec2(indexx + 7, 0), 0).xyz;
         float radius  = params.x;
         float area    = params.y;
         float type    = params.z; // 0->rect, 1->sphere
 
-        light = Light(position, emission, u, v, radius, area, type);
+        light = Light(position, emission, u, v, nrm, uu, vv, radius, area, type);
         sampleLight(light, lightSampleRec);
 
         vec3 lightDir = lightSampleRec.surfacePos - surfacePos;
-        float lightDist = length(lightDir);
-        float lightDistSq = lightDist * lightDist;
-        lightDir /= lightDist;
 
         if (dot(lightDir, lightSampleRec.normal) < 0.0)
         {
+			float lightDist = length(lightDir);
+			lightDir /= lightDist;
+		
             Ray shadowRay = Ray(surfacePos, lightDir);
             bool inShadow = AnyHit(shadowRay, lightDist - EPS);
 
             if (!inShadow)
             {
                 bsdfSampleRec.f = DisneyEval(state, -r.direction, state.ffnormal, lightDir, bsdfSampleRec.pdf);
-                float lightPdf = lightDistSq / (light.area * abs(dot(lightSampleRec.normal, lightDir)));
 
-                if (bsdfSampleRec.pdf > 0.0)
+                if (bsdfSampleRec.pdf > 0.0) {
+					float lightPdf = - (lightDist * lightDist) / (light.area * dot(lightDir, lightSampleRec.normal));
                     Li += powerHeuristic(lightPdf, bsdfSampleRec.pdf) * bsdfSampleRec.f * abs(dot(state.ffnormal, lightDir)) * lightSampleRec.emission / lightPdf;
+				}
             }
         }
     }
@@ -231,6 +239,7 @@ vec3 PathTrace(Ray r)
     LightSampleRec lightSampleRec;
     BsdfSampleRec bsdfSampleRec;
     vec3 absorption = vec3(0.0);
+	
     state.specularBounce = false;
     
     for (int depth = 0; depth < maxDepth; depth++)
@@ -246,12 +255,12 @@ vec3 PathTrace(Ray r)
 #ifdef ENVMAP
             {
                 float misWeight = 1.0f;
-                vec2 uv = vec2((PI + atan(r.direction.z, r.direction.x)) * (1.0 / TWO_PI), acos(r.direction.y) * (1.0 / PI));
+                vec2 uv = vec2((PI + atan(r.direction.z, r.direction.x)) * INV_TWO_PI, acos(r.direction.y) * INV_PI);
 
                 if (depth > 0 && !state.specularBounce)
                 {
                     // TODO: Fix NaNs when using certain HDRs
-                    float lightPdf = EnvPdf(r);
+                    float lightPdf = EnvPdf(r, uv);
                     misWeight = powerHeuristic(bsdfSampleRec.pdf, lightPdf);
                 }
                 radiance += misWeight * texture(hdrTex, uv).xyz * throughput * hdrMultiplier;
@@ -264,10 +273,6 @@ vec3 PathTrace(Ray r)
         GetNormalsAndTexCoord(state, r);
         GetMaterialsAndTextures(state, r);
 
-        // Reset absorption when ray is going out of surface
-        if (dot(state.normal, state.ffnormal) > 0.0)
-            absorption = vec3(0.0);
-
         radiance += state.mat.emission * throughput;
 
 #ifdef LIGHTS
@@ -278,19 +283,30 @@ vec3 PathTrace(Ray r)
         }
 #endif
 
-        // Add absoption
-        throughput *= exp(-absorption * t);
+        // Reset absorption when ray is going out of surface
+        if (dot(state.normal, state.ffnormal) > 0.0) {
+            absorption = vec3(0.0);
+		}
+		else 
+		{
+			// Add absoption
+			throughput *= exp(-absorption * t);
+		}
 
         radiance += DirectLight(r, state) * throughput;
 
         bsdfSampleRec.f = DisneySample(state, -r.direction, state.ffnormal, bsdfSampleRec.L, bsdfSampleRec.pdf);
 
+		float dotL = dot(state.ffnormal, bsdfSampleRec.L);
+
         // Set absorption only if the ray is currently inside the object.
-        if (dot(state.ffnormal, bsdfSampleRec.L) < 0.0)
-            absorption = -log(state.mat.extinction) / state.mat.atDistance;
+        if (dotL < 0.0) {
+            absorption = state.mat.extinction1;
+			dotL = - dotL;
+		}
 
         if (bsdfSampleRec.pdf > 0.0)
-            throughput *= bsdfSampleRec.f * abs(dot(state.ffnormal, bsdfSampleRec.L)) / bsdfSampleRec.pdf;
+            throughput *= bsdfSampleRec.f * dotL / bsdfSampleRec.pdf;
         else
             break;
 

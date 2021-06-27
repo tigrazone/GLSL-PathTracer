@@ -100,7 +100,7 @@ float GTR1(float NDotH, float a)
 //-----------------------------------------------------------------------
 {
     if (a >= 1.0)
-        return (1.0 / PI);
+        return INV_PI;
     float a2 = a * a;
     float t = 1.0 + (a2 - 1.0) * NDotH * NDotH;
     return (a2 - 1.0) / (PI * log(a2) * t);
@@ -169,10 +169,13 @@ vec3 UniformSampleHemisphere(float r1, float r2)
 }
 
 //-----------------------------------------------------------------------
-vec3 UniformSampleSphere(float r1, float r2)
+vec3 UniformSampleSphere()
 //-----------------------------------------------------------------------
 {
-    float z = 1.0 - 2.0 * r1;
+    float r1 = rand();
+    float r2 = rand();
+
+    float z = 1.0 - r1 - r1;
     float r = sqrt(max(0.0, 1.0 - z * z));
     float phi = TWO_PI * r2;
 
@@ -191,10 +194,7 @@ float powerHeuristic(float a, float b)
 void sampleSphereLight(in Light light, inout LightSampleRec lightSampleRec)
 //-----------------------------------------------------------------------
 {
-    float r1 = rand();
-    float r2 = rand();
-
-    lightSampleRec.surfacePos = light.position + UniformSampleSphere(r1, r2) * light.radius;
+    lightSampleRec.surfacePos = light.position + UniformSampleSphere() * light.radius;
     lightSampleRec.normal = normalize(lightSampleRec.surfacePos - light.position);
     lightSampleRec.emission = light.emission * float(numOfLights);
 }
@@ -207,7 +207,7 @@ void sampleRectLight(in Light light, inout LightSampleRec lightSampleRec)
     float r2 = rand();
 
     lightSampleRec.surfacePos = light.position + light.u * r1 + light.v * r2;
-    lightSampleRec.normal = normalize(cross(light.u, light.v));
+    lightSampleRec.normal = light.nrm;
     lightSampleRec.emission = light.emission * float(numOfLights);
 }
 
@@ -225,13 +225,11 @@ void sampleLight(in Light light, inout LightSampleRec lightSampleRec)
 #ifndef CONSTANT_BG
 
 //-----------------------------------------------------------------------
-float EnvPdf(in Ray r)
+float EnvPdf(in Ray r, in vec2 uv)
 //-----------------------------------------------------------------------
 {
-    float theta = acos(clamp(r.direction.y, -1.0, 1.0));
-    vec2 uv = vec2((PI + atan(r.direction.z, r.direction.x)) * (1.0 / TWO_PI), theta * (1.0 / PI));
     float pdf = texture(hdrCondDistTex, uv).y * texture(hdrMarginalDistTex, vec2(uv.y, 0.)).y;
-    return (pdf * hdrResolution) / (2.0 * PI * PI * sin(theta));
+    return (pdf * hdrResolution) / (TWO_PI_PI * sqrt(1.0f - r.direction.y * r.direction.y));
 }
 
 //-----------------------------------------------------------------------
@@ -245,15 +243,20 @@ vec4 EnvSample(inout vec3 color)
     float u = texture(hdrCondDistTex, vec2(r2, v)).x;
 
     color = texture(hdrTex, vec2(u, v)).xyz * hdrMultiplier;
+    float theta = v * PI;
+	
+	float sinTheta = - sin(theta);
+
+    if (sinTheta == 0.0)
+	{
+		return vec4(0.0f, 1.0f, 0.0f, 0.0f);
+	}
+	
+    float phi = u * TWO_PI;
+	
     float pdf = texture(hdrCondDistTex, vec2(u, v)).y * texture(hdrMarginalDistTex, vec2(v, 0.)).y;
 
-    float phi = u * TWO_PI;
-    float theta = v * PI;
-
-    if (sin(theta) == 0.0)
-        pdf = 0.0;
-
-    return vec4(-sin(theta) * cos(phi), cos(theta), -sin(theta) * sin(phi), (pdf * hdrResolution) / (2.0 * PI * PI * sin(theta)));
+    return vec4(sinTheta * cos(phi), cos(theta), sinTheta * sin(phi), - (pdf * hdrResolution) / (TWO_PI_PI * sinTheta));
 }
 
 #endif

@@ -31,36 +31,39 @@ bool AnyHit(Ray r, float maxDist)
     // Intersect Emitters
     for (int i = 0; i < numOfLights; i++)
     {
+        int indexx = i * 8;
         // Fetch light Data
-        vec3 position = texelFetch(lightsTex, ivec2(i * 5 + 0, 0), 0).xyz;
-        vec3 emission = texelFetch(lightsTex, ivec2(i * 5 + 1, 0), 0).xyz;
-        vec3 u = texelFetch(lightsTex, ivec2(i * 5 + 2, 0), 0).xyz;
-        vec3 v = texelFetch(lightsTex, ivec2(i * 5 + 3, 0), 0).xyz;
-        vec3 params = texelFetch(lightsTex, ivec2(i * 5 + 4, 0), 0).xyz;
+        vec3 position = texelFetch(lightsTex, ivec2(indexx, 0), 0).xyz;
+        vec3 emission = texelFetch(lightsTex, ivec2(indexx + 1, 0), 0).xyz;
+        vec3 u = texelFetch(lightsTex, ivec2(indexx + 2, 0), 0).xyz;
+        vec3 v = texelFetch(lightsTex, ivec2(indexx + 3, 0), 0).xyz;
+        vec3 normal = texelFetch(lightsTex, ivec2(indexx + 4, 0), 0).xyz;
+        vec3 uu = texelFetch(lightsTex, ivec2(indexx + 5, 0), 0).xyz;
+        vec3 vv = texelFetch(lightsTex, ivec2(indexx + 6, 0), 0).xyz;
+        vec3 params = texelFetch(lightsTex, ivec2(indexx + 7, 0), 0).xyz;
         float radius = params.x;
         float area = params.y;
         float type = params.z;
+		
+		int itype = int(type);
 
         // Intersect rectangular area light
-        if (type == QUAD_LIGHT)
+        if (itype == QUAD_LIGHT)
         {
-            vec3 normal = normalize(cross(u, v));
-            vec4 plane = vec4(normal, dot(normal, position));
-            u *= 1.0f / dot(u, u);
-            v *= 1.0f / dot(v, v);
+            vec4 plane = vec4(normal, radius);			
+			
+			float d = RectIntersect(position, uu, vv, plane, r);
 
-            float d = RectIntersect(position, u, v, plane, r);
             if (d > 0.0 && d < maxDist)
                 return true;
-        }
-
-        // Intersect spherical area light
-        if (type == SPHERE_LIGHT)
-        {
-            float d = SphereIntersect(radius, position, r);
-            if (d > 0.0 && d < maxDist)
-                return true;
-        }
+        } else 
+			// Intersect spherical area light
+			if (itype == SPHERE_LIGHT)
+			{
+				float d = SphereIntersect(u.x, position, r); //precalculated
+				if (d > 0.0 && d < maxDist)
+					return true;
+			}
     }
 #endif
 
@@ -137,10 +140,12 @@ bool AnyHit(Ray r, float maxDist)
         {
             idx = leftIndex;
 
-            vec4 r1 = texelFetch(transformsTex, ivec2((-leaf - 1) * 4 + 0, 0), 0).xyzw;
-            vec4 r2 = texelFetch(transformsTex, ivec2((-leaf - 1) * 4 + 1, 0), 0).xyzw;
-            vec4 r3 = texelFetch(transformsTex, ivec2((-leaf - 1) * 4 + 2, 0), 0).xyzw;
-            vec4 r4 = texelFetch(transformsTex, ivec2((-leaf - 1) * 4 + 3, 0), 0).xyzw;
+			int leaf4 = (-leaf - 1) << 2;
+
+            vec4 r1 = texelFetch(transformsTex, ivec2(leaf4, 0), 0).xyzw;
+            vec4 r2 = texelFetch(transformsTex, ivec2(leaf4 + 1, 0), 0).xyzw;
+            vec4 r3 = texelFetch(transformsTex, ivec2(leaf4 + 2, 0), 0).xyzw;
+            vec4 r4 = texelFetch(transformsTex, ivec2(leaf4 + 3, 0), 0).xyzw;
 
             temp_transform = mat4(r1, r2, r3, r4);
 
@@ -154,8 +159,8 @@ bool AnyHit(Ray r, float maxDist)
         }
         else
         {
-            leftHit =  AABBIntersect(texelFetch(BVH, leftIndex  * 3 + 0).xyz, texelFetch(BVH, leftIndex  * 3 + 1).xyz, r_trans);
-            rightHit = AABBIntersect(texelFetch(BVH, rightIndex * 3 + 0).xyz, texelFetch(BVH, rightIndex * 3 + 1).xyz, r_trans);
+            leftHit =  AABBIntersect(texelFetch(BVH, leftIndex  * 3).xyz, texelFetch(BVH, leftIndex  * 3 + 1).xyz, r_trans);
+            rightHit = AABBIntersect(texelFetch(BVH, rightIndex * 3).xyz, texelFetch(BVH, rightIndex * 3 + 1).xyz, r_trans);
 
             if (leftHit > 0.0 && rightHit > 0.0)
             {

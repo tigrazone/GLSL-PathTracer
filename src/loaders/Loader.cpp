@@ -32,6 +32,8 @@ freely, subject to the following restrictions:
 #include <algorithm>
 #include <stdio.h>
 
+#include <ctime>
+
 namespace GLSLPT
 {
     static const int kMaxLineLength = 2048;
@@ -39,6 +41,13 @@ namespace GLSLPT
 
     bool LoadSceneFromFile(const std::string &filename, Scene *scene, RenderOptions& renderOptions)
     {
+		clock_t time1, time2;
+
+        const size_t buf_sz = 32 * 1024;
+        char buf[buf_sz];
+		
+		time1 = clock();
+		
         FILE* file;
         file = fopen(filename.c_str(), "r");
 
@@ -49,6 +58,8 @@ namespace GLSLPT
         }
 
         Log("Loading Scene..\n");
+
+        setvbuf(file, buf, _IOLBF, buf_sz);
 
         struct MaterialData
         {
@@ -129,6 +140,11 @@ namespace GLSLPT
                 // Normal Map Texture
                 if (strcmp(normalTexName, "None") != 0)
                     material.normalmapTexID = scene->AddTexture(path + normalTexName);
+				
+				// -log(state.mat.extinction) / state.mat.atDistance
+				material.extinction1.x = -log(material.extinction.x) / material.atDistance;
+				material.extinction1.y = -log(material.extinction.y) / material.atDistance;
+				material.extinction1.z = -log(material.extinction.z) / material.atDistance;
 
                 // add material to map
                 if (materialMap.find(name) == materialMap.end()) // New material
@@ -167,12 +183,23 @@ namespace GLSLPT
                     light.type = LightType::RectLight;
                     light.u = v1 - light.position;
                     light.v = v2 - light.position;
-                    light.area = Vec3::Length(Vec3::Cross(light.u, light.v));
+                    
+					light.normal = Vec3::Cross(light.u, light.v);
+					
+					light.area = Vec3::Length(light.normal);
+					
+                    light.normal = Vec3::Normalize(light.normal);
+
+					light.uu = light.u * (1.0f / Vec3::Dot(light.u, light.u));
+					light.vv = light.v * (1.0f / Vec3::Dot(light.v, light.v));
+
+                    light.radius = Vec3::Dot(light.normal, light.position);
                 }
                 else if (strcmp(light_type, "Sphere") == 0)
                 {
                     light.type = LightType::SphereLight;
-                    light.area = 4.0f * PI * light.radius * light.radius;
+                    light.u.x = light.radius * light.radius;	//precalculated
+                    light.area = 4.0f * PI * light.u.x;
                 }
 
                 scene->AddLight(light);
@@ -215,6 +242,7 @@ namespace GLSLPT
             {
                 char envMap[200] = "None";
                 char enableRR[10] = "None";
+                char *subString, *p;
 
                 while (fgets(line, kMaxLineLength, file))
                 {
@@ -234,8 +262,19 @@ namespace GLSLPT
 
                 if (strcmp(envMap, "None") != 0)
                 {
-                    scene->AddHDR(path + envMap);
-                    renderOptions.useEnvMap = true;
+                    subString = strrchr(envMap, '.');
+					p = subString;
+					for ( ; *p; ++p) *p = tolower(*p);
+					
+					if(subString != NULL) {
+                        if (strcmp(subString, ".hdr") == 0) {
+                            scene->AddHDR(path + envMap);
+                        }
+                        else if (strcmp(subString, ".exr") == 0) {
+                            scene->AddEXR(path + envMap);
+                        }
+						renderOptions.useEnvMap = true;
+					}
                 }
 
                 if (strcmp(enableRR, "False") == 0)
@@ -317,6 +356,9 @@ namespace GLSLPT
 
         if (!cameraAdded)
             scene->AddCamera(Vec3(0.0f, 0.0f, 10.0f), Vec3(0.0f, 0.0f, -10.0f), 35.0f);
+		
+		time2 = clock();
+		printf("%.1fs\n", (float)(time2-time1)/(float)CLOCKS_PER_SEC);
 
         scene->CreateAccelerationStructures();
 

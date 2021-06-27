@@ -26,6 +26,7 @@
 
 #include "Renderer.h"
 #include "OpenImageDenoise/oidn.hpp"
+#include <ctime>
 
 namespace GLSLPT
 {
@@ -38,6 +39,7 @@ namespace GLSLPT
         GLuint pathTraceFBOLowRes;
         GLuint accumFBO;
         GLuint outputFBO;
+        GLuint rawFBO;
 
         // Shaders
         Program* pathTraceShader;
@@ -45,11 +47,13 @@ namespace GLSLPT
         Program* accumShader;
         Program* outputShader;
         Program* tonemapShader;
+        Program* rawfbShader;
 
         // Textures
         GLuint pathTraceTexture;
         GLuint pathTraceTextureLowRes;
         GLuint accumTexture;
+        GLuint rawTexture;
         GLuint tileOutputTexture[2];
         GLuint denoisedTexture;
 
@@ -65,6 +69,7 @@ namespace GLSLPT
         int frameCounter;
         int sampleCounter;
         float pixelRatio;
+        clock_t startRenderTime;
 
         Vec3* denoiserInputFramePtr;
         Vec3* frameOutputPtr;
@@ -83,6 +88,8 @@ namespace GLSLPT
         void Update(float secondsElapsed);
         float GetProgress() const;
         int GetSampleCount() const;
+        float GetRenderTime() const;
         void GetOutputBuffer(unsigned char**, int &w, int &h);
+		void GetRawOutputBuffer(float** data, int &w, int &h);
     };
 }

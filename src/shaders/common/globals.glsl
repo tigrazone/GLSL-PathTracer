@@ -24,12 +24,14 @@
 
 #define PI        3.14159265358979323
 #define TWO_PI    6.28318530717958648
+
+#define INV_PI        0.31830988618379067153776752674503
+#define INV_TWO_PI    0.15915494309189533576888376337251
+
+#define TWO_PI_PI    19.739208802178717237668981999752
+
 #define INFINITY  1000000.0
 #define EPS 0.0001
-
-#define REFL 0
-#define REFR 1
-#define SUBS 2
 
 #define QUAD_LIGHT 0
 #define SPHERE_LIGHT 1
@@ -63,6 +65,7 @@ struct Material
     float ior;
     float atDistance;
     vec3 extinction;
+    vec3 extinction1;
     vec3 texIDs;
     // Roughness calculated from anisotropic param
     float ax;
@@ -76,6 +79,8 @@ struct Camera
     vec3 forward;
     vec3 position;
     float fov;
+    float fovTAN;
+    float fovTAN1;
     float focalDist;
     float aperture;
 };
@@ -86,6 +91,9 @@ struct Light
     vec3 emission;
     vec3 u;
     vec3 v;
+	vec3 nrm;
+	vec3 uu;
+	vec3 vv;
     float radius;
     float area;
     float type;
@@ -139,4 +147,34 @@ float rand()
 vec3 FaceForward(vec3 a, vec3 b)
 {
     return dot(a, b) < 0.0 ? -b : b;
+}
+
+uint hash( uint x ) {
+    x += ( x << 10u );
+    x ^= ( x >>  6u );
+    x += ( x <<  3u );
+    x ^= ( x >> 11u );
+    x += ( x << 15u );
+    return x;
+}
+
+uint hash( uvec2 v ) { return hash( v.x ^ hash(v.y)                         ); }
+
+float floatConstruct( uint m ) {
+    const uint ieeeMantissa = 0x007FFFFFu; // binary32 mantissa bitmask
+    const uint ieeeOne      = 0x3F800000u; // 1.0 in IEEE binary32
+
+    m &= ieeeMantissa;                     // Keep only mantissa bits (fractional part)
+    m |= ieeeOne;                          // Add fractional part to 1.0
+
+    float  f = uintBitsToFloat( m );       // Range [1:2]
+    return f - 1.0;                        // Range [0:1]
+}
+
+float random( vec2  v ) { return floatConstruct(hash(floatBitsToUint(v))); }
+
+float rand1()
+{
+	seed -= randomVector.xy;
+	return random(seed);
 }

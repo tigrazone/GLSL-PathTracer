@@ -24,6 +24,7 @@
 
 #pragma once
 
+#include <ctime>
 #include <vector>
 #include "split_bvh.h"
 
@@ -39,7 +40,7 @@ namespace GLSLPT
         }
         ~Mesh() { delete bvh; }
 
-        void BuildBVH();
+        size_t BuildBVH();
         bool LoadFromFile(const std::string& filename);
         
         std::vector<Vec4> verticesUVX; // Vertex Data + x coord of uv 

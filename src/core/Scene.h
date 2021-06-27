@@ -52,6 +52,9 @@ namespace GLSLPT
         Vec3 emission;
         Vec3 u;
         Vec3 v;
+        Vec3 normal;
+        Vec3 uu;
+        Vec3 vv;
         float radius;
         float area;
         float type;
@@ -78,6 +81,7 @@ namespace GLSLPT
 
         void AddCamera(Vec3 eye, Vec3 lookat, float fov);
         void AddHDR(const std::string &filename);
+        void AddEXR(const std::string &filename);
 
         void CreateAccelerationStructures();
         void RebuildInstances();
@@ -117,6 +121,8 @@ namespace GLSLPT
         std::vector<unsigned char> textureMapsArray;
         int texWidth;
         int texHeight; // TODO: allow textures of different sizes
+		
+		size_t totalTris;
 
     private:
         RadeonRays::Bvh *sceneBvh;
