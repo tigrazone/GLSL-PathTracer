@@ -31,6 +31,8 @@ file(GLOB_RECURSE EXT_FILES
 	${CMAKE_SOURCE_DIR}/thirdparty/oidn/*.h
 	${CMAKE_SOURCE_DIR}/thirdparty/oidn/*.hpp
 	${CMAKE_SOURCE_DIR}/thirdparty/tinydir/*.h
+	${CMAKE_SOURCE_DIR}/thirdparty/tinyobjloader/*.h
+	${CMAKE_SOURCE_DIR}/thirdparty/tinyexr/*.h
 )
 
 set(SRCS ${SRC_FILES} ${EXT_FILES} ${SHADERS})
@@ -47,6 +49,8 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src/tests
   ${CMAKE_SOURCE_DIR}/src/math
   ${CMAKE_SOURCE_DIR}/thirdparty/imgui
+  ${CMAKE_SOURCE_DIR}/thirdparty/tinyobjloader
+  ${CMAKE_SOURCE_DIR}/thirdparty/tinyexr
   ${CMAKE_SOURCE_DIR}/thirdparty/glew/include
   ${CMAKE_SOURCE_DIR}/thirdparty/stb
   ${CMAKE_SOURCE_DIR}/thirdparty/gl3w

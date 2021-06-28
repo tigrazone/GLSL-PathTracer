@@ -342,10 +342,10 @@ light
 }
 
 
-#light
+light
 {
 	type Sphere
-	emission 80.0 80.0 80.0
+	emission 300.0 300.0 300.0
 	position 0 390.0 -439.0
 	radius 60.0
 }
