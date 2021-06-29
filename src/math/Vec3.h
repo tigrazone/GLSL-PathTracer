@@ -96,11 +96,6 @@ namespace GLSLPT
         return Vec3(x * b, y * b, z * b);
     };
 
-    inline Vec3 Vec3::operator *= (const float b) const
-    {
-        return Vec3(x * b, y * b, z * b);
-    };
-
     inline float Vec3::operator[](int i) const
     {
         if (i == 0)

@@ -1,7 +1,7 @@
 Renderer
 {
 	resolution 1280 720
-	maxDepth 4
+	maxDepth 8
 	tileWidth 256
 	tileHeight 144
 }
@@ -87,12 +87,29 @@ material marb2
 	clearcoatGloss 0.93
 }
 
+material glass_dragon
+{
+	color 1.0 1.0 1.0
+	extinction 0.905 0.63 0.3
+	roughness 0.1
+	ior 1.45
+	transmission 1.0
+}
+
 mesh
 {
 	name Glass Ball
 	file hyperion/glass.obj
 	material glass
 	position -0.57 1.87 6.55
+}
+
+mesh
+{
+	file dragon/dragon.obj
+	material glass_dragon
+	position 2.791 0.839 -0.59
+	scale 0.2 0.2 0.2
 }
 
 

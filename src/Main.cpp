@@ -175,6 +175,60 @@ void Render()
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
+
+void MoveCameraFromKeyboard(float multiply)
+{	
+			if(ImGui::IsKeyPressed(SDL_SCANCODE_W)) { // w
+				scene->camera->position = scene->camera->position + scene->camera->forward * multiply;
+                scene->camera->isMoving = true;
+			} else
+			if(ImGui::IsKeyPressed(SDL_SCANCODE_A)) { // a
+				scene->camera->position = scene->camera->position - scene->camera->right * multiply;
+                scene->camera->isMoving = true;
+			} else
+			if(ImGui::IsKeyPressed(SDL_SCANCODE_S)) { // s
+                scene->camera->position = scene->camera->position - scene->camera->forward * multiply;
+                scene->camera->isMoving = true;
+			} else
+			if(ImGui::IsKeyPressed(SDL_SCANCODE_D)) { // d
+                scene->camera->position = scene->camera->position + scene->camera->right * multiply;
+                scene->camera->isMoving = true;
+			} else
+			if(ImGui::IsKeyPressed(SDL_SCANCODE_R)) { // r
+                scene->camera->position = scene->camera->position + scene->camera->up * multiply;
+                scene->camera->isMoving = true;
+			} else
+			if(ImGui::IsKeyPressed(SDL_SCANCODE_F)) { // f
+                scene->camera->position = scene->camera->position - scene->camera->up * multiply;
+                scene->camera->isMoving = true;
+			} else
+			if(ImGui::IsKeyPressed(SDL_SCANCODE_UP)) { 		// up arrow
+				scene->camera->position = scene->camera->position + scene->camera->forward * multiply;
+                scene->camera->isMoving = true;
+			} else
+			if(ImGui::IsKeyPressed(SDL_SCANCODE_RIGHT)) { 	// right arrow
+				scene->camera->position = scene->camera->position - scene->camera->right * multiply;
+                scene->camera->isMoving = true;
+			} else
+			if(ImGui::IsKeyPressed(SDL_SCANCODE_DOWN)) { 	// down arrow
+                scene->camera->position = scene->camera->position - scene->camera->forward * multiply;
+                scene->camera->isMoving = true;
+			} else
+			if(ImGui::IsKeyPressed(SDL_SCANCODE_LEFT)) { 	// left arrow
+                scene->camera->position = scene->camera->position + scene->camera->right * multiply;
+                scene->camera->isMoving = true;
+			} else
+			if(ImGui::IsKeyPressed(SDL_SCANCODE_PAGEUP)) { 	// PgUp
+                scene->camera->position = scene->camera->position + scene->camera->up * multiply;
+                scene->camera->isMoving = true;
+			} else
+			if(ImGui::IsKeyPressed(SDL_SCANCODE_PAGEDOWN)) { // PgDn
+                scene->camera->position = scene->camera->position - scene->camera->up * multiply;
+                scene->camera->isMoving = true;
+			}
+}
+
+
 void Update(float secondsElapsed)
 {
     keyPressed = false;
@@ -202,10 +256,39 @@ void Update(float secondsElapsed)
         scene->camera->isMoving = true;
     }
 	
-	/*
-	if (g.IO.KeyCtrl && IsKeyPressedMap(ImGuiKey_C))
-                LogToClipboard();
-	*/
+
+    ImGuiIO& io = ImGui::GetIO();
+	
+	int specKeys = 0;
+	
+	specKeys += io.KeyCtrl;
+	specKeys += io.KeyShift; 
+	specKeys += io.KeyAlt; 
+	specKeys += io.KeySuper;
+	
+	float multiply = 1.0f;
+
+	if(specKeys < 2) {
+		if(io.KeyCtrl) {
+			multiply = 0.1f;
+			multiply *= mouseSensitivity;
+			MoveCameraFromKeyboard(multiply);
+		} else			
+		if(io.KeyShift) {
+			multiply = 10.0f;
+			multiply *= mouseSensitivity;
+			MoveCameraFromKeyboard(multiply);
+		} else			
+		if(io.KeyAlt) {
+			multiply = 0.05f;
+			multiply *= mouseSensitivity;
+			MoveCameraFromKeyboard(multiply);
+		} else 
+		if(specKeys == 0) {
+			multiply *= mouseSensitivity;
+			MoveCameraFromKeyboard(multiply);		
+		}
+	}	
 
     renderer->Update(secondsElapsed);
 }
