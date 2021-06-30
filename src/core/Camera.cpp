@@ -181,7 +181,7 @@ namespace GLSLPT
         forward_temp.z = sin(Math::Radians(yaw)) * cos(Math::Radians(pitch));
 
         forward = Vec3::Normalize(forward_temp);
-        position = pivot + (forward * -1.0f) * radius;
+        position = pivot - forward * radius;
 
         right = Vec3::Normalize(Vec3::Cross(forward, worldUp));
         up = Vec3::Normalize(Vec3::Cross(right, forward));
@@ -191,7 +191,7 @@ namespace GLSLPT
     {
         Vec3 at = position + forward;
         LookAt(&position.x, &at.x, &up.x, view);
-        const float fov_v = (1.f / ratio) * tanf(fov / 2.f);
+        const float fov_v = tanf(fov * 0.5f) / ratio;
         Perspective(Math::Degrees(fov_v), ratio, 0.1f, 1000.f, projection);
     }
 }
