@@ -99,8 +99,10 @@ namespace GLSLPT
 		time1 = clock();
 		
         hdrData = HDRLoader::load(filename.c_str());
-        if (hdrData == nullptr)
+        if (hdrData == nullptr) {
             printf("Unable to load HDR\n");
+            renderOptions.useEnvMap = false;
+        }
         else
         {
             printf("HDR %s loaded\n", filename.c_str());
@@ -120,8 +122,10 @@ namespace GLSLPT
 		time1 = clock();
 		
         hdrData = EXRLoader::load(filename.c_str());
-        if (hdrData == nullptr)
+        if (hdrData == nullptr) {
             printf("Unable to load EXR\n");
+            renderOptions.useEnvMap = false;
+        }
         else
         {
             printf("EXR %s loaded\n", filename.c_str());

@@ -29,6 +29,8 @@
 
 #include <time.h>
 #include <math.h>
+
+#include <cstring>
 #include <string>
 
 #include "Scene.h"
@@ -46,6 +48,8 @@
 
 #include "ImGuizmo.h"
 #include "tinydir.h"
+
+#include "Utils.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
@@ -69,6 +73,9 @@ bool done = false;
 
 std::string shadersDir = "../src/shaders/";
 std::string assetsDir = "../assets/";
+
+std::string sceneFile;
+
 
 RenderOptions renderOptions;
 
@@ -103,14 +110,16 @@ void GetSceneFiles()
     tinydir_close(&dir);
 }
 
-void LoadScene(std::string sceneName)
+bool LoadScene(std::string sceneName)
 {
     delete scene;
     scene = new Scene();
-    LoadSceneFromFile(sceneName, scene, renderOptions);
+    if(!LoadSceneFromFile(sceneName, scene, renderOptions))
+		return false;
     //loadCornellTestScene(scene, renderOptions);
     selectedInstance = 0;
     scene->renderOptions = renderOptions;
+	return true;
 }
 
 bool InitRenderer()
@@ -391,16 +400,33 @@ void MainLoop(void* arg)
             done = true;
 		}
 
-        ImGui::BulletText("LMB + drag to rotate");
-        ImGui::BulletText("MMB + drag to pan");
-        ImGui::BulletText("RMB + drag to zoom in/out");
-
         if (ImGui::Button("Save Screenshot"))
         {
             SaveFrame("./img_" + to_string(renderer->GetSampleCount()) + ".png");
             SaveRawFrame("./img_" + to_string(renderer->GetSampleCount()) + ".exr");
         }
 
+
+        if (ImGui::Button("Load Scene"))
+        {			
+			const std::string selected = openFileDialog("Select a scene file", assetsDir, { "*.scene"
+			// , "*.obj", "*.ply", "*.pbf", "*.pbrt"  
+			});
+			if(!selected.empty()) {
+					if(LoadScene(selected)) {
+						sceneFile = selected;
+					} else {
+						// reload previously loaded scene
+						LoadScene(sceneFile);
+					}
+					
+					SDL_RestoreWindow(loopdata.mWindow);
+					SDL_SetWindowSize(loopdata.mWindow, renderOptions.resolution.x, renderOptions.resolution.y);
+					InitRenderer();
+				}
+        }
+		
+		
         std::vector<const char*> scenes;
         for (int i = 0; i < sceneFiles.size(); ++i)
         {
@@ -409,7 +435,9 @@ void MainLoop(void* arg)
 
         if (ImGui::Combo("Scene", &sampleSceneIndex, scenes.data(), scenes.size()))
         {
-            LoadScene(sceneFiles[sampleSceneIndex]);
+            if(LoadScene(sceneFiles[sampleSceneIndex])) {
+				sceneFile = sceneFiles[sampleSceneIndex];
+			}
             SDL_RestoreWindow(loopdata.mWindow);
             SDL_SetWindowSize(loopdata.mWindow, renderOptions.resolution.x, renderOptions.resolution.y);
             InitRenderer();
@@ -417,7 +445,7 @@ void MainLoop(void* arg)
 
         bool optionsChanged = false;
 
-        optionsChanged |= ImGui::SliderFloat("Mouse Sensitivity", &mouseSensitivity, 0.01f, 1.0f);
+        ImGui::SliderFloat("Mouse Sensitivity", &mouseSensitivity, 0.01f, 1.0f);
 
         if (ImGui::CollapsingHeader("Render Settings"))
         {
@@ -426,6 +454,30 @@ void MainLoop(void* arg)
 
             optionsChanged |= ImGui::SliderInt("Max Depth", &renderOptions.maxDepth, 1, 10);
             requiresReload |= ImGui::Checkbox("Enable EnvMap", &renderOptions.useEnvMap);
+			
+				if (ImGui::Button("Load EnvMap"))
+				{					
+					const std::string envMap = openFileDialog("Select environment map file", assetsDir, { "*.hdr", "*.exr"});
+					if(!envMap.empty()) {
+						char *subString, *p;
+						
+						subString = strrchr((char*) envMap.c_str(), '.');
+						p = subString;
+						for ( ; *p; ++p) *p = tolower(*p);
+						
+						if(subString != NULL) {
+							if (strcmp(subString, ".hdr") == 0) {
+								scene->AddHDR(envMap);
+								InitRenderer();
+							}
+							else if (strcmp(subString, ".exr") == 0) {
+								scene->AddEXR(envMap);
+								InitRenderer();
+							}
+						}
+					}
+				}
+				
             optionsChanged |= ImGui::SliderFloat("HDR multiplier", &renderOptions.hdrMultiplier, 0.1f, 10.0f);
             requiresReload |= ImGui::Checkbox("Enable RR", &renderOptions.enableRR);
             requiresReload |= ImGui::SliderInt("RR Depth", &renderOptions.RRDepth, 1, 10);
@@ -453,7 +505,7 @@ void MainLoop(void* arg)
             optionsChanged |= ImGui::SliderFloat("Aperture", &aperture, 0.0f, 10.8f);
             scene->camera->aperture = aperture / 1000.0f;
             optionsChanged |= ImGui::SliderFloat("Focal Distance", &scene->camera->focalDist, 0.01f, 50.0f);
-            ImGui::Text("Pos: %.2f, %.2f, %.2f", scene->camera->position.x, scene->camera->position.y, scene->camera->position.z);
+            // ImGui::Text("Pos: %.2f, %.2f, %.2f", scene->camera->position.x, scene->camera->position.y, scene->camera->position.z);
         }
 
         scene->camera->isMoving = false;
@@ -488,26 +540,29 @@ void MainLoop(void* arg)
 
             ImGui::Separator();
             ImGui::Text("Materials");
+			
+			size_t nowMaterialId = scene->meshInstances[selectedInstance].materialID;
+			Material *nowMat = &scene->materials[nowMaterialId];
 
             // Material Properties
-            Vec3 *albedo   = &scene->materials[scene->meshInstances[selectedInstance].materialID].albedo;
-            Vec3 *emission = &scene->materials[scene->meshInstances[selectedInstance].materialID].emission;
-            Vec3 *extinction = &scene->materials[scene->meshInstances[selectedInstance].materialID].extinction;
+            Vec3 *albedo   = &(*nowMat).albedo;
+            Vec3 *emission = &(*nowMat).emission;
+            Vec3 *extinction = &(*nowMat).extinction;
 
             objectPropChanged |= ImGui::ColorEdit3("Albedo", (float*)albedo, 0);
-            objectPropChanged |= ImGui::SliderFloat("Metallic",  &scene->materials[scene->meshInstances[selectedInstance].materialID].metallic, 0.0f, 1.0f);
-            objectPropChanged |= ImGui::SliderFloat("Roughness", &scene->materials[scene->meshInstances[selectedInstance].materialID].roughness, 0.0f, 1.0f);
-            objectPropChanged |= ImGui::SliderFloat("Specular", &scene->materials[scene->meshInstances[selectedInstance].materialID].specular, 0.0f, 1.0f);
-            objectPropChanged |= ImGui::SliderFloat("SpecularTint", &scene->materials[scene->meshInstances[selectedInstance].materialID].specularTint, 0.0f, 1.0f);
-            objectPropChanged |= ImGui::SliderFloat("Subsurface", &scene->materials[scene->meshInstances[selectedInstance].materialID].subsurface, 0.0f, 1.0f);
-            //objectPropChanged |= ImGui::SliderFloat("Anisotropic", &scene->materials[scene->meshInstances[selectedInstance].materialID].anisotropic, 0.0f, 1.0f);
-            objectPropChanged |= ImGui::SliderFloat("Sheen", &scene->materials[scene->meshInstances[selectedInstance].materialID].sheen, 0.0f, 1.0f);
-            objectPropChanged |= ImGui::SliderFloat("SheenTint", &scene->materials[scene->meshInstances[selectedInstance].materialID].sheenTint, 0.0f, 1.0f);
-            objectPropChanged |= ImGui::SliderFloat("Clearcoat", &scene->materials[scene->meshInstances[selectedInstance].materialID].clearcoat, 0.0f, 1.0f);
-            objectPropChanged |= ImGui::SliderFloat("clearcoatGloss", &scene->materials[scene->meshInstances[selectedInstance].materialID].clearcoatGloss, 0.0f, 1.0f);
-            objectPropChanged |= ImGui::SliderFloat("Transmission", &scene->materials[scene->meshInstances[selectedInstance].materialID].transmission, 0.0f, 1.0f);
-            objectPropChanged |= ImGui::SliderFloat("Ior", &scene->materials[scene->meshInstances[selectedInstance].materialID].ior, 1.001f, 2.0f);
-            objectPropChanged |= ImGui::SliderFloat("atDistance", &scene->materials[scene->meshInstances[selectedInstance].materialID].atDistance, 0.05f, 10.0f);
+            objectPropChanged |= ImGui::SliderFloat("Metallic",  &(*nowMat).metallic, 0.0f, 1.0f);
+            objectPropChanged |= ImGui::SliderFloat("Roughness", &(*nowMat).roughness, 0.0f, 1.0f);
+            objectPropChanged |= ImGui::SliderFloat("Specular", &(*nowMat).specular, 0.0f, 1.0f);
+            objectPropChanged |= ImGui::SliderFloat("SpecularTint", &(*nowMat).specularTint, 0.0f, 1.0f);
+            objectPropChanged |= ImGui::SliderFloat("Subsurface", &(*nowMat).subsurface, 0.0f, 1.0f);
+            //objectPropChanged |= ImGui::SliderFloat("Anisotropic", &(*nowMat).anisotropic, 0.0f, 1.0f);
+            objectPropChanged |= ImGui::SliderFloat("Sheen", &(*nowMat).sheen, 0.0f, 1.0f);
+            objectPropChanged |= ImGui::SliderFloat("SheenTint", &(*nowMat).sheenTint, 0.0f, 1.0f);
+            objectPropChanged |= ImGui::SliderFloat("Clearcoat", &(*nowMat).clearcoat, 0.0f, 1.0f);
+            objectPropChanged |= ImGui::SliderFloat("clearcoatGloss", &(*nowMat).clearcoatGloss, 0.0f, 1.0f);
+            objectPropChanged |= ImGui::SliderFloat("Transmission", &(*nowMat).transmission, 0.0f, 1.0f);
+            objectPropChanged |= ImGui::SliderFloat("Ior", &(*nowMat).ior, 1.001f, 2.0f);
+            objectPropChanged |= ImGui::SliderFloat("atDistance", &(*nowMat).atDistance, 0.05f, 10.0f);
             objectPropChanged |= ImGui::ColorEdit3("Extinction", (float*)extinction, 0);
             // objectPropChanged |= ImGui::ColorEdit3("Emission", (float*)emission, 0);
 			// SliderFloat3(const char* label, float v[3], float v_min, float v_max, const char* format = "%.3f", float power = 1.0f);
@@ -553,8 +608,7 @@ void MainLoop(void* arg)
 int main(int argc, char** argv)
 {
     srand((unsigned int)time(0));
-
-    std::string sceneFile;
+	
     bool testAjax = false;
     bool testBoy = false;
 
@@ -624,7 +678,10 @@ int main(int argc, char** argv)
 		else
 		{
 			GetSceneFiles();
-			LoadScene(sceneFiles[sampleSceneIndex]);
+			
+            if(LoadScene(sceneFiles[sampleSceneIndex])) {
+				sceneFile = sceneFiles[sampleSceneIndex];
+			}
 		}
 	}
 

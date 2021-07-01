@@ -33,6 +33,8 @@ file(GLOB_RECURSE EXT_FILES
 	${CMAKE_SOURCE_DIR}/thirdparty/tinydir/*.h
 	${CMAKE_SOURCE_DIR}/thirdparty/tinyobjloader/*.h
 	${CMAKE_SOURCE_DIR}/thirdparty/tinyexr/*.h
+    ${CMAKE_SOURCE_DIR}/thirdparty/tinyfiledialogs/*.h
+    ${CMAKE_SOURCE_DIR}/thirdparty/tinyfiledialogs/*.c
 )
 
 set(SRCS ${SRC_FILES} ${EXT_FILES} ${SHADERS})
@@ -57,6 +59,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/thirdparty/imguizmo
   ${CMAKE_SOURCE_DIR}/thirdparty/RadeonRays
   ${CMAKE_SOURCE_DIR}/thirdparty/tinydir
+  ${CMAKE_SOURCE_DIR}/thirdparty/tinyfiledialogs
   ${CMAKE_SOURCE_DIR}/thirdparty/oidn/include
   ${SDL2_INCLUDE_DIRS}
 )
