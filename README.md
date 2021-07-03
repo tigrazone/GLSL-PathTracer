@@ -49,6 +49,22 @@ Gallery
 --------
 ![Dragon](./screenshots/dragon.jpg)
 
+Controls
+--------
+| Key                     | Action                                                                                |
+|-------------------------|---------------------------------------------------------------------------------------|
+| **W / A / S / D**       | Move camera step forward, left, back, right                                           |
+| **R / F**               | Move camera up/down 																  |
+| **Mouse left**          | Look around                                                                           |
+| **Mouse right**         | Camera forward/back                                                                   |
+| **Mouse middle**        | Camera pan                                                                            |
+| **Home / End**          | Adjust movement speed                                                                 |
+| **Z / X**               | Adjust environment map emission                                                       |
+| **Arrow keys**          | Move camera                                                                           |
+| **Page Up / Down**      | Move camera up/down                                                                   |
+| **, / .**               | Change FOV                                                                            |
+
+
 References/Credits
 --------
 - A huge shout-out to Cedric Guillemet (https://github.com/CedricGuillemet) for cleaning up the code, adding the UI, integrating ImGuizmo, cmake and quite a lot of fixes.

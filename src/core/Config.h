@@ -32,3 +32,5 @@
 #undef min
 #undef max
 #endif
+
+#define MAXhdrMultiplier 10.0f

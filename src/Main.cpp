@@ -185,7 +185,7 @@ void Render()
 }
 
 
-void MoveCameraFromKeyboard(float multiply)
+void MoveCameraFromKeyboard(float multiply, float coef)
 {	
 			if(ImGui::IsKeyPressed(SDL_SCANCODE_W)) { // w
 				scene->camera->position = scene->camera->position + scene->camera->forward * multiply;
@@ -234,6 +234,46 @@ void MoveCameraFromKeyboard(float multiply)
 			if(ImGui::IsKeyPressed(SDL_SCANCODE_PAGEDOWN)) { // PgDn
                 scene->camera->position = scene->camera->position - scene->camera->up * multiply;
                 scene->camera->isMoving = true;
+			} else
+			if(ImGui::IsKeyPressed(SDL_SCANCODE_COMMA)) { // , fov -
+				float fov = Math::Degrees(scene->camera->fov);
+                if(fov - coef > 10.0f - coef*0.1f) {
+					scene->camera->fov = Math::Radians(fov - coef);
+					scene->camera->isMoving = true;
+				}
+			} else
+			if(ImGui::IsKeyPressed(SDL_SCANCODE_PERIOD)) { // . fov +
+				float fov = Math::Degrees(scene->camera->fov);
+                if(fov + coef < 90.0f + coef*0.1f) {
+					scene->camera->fov = Math::Radians(fov + coef);
+					scene->camera->isMoving = true;
+				}
+			} else
+			if(ImGui::IsKeyPressed(SDL_SCANCODE_X)) { // X env map Multiplier +
+				if(renderOptions.hdrMultiplier + coef < MAXhdrMultiplier + coef*0.1f) {
+					renderOptions.hdrMultiplier += coef;					
+					scene->renderOptions = renderOptions;
+					scene->camera->isMoving = true;
+				}
+			} else
+			if(ImGui::IsKeyPressed(SDL_SCANCODE_Z)) { // Z env map Multiplier -
+				if(renderOptions.hdrMultiplier - coef > 0.1f - coef*0.1f) {
+					renderOptions.hdrMultiplier -= coef;					
+					scene->renderOptions = renderOptions;
+					scene->camera->isMoving = true;
+				}
+			} else
+			if(ImGui::IsKeyPressed(SDL_SCANCODE_HOME)) { // Home movement step +
+				multiply = coef * 0.01f;
+				if(mouseSensitivity + multiply < 1.0f + multiply*0.1f) {
+					mouseSensitivity += multiply;
+				}
+			} else
+			if(ImGui::IsKeyPressed(SDL_SCANCODE_END)) { // End movement step -		
+				multiply = coef * 0.01f;
+				if(mouseSensitivity - multiply > 0.01f - multiply*0.1f) {
+					mouseSensitivity -= multiply;
+				}
 			}
 }
 
@@ -275,27 +315,23 @@ void Update(float secondsElapsed)
 	specKeys += io.KeyAlt; 
 	specKeys += io.KeySuper;
 	
-	float multiply = 1.0f;
+	float coef = 1.0f;
 
 	if(specKeys < 2) {
 		if(io.KeyCtrl) {
-			multiply = 0.1f;
-			multiply *= mouseSensitivity;
-			MoveCameraFromKeyboard(multiply);
+			coef = 0.1f;
+			MoveCameraFromKeyboard(coef * mouseSensitivity, coef);
 		} else			
 		if(io.KeyShift) {
-			multiply = 10.0f;
-			multiply *= mouseSensitivity;
-			MoveCameraFromKeyboard(multiply);
+			coef = 10.0f;
+			MoveCameraFromKeyboard(coef * mouseSensitivity, coef);
 		} else			
 		if(io.KeyAlt) {
-			multiply = 0.05f;
-			multiply *= mouseSensitivity;
-			MoveCameraFromKeyboard(multiply);
+			coef = 0.05f;
+			MoveCameraFromKeyboard(coef * mouseSensitivity, coef);
 		} else 
 		if(specKeys == 0) {
-			multiply *= mouseSensitivity;
-			MoveCameraFromKeyboard(multiply);		
+			MoveCameraFromKeyboard(coef * mouseSensitivity, coef);
 		}
 	}	
 
@@ -478,7 +514,7 @@ void MainLoop(void* arg)
 					}
 				}
 				
-            optionsChanged |= ImGui::SliderFloat("HDR multiplier", &renderOptions.hdrMultiplier, 0.1f, 10.0f);
+            optionsChanged |= ImGui::SliderFloat("HDR multiplier", &renderOptions.hdrMultiplier, 0.1f, MAXhdrMultiplier);
             requiresReload |= ImGui::Checkbox("Enable RR", &renderOptions.enableRR);
             requiresReload |= ImGui::SliderInt("RR Depth", &renderOptions.RRDepth, 1, 10);
             requiresReload |= ImGui::Checkbox("Enable Constant BG", &renderOptions.useConstantBg);
