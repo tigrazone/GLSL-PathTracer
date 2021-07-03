@@ -87,7 +87,7 @@ namespace GLSLPT
         int GetSampleCount() const;
         float GetRenderTime() const;
         void GetOutputBuffer(unsigned char**, int &w, int &h);
-		void GetRawOutputBuffer(float** data, int &w, int &h);
+		void GetRawOutputBuffer(float** data, int &w, int &h, bool flipVert);
 		void flipVertical(float* array, unsigned int cols, unsigned int rows);
     };
 }

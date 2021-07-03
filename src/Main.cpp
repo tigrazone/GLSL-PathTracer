@@ -131,39 +131,63 @@ bool InitRenderer()
 }
 
 // TODO: Fix occassional crashes when saving screenshot
-void SaveFrame(const std::string filename)
+void SaveFrame(const std::string filename, const std::string format="png")
 {
     unsigned char* data = nullptr;
     int w, h;
     renderer->GetOutputBuffer(&data, w, h);
     stbi_flip_vertically_on_write(true);
-    stbi_write_png(filename.c_str(), w, h, 3, data, w*3);
+	
+	if(format == "png") {
+		stbi_write_png(filename.c_str(), w, h, 3, data, w*3);
+	} else
+	if(format == "bmp") {
+		stbi_write_bmp(filename.c_str(), w, h, 3, data);
+	} else
+	if(format == "tga") {
+		stbi_write_tga(filename.c_str(), w, h, 3, data);
+	} else	
+	if(format == "jpg") {
+		stbi_write_jpg(filename.c_str(), w, h, 3, data, 92);
+	}
     delete data;
 }
 
 
 #include "tinyexr.h"
 
-void SaveRawFrame(const std::string filename)
+void SaveRawFrame(const std::string filename, const std::string format="exr")
 {
 	float* data = nullptr;
     int w, h;
-    renderer->GetRawOutputBuffer(&data, w, h);	
+	
+	bool is_exr = (format == "exr");
+	
+    renderer->GetRawOutputBuffer(&data, w, h, is_exr);
 	
 	const char* err = NULL;
 	int ret;
 	
-	ret = SaveEXR(data, w, h, 3 // =RGB
-					,1 // = save as fp16 format, else fp32 bit
-					,filename.c_str()
-                    ,&err
-				);
-					
-	  if (ret != TINYEXR_SUCCESS) {
-		if (err) {
-		  fprintf(stderr, "Save EXR err: %s(code %d)\n", err, ret);
-		} else {
-		  fprintf(stderr, "Failed to save EXR image. code = %d\n", ret);
+	if(is_exr) {
+		ret = SaveEXR(data, w, h, 3 // =RGB
+						,1 // = save as fp16 format, else fp32 bit
+						,filename.c_str()
+						,&err
+					);
+						
+		  if (ret != TINYEXR_SUCCESS) {
+			if (err) {
+			  fprintf(stderr, "Save EXR err: %s(code %d)\n", err, ret);
+			} else {
+			  fprintf(stderr, "Failed to save EXR image. code = %d\n", ret);
+			}
+		}
+	} else
+	if(format == "hdr") {
+		stbi_flip_vertically_on_write(true);
+		ret = stbi_write_hdr(filename.c_str(), w, h, 3, data);
+		if (ret == 0) {
+		  fprintf(stderr, "Failed to save HDR image %s\n", filename.c_str());
 		}
 	}
 	
@@ -436,10 +460,28 @@ void MainLoop(void* arg)
             done = true;
 		}
 
-        if (ImGui::Button("Save Screenshot"))
+        if (ImGui::Button("Save image"))
         {
-            SaveFrame("./img_" + to_string(renderer->GetSampleCount()) + ".png");
-            SaveRawFrame("./img_" + to_string(renderer->GetSampleCount()) + ".exr");
+			//saveFileDialog(const std::string message, const std::string defaultPath, const std::vector<const char*> filter);
+            const std::string selected = saveFileDialog("Save image", assetsDir, { "*.png", "*.jpg", "*.tga", "*.bmp", "*.exr", "*.hdr" });
+			if(!selected.empty()) {
+						char *subString, *p;
+						std::string format = "png";
+						
+						subString = strrchr((char*) selected.c_str(), '.');
+						p = subString;
+						for ( ; *p; ++p) *p = tolower(*p);
+						if(p - subString > 1) {
+							format.assign(subString + 1);
+							// printf("format=%s\n", format.c_str());
+						}
+						
+						if(format == "hdr" || format == "exr") {				
+							SaveRawFrame(selected, format);
+						} else {	
+							SaveFrame(selected, format);
+						}
+			}
         }
 
 

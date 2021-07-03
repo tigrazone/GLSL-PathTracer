@@ -438,7 +438,7 @@ namespace GLSLPT
         glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, *data);
     }
 
-    void TiledRenderer::GetRawOutputBuffer(float** data, int &w, int &h)
+    void TiledRenderer::GetRawOutputBuffer(float** data, int &w, int &h, bool flipVert = true)
     {
         w = scene->renderOptions.resolution.x;
         h = scene->renderOptions.resolution.y;
@@ -449,7 +449,9 @@ namespace GLSLPT
 
         glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_FLOAT, *data);
 		
-		flipVertical(*data, w, h);
+        if (flipVert) {
+            flipVertical(*data, w, h);
+        }
     }
 	
 	void TiledRenderer::flipVertical(float* array, unsigned int cols, unsigned int rows)

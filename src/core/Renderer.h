@@ -113,7 +113,7 @@ namespace GLSLPT
         virtual int GetSampleCount() const = 0;
         virtual float GetRenderTime() const = 0;
         virtual void GetOutputBuffer(unsigned char**, int &w, int &h) = 0;
-        virtual void GetRawOutputBuffer(float** data, int &w, int &h) = 0;
+        virtual void GetRawOutputBuffer(float** data, int &w, int &h, bool flipVert) = 0;
         virtual void flipVertical(float* array, unsigned int cols, unsigned int rows) = 0;
     };
 }

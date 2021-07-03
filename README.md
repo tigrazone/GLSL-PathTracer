@@ -63,6 +63,7 @@ Controls
 | **Arrow keys**          | Move camera                                                                           |
 | **Page Up / Down**      | Move camera up/down                                                                   |
 | **, / .**               | Change FOV                                                                            |
+Use Ctrl move for 1/10 step, Alt for 1/2 step, Shift for 10x step
 
 
 References/Credits
