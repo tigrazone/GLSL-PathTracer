@@ -21,6 +21,11 @@ Features
 - Analytic Lights (Sphere, Rect, Directional) with MIS
 - IBL
 - Progressive + Tiled Rendering
+- Load Scene from ui
+- Load Environment Map from ui in hdr, exr formats
+- Save image to png, tga, bmp, jpg, exr, hdr from ui
+- Render fixed samples or fixed time and save image
+- Control many paremeters of camera from keyboard
 
 Build Instructions
 --------
