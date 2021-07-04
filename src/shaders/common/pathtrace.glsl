@@ -197,7 +197,7 @@ vec3 DirectLight(in Ray r, in State state)
         vec3 params   = texelFetch(lightsTex, ivec2(indexx + 7, 0), 0).xyz;
         float radius  = params.x;
         float area    = params.y;
-        float type    = params.z; // 0->rect, 1->sphere
+        float type    = params.z; // 0->rect, 1->sphere, 2->distant
 
         light = Light(position, emission, u, v, nrm, uu, vv, radius, area, type);
         sampleLight(light, lightSampleRec, surfacePos);
@@ -234,30 +234,6 @@ vec3 DirectLight(in Ray r, in State state)
 					}
 				}
             }
-/*
-        float type    = params.z; // 0->Rect, 1->Sphere, 2->Distant
-
-        light = Light(position, emission, u, v, radius, area, type);
-        sampleOneLight(light, surfacePos, lightSampleRec);
-
-        if (dot(lightSampleRec.direction, lightSampleRec.normal) < 0.0)
-        {
-            Ray shadowRay = Ray(surfacePos, lightSampleRec.direction);
-            bool inShadow = AnyHit(shadowRay, lightSampleRec.dist - EPS);
-			
-            if (!inShadow)
-            {
-                bsdfSampleRec.f = DisneyEval(state, -r.direction, state.ffnormal, lightSampleRec.direction, bsdfSampleRec.pdf);
-
-                float weight = 1.0;
-                if(light.area > 0.0)
-                    weight = powerHeuristic(lightSampleRec.pdf, bsdfSampleRec.pdf);
-
-                if (bsdfSampleRec.pdf > 0.0)
-                    Li += weight * bsdfSampleRec.f * abs(dot(state.ffnormal, lightSampleRec.direction)) * lightSampleRec.emission / lightSampleRec.pdf;
-            }
-*/
-
         }
     }
 #endif
