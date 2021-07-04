@@ -4,6 +4,8 @@ Renderer
 	maxDepth 8
 	tileWidth 256
 	tileHeight 144
+	enableRR True
+	RRDepth 5  
 }
 
 Camera

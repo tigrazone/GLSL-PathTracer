@@ -201,6 +201,14 @@ namespace GLSLPT
                     light.u.x = light.radius * light.radius;	//precalculated
                     light.area = 4.0f * PI * light.u.x;
                 }
+                else if (strcmp(light_type, "Distant") == 0)
+                {
+                    light.type = LightType::DistantLight;
+                    light.area = 0.0f;
+					
+                    light.u = Vec3::Normalize(light.position);
+                }
+
 
                 scene->AddLight(light);
             }

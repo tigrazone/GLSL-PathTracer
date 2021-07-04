@@ -35,6 +35,7 @@
 
 #define QUAD_LIGHT 0
 #define SPHERE_LIGHT 1
+#define DISTANT_LIGHT 2
 
 mat4 transform;
 

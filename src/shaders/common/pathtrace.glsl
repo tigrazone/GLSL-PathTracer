@@ -109,9 +109,10 @@ void GetMaterialsAndTextures(inout State state, in Ray r)
     if (int(mat.texIDs.y) >= 0)
     {
         vec2 matRgh;
+        // TODO: Change metallic roughness maps in repo to linear space and remove gamma correction
         matRgh = pow(texture(textureMapsArrayTex, vec3(texUV, int(mat.texIDs.y))).zy, vec2(2.2));
         mat.metallic = matRgh.x;
-        mat.roughness = matRgh.y;
+        mat.roughness = max(matRgh.y, 0.001);
     }
 
     // Normal Map
@@ -122,15 +123,14 @@ void GetMaterialsAndTextures(inout State state, in Ray r)
         // Orthonormal Basis
         vec3 T, B;
 		
-		state.ffnormal = dot(state.normal, r.direction) <= 0.0 ? state.normal : -state.normal;
-        Onb(state.ffnormal, T, B);
+		Onb(state.normal, T, B);
 
-        nrm = T * nrm.x + B * nrm.y + state.ffnormal * nrm.z;
+        nrm = T * nrm.x + B * nrm.y + state.normal * nrm.z;
         state.normal = normalize(nrm);
     }
 	
     state.ffnormal = dot(state.normal, r.direction) <= 0.0 ? state.normal : -state.normal;
-	Onb(state.ffnormal, state.tangent, state.bitangent);
+	Onb(state.normal, state.tangent, state.bitangent);
 
     // Calculate anisotropic roughness along the tangent and bitangent directions
     float aspect = sqrt(1.0 - mat.anisotropic * 0.9);
@@ -200,14 +200,23 @@ vec3 DirectLight(in Ray r, in State state)
         float type    = params.z; // 0->rect, 1->sphere
 
         light = Light(position, emission, u, v, nrm, uu, vv, radius, area, type);
-        sampleLight(light, lightSampleRec);
-
-        vec3 lightDir = lightSampleRec.surfacePos - surfacePos;
+        sampleLight(light, lightSampleRec, surfacePos);
+		
+		vec3 lightDir;
+		
+		if(light.area > 0.0) {
+			lightDir = lightSampleRec.surfacePos - surfacePos;
+		} else {
+			lightDir = light.u;
+		}
 
         if (dot(lightDir, lightSampleRec.normal) < 0.0)
-        {
-			float lightDist = length(lightDir);
-			lightDir /= lightDist;
+        {			
+			float lightDist = INFINITY;
+			if(light.area > 0.0) {
+				lightDist = length(lightDir);
+				lightDir /= lightDist;
+			}
 		
             Ray shadowRay = Ray(surfacePos, lightDir);
             bool inShadow = AnyHit(shadowRay, lightDist - EPS);
@@ -217,10 +226,38 @@ vec3 DirectLight(in Ray r, in State state)
                 bsdfSampleRec.f = DisneyEval(state, -r.direction, state.ffnormal, lightDir, bsdfSampleRec.pdf);
 
                 if (bsdfSampleRec.pdf > 0.0) {
-					float lightPdf = - (lightDist * lightDist) / (light.area * dot(lightDir, lightSampleRec.normal));
-                    Li += powerHeuristic(lightPdf, bsdfSampleRec.pdf) * bsdfSampleRec.f * abs(dot(state.ffnormal, lightDir)) * lightSampleRec.emission / lightPdf;
+					if(light.area > 0.0) {
+						float lightPdf = - (lightDist * lightDist) / (light.area * dot(lightDir, lightSampleRec.normal));
+						Li += powerHeuristic(lightPdf, bsdfSampleRec.pdf) * bsdfSampleRec.f * abs(dot(state.ffnormal, lightDir)) * lightSampleRec.emission / lightPdf;
+					} else {
+							Li += bsdfSampleRec.f * abs(dot(state.ffnormal, lightDir)) * lightSampleRec.emission;
+					}
 				}
             }
+/*
+        float type    = params.z; // 0->Rect, 1->Sphere, 2->Distant
+
+        light = Light(position, emission, u, v, radius, area, type);
+        sampleOneLight(light, surfacePos, lightSampleRec);
+
+        if (dot(lightSampleRec.direction, lightSampleRec.normal) < 0.0)
+        {
+            Ray shadowRay = Ray(surfacePos, lightSampleRec.direction);
+            bool inShadow = AnyHit(shadowRay, lightSampleRec.dist - EPS);
+			
+            if (!inShadow)
+            {
+                bsdfSampleRec.f = DisneyEval(state, -r.direction, state.ffnormal, lightSampleRec.direction, bsdfSampleRec.pdf);
+
+                float weight = 1.0;
+                if(light.area > 0.0)
+                    weight = powerHeuristic(lightSampleRec.pdf, bsdfSampleRec.pdf);
+
+                if (bsdfSampleRec.pdf > 0.0)
+                    Li += weight * bsdfSampleRec.f * abs(dot(state.ffnormal, lightSampleRec.direction)) * lightSampleRec.emission / lightSampleRec.pdf;
+            }
+*/
+
         }
     }
 #endif
