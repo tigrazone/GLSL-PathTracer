@@ -26,7 +26,9 @@
 
 #include <string>
 #include <vector>
-#include <map>
+
+#include <unordered_map>
+
 #include "hdrloader.h"
 #include "bvh.h"
 #include "Renderer.h"
@@ -92,6 +94,11 @@ namespace GLSLPT
 
         //Meshs
         std::vector<Mesh*> meshes;
+		
+		
+		std::unordered_map <std::string, size_t> mesh_names;
+		std::unordered_map <std::string, size_t> tex_names;
+		
 
         // Scene Mesh Data 
         std::vector<Indices> vertIndices;

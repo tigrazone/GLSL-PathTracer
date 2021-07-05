@@ -192,8 +192,8 @@ vec3 DirectLight(in Ray r, in State state)
         vec3 u        = texelFetch(lightsTex, ivec2(indexx + 2, 0), 0).xyz; // u vector for rect
         vec3 v        = texelFetch(lightsTex, ivec2(indexx + 3, 0), 0).xyz; // v vector for rect
         vec3 nrm      = texelFetch(lightsTex, ivec2(indexx + 4, 0), 0).xyz; // v vector for rect
-        vec3 uu       = texelFetch(lightsTex, ivec2(indexx + 5, 0), 0).xyz; // v vector for rect
-        vec3 vv       = texelFetch(lightsTex, ivec2(indexx + 6, 0), 0).xyz; // v vector for rect
+        vec3 uu       = texelFetch(lightsTex, ivec2(indexx + 5, 0), 0).xyz; // uu precalc for rect
+        vec3 vv       = texelFetch(lightsTex, ivec2(indexx + 6, 0), 0).xyz; // vv precalc for rect
         vec3 params   = texelFetch(lightsTex, ivec2(indexx + 7, 0), 0).xyz;
         float radius  = params.x;
         float area    = params.y;

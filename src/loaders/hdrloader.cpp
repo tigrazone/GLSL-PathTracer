@@ -26,7 +26,7 @@ typedef unsigned char RGBE[4];
 #define  MINELEN    8                // minimum scanline length for encoding
 #define  MAXELEN    0x7fff            // maximum scanline length for encoding
 
-static void RGBAtoRGB(float *image, int len, float *cols);
+static void RGBAtoRGB(float *image, int len, float *cols, int channels);
 static void workOnRGBE(RGBE *scan, int len, float *cols);
 static bool decrunch(RGBE *scanline, int len, FILE *file);
 static bool oldDecrunch(RGBE *scanline, int len, FILE *file);
@@ -256,6 +256,11 @@ HDRData* EXRLoader::load(const char *fileName)
     return nullptr;
   }
 
+  EXRHeader header;
+  EXRVersion version;
+  
+  ret = ParseEXRHeaderFromFile(&header, &version, fileName, &err);
+
   //image is RGBA
   ret = LoadEXR(&image, &width, &height, fileName, &err);
   if (ret != TINYEXR_SUCCESS) {
@@ -269,15 +274,20 @@ HDRData* EXRLoader::load(const char *fileName)
   }
 
     HDRData* res = new HDRData;
+	
+	size_t wh = width * height;
 
     res->width = width;
     res->height = height;
 
 	printf("EXR width %d, height %d\n", width, height);
-	float *cols = new float[width * height * 3];
+	float *cols = new float[wh * 3];
 	
     res->cols = cols;
-	RGBAtoRGB(image, width * height, cols);
+	
+	printf("channels = %d\n", header.num_channels);
+	
+	RGBAtoRGB(image, wh, cols, header.num_channels > 3 ? header.num_channels : 4);
 	
     free(image);
 	
@@ -306,14 +316,14 @@ void workOnRGBE(RGBE *scan, int len, float *cols)
     }
 }
 
-void RGBAtoRGB(float *image, int len, float *cols)
+void RGBAtoRGB(float *image, int len, float *cols, int channels)
 {
     while (len-- > 0) {
         cols[0] = image[0];
         cols[1] = image[1];
         cols[2] = image[2];
         cols += 3;
-        image += 4;
+        image += channels;
     }
 }
 

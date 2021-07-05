@@ -40,12 +40,16 @@ namespace GLSLPT
     int Scene::AddMesh(const std::string& filename)
     {
         int id = -1;
-        // Check if mesh was already loaded
-        for (int i = 0; i < meshes.size(); i++)
-            if (meshes[i]->name == filename)
-                return i;
-            
-        id = meshes.size();
+		
+        // Check if mesh was already loaded		
+		auto it = mesh_names.find(filename);
+		
+		if (it == mesh_names.end()) {			   
+			id = meshes.size();
+			mesh_names[filename] = id;
+		} else {
+			return it->second;
+		}
 
         Mesh* mesh = new Mesh;
 		
@@ -63,12 +67,16 @@ namespace GLSLPT
     int Scene::AddTexture(const std::string& filename)
     {
         int id = -1;
+		
         // Check if texture was already loaded
-        for (int i = 0; i < textures.size(); i++)
-            if (textures[i]->name == filename)
-                return i;
-
-        id = textures.size();
+		auto it = tex_names.find(filename);
+		
+		if (it == tex_names.end()) {			   
+			id = textures.size();
+			tex_names[filename] = id;
+		} else {
+			return it->second;
+		}
 
         Texture* texture = new Texture;
 
@@ -97,6 +105,7 @@ namespace GLSLPT
 		clock_t time1, time2;
 		
 		time1 = clock();
+		printf("HDR loading %s ...\n", filename.c_str());
 		
         hdrData = HDRLoader::load(filename.c_str());
         if (hdrData == nullptr) {
@@ -120,6 +129,7 @@ namespace GLSLPT
 		clock_t time1, time2;
 		
 		time1 = clock();
+		printf("EXR loading %s ...\n", filename.c_str());
 		
         hdrData = EXRLoader::load(filename.c_str());
         if (hdrData == nullptr) {
@@ -222,11 +232,13 @@ namespace GLSLPT
             transforms[i] = meshInstances[i].transform;
 		
 		//precalc extinction
-        for (int i = 0; i < materials.size(); i++) {            
+        for (int i = 0; i < materials.size(); i++) {
+			if(materials[i].atDistance > 0.0) {
 				// -log(state.mat.extinction) / state.mat.atDistance
 				materials[i].extinction1.x = -log(materials[i].extinction.x) / materials[i].atDistance;
 				materials[i].extinction1.y = -log(materials[i].extinction.y) / materials[i].atDistance;
 				materials[i].extinction1.z = -log(materials[i].extinction.z) / materials[i].atDistance;
+			}
 		}
 
         instancesModified = true;
