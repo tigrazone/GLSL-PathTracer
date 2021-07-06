@@ -30,6 +30,7 @@ freely, subject to the following restrictions:
 #include <iostream>
 #include <iterator>
 #include <algorithm>
+#include <unordered_map>
 #include <stdio.h>
 
 #include <ctime>
@@ -67,7 +68,7 @@ namespace GLSLPT
             int id;
         };
 
-        std::map<std::string, MaterialData> materialMap;
+        std::unordered_map<std::string, MaterialData> materialMap;
         std::vector<std::string> albedoTex;
         std::vector<std::string> metallicRoughnessTex;
         std::vector<std::string> normalTex;
@@ -281,7 +282,6 @@ namespace GLSLPT
                         else if (strcmp(subString, ".exr") == 0) {
                             scene->AddEXR(path + envMap);
                         }
-						renderOptions.useEnvMap = true;
 					}
                 }
 
@@ -364,6 +364,9 @@ namespace GLSLPT
 
         if (!cameraAdded)
             scene->AddCamera(Vec3(0.0f, 0.0f, 10.0f), Vec3(0.0f, 0.0f, -10.0f), 35.0f);
+		
+		
+		scene->renderOptions = renderOptions;
 		
 		time2 = clock();
 		printf("%.1fs\n", (float)(time2-time1)/(float)CLOCKS_PER_SEC);

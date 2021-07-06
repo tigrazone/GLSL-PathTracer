@@ -82,6 +82,16 @@ RenderOptions renderOptions;
 int maxSPP = -1;
 float maxRenderTime = -1.0f;
 
+int saveEverySPP = -1;
+int lastSavedSPP = -1;
+float saveEveryTime = -1.0f;
+float lastSaveTime = -1.0f;
+
+std::string imgDefaultFilename = "img";
+std::string imgDefaultFilenameExt = "png";
+
+bool addspp = false;
+
 bool oldDefaultMaterial = false;
 
 struct LoopData
@@ -456,14 +466,51 @@ void MainLoop(void* arg)
 		if( maxSPP == samplesNow || (renderTimeNow > maxRenderTime && maxRenderTime>0.0f))
 		{
 			printf("%d samples. render time: %.1fs\n", samplesNow, renderTimeNow);
-			SaveFrame("./img_" + to_string(samplesNow) + ".png");
-			SaveRawFrame("./img_" + to_string(samplesNow) + ".exr");
+			
+			std::string fn = imgDefaultFilename;
+			fn += "_"+to_string(samplesNow)+"spp";
+			fn += "_"+to_string((int)renderTimeNow)+"s";
+			fn += "."+imgDefaultFilenameExt;
+			
+						if(imgDefaultFilenameExt == "hdr" || imgDefaultFilenameExt == "exr") {				
+							SaveRawFrame(fn, imgDefaultFilenameExt);
+						} else {	
+							SaveFrame(fn, imgDefaultFilenameExt);
+						}
             done = true;
+		}
+		
+		if(saveEveryTime>0.0f && lastSaveTime<0.0f) {
+			lastSaveTime = renderTimeNow;
+		}
+		
+		if(saveEverySPP>0 && lastSavedSPP <0) {
+			lastSavedSPP = 0;
+		}
+		
+		if((saveEverySPP>0 && (samplesNow-lastSavedSPP) == saveEverySPP) || (renderTimeNow - lastSaveTime > saveEveryTime && saveEveryTime>0.0f))
+		{
+			printf("%d samples. render time: %.1fs\n", samplesNow, renderTimeNow);
+			
+			std::string fn = imgDefaultFilename;
+			if(addspp) {
+				fn += "_"+to_string(samplesNow)+"spp";
+				fn += "_"+to_string((int)renderTimeNow)+"s";
+			}
+			fn += "."+imgDefaultFilenameExt;
+			
+			lastSaveTime = renderTimeNow;
+			lastSavedSPP = samplesNow;
+			
+						if(imgDefaultFilenameExt == "hdr" || imgDefaultFilenameExt == "exr") {				
+							SaveRawFrame(fn, imgDefaultFilenameExt);
+						} else {	
+							SaveFrame(fn, imgDefaultFilenameExt);
+						}
 		}
 
         if (ImGui::Button("Save image"))
         {
-			//saveFileDialog(const std::string message, const std::string defaultPath, const std::vector<const char*> filter);
             const std::string selected = saveFileDialog("Save image", assetsDir, { "*.png", "*.jpg", "*.tga", "*.bmp", "*.exr", "*.hdr" });
 			if(!selected.empty()) {
 						char *subString, *p;
@@ -690,15 +737,17 @@ int main(int argc, char** argv)
 	
     bool testAjax = false;
     bool testBoy = false;
+	std::string arg;
 
     for (int i = 1; i < argc; ++i)
     {
-        const std::string arg(argv[i]);
+        arg.assign(argv[i]);
+		
         if (arg == "-s" || arg == "--scene")
         {
             sceneFile = argv[++i];
         }
-        else 
+        else
         if (arg == "-spp")
         {
             maxSPP = atoi(argv[++i]);
@@ -713,6 +762,21 @@ int main(int argc, char** argv)
         {
             testAjax = true;
         }
+        else
+        if (arg == "-saveEverySpp")
+        {
+            saveEverySPP = atoi(argv[++i]);
+        }
+        else 
+        if (arg == "-saveEveryTime")
+        {
+            saveEveryTime = atof(argv[++i]);
+        }
+        else 
+        if (arg == "-addspp")
+        {
+            addspp = true;
+        }
         else 
         if (arg == "-testBoy")
         {
@@ -723,7 +787,37 @@ int main(int argc, char** argv)
         {
             oldDefaultMaterial = true;
         }
-        else if (arg[0] == '-')
+		else			
+        if (arg == "-o")
+        {
+            imgDefaultFilename = argv[++i];
+			
+			char *subString1, *p1, *pp1, *fn;			
+			size_t str_sz = imgDefaultFilename.length();
+			
+			pp1 = new char [ str_sz + 1];
+			
+			strcpy(pp1, imgDefaultFilename.c_str());
+						
+						subString1 = strrchr(pp1, '.');
+						
+						fn =  new char [ subString1 - pp1 ];
+						strncpy(fn, pp1, subString1 - pp1);
+						fn[ subString1 - pp1 ] = 0;						
+						imgDefaultFilename.assign(fn);
+						
+						p1 = subString1;
+						for ( ; *p1; ++p1) *p1 = tolower(*p1);
+						
+						if(p1 - subString1 > 1) {
+							imgDefaultFilenameExt.assign(subString1 + 1);
+						}
+			
+			delete pp1;
+			delete fn;
+        }
+        else 
+		if (arg[0] == '-')
         {
             printf("Unknown option %s \n'", arg.c_str());
             exit(0);
