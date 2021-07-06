@@ -254,7 +254,7 @@ HDRData* EXRLoader::load(const char *fileName)
   if (ret != TINYEXR_SUCCESS) {
     fprintf(stderr, "EXR: Header err. code %d\n", ret);
     return nullptr;
-  }
+  }	
 
   EXRHeader header;
   EXRVersion version;

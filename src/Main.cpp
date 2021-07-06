@@ -813,8 +813,8 @@ int main(int argc, char** argv)
 							imgDefaultFilenameExt.assign(subString1 + 1);
 						}
 			
-			delete pp1;
-			delete fn;
+			delete[] pp1;
+			delete[] fn;
         }
         else 
 		if (arg[0] == '-')

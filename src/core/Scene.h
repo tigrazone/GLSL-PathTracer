@@ -29,6 +29,9 @@
 
 #include <unordered_map>
 
+#include <sys\stat.h>
+#include <string>
+
 #include "hdrloader.h"
 #include "bvh.h"
 #include "Renderer.h"
@@ -37,6 +40,15 @@
 #include "bvh_translator.h"
 #include "Texture.h"
 #include "Material.h"
+
+
+#if defined(WIN32) || defined(_WIN32) 
+#define PATH_SEPARATOR '\\' 
+#define WRONG_PATH_SEPARATOR '/' 
+#else 
+#define PATH_SEPARATOR '/'
+#define WRONG_PATH_SEPARATOR '\\'
+#endif
 
 namespace GLSLPT
 {
@@ -116,6 +128,8 @@ namespace GLSLPT
 
         //HDR
         HDRData *hdrData;
+		std::string HDRfn;
+		struct stat HDRst;
 
         //Camera
         Camera *camera;

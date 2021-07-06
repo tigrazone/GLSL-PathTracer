@@ -24,7 +24,7 @@ public:
     // each pixel takes 3 float32, each component can be of any value...
     float *cols;
     Vec2 *marginalDistData;    // y component holds the pdf
-    Vec2 *conditionalDistData; // y component holds the pdf
+    Vec2 *conditionalDistData; // y component holds the pdf	
 };
 
 class HDRLoader {

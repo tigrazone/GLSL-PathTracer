@@ -283,6 +283,7 @@ namespace GLSLPT
                             scene->AddEXR(path + envMap);
                         }
 					}
+					renderOptions.useEnvMap = scene->renderOptions.useEnvMap;
                 }
 
                 if (strcmp(enableRR, "False") == 0)

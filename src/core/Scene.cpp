@@ -98,9 +98,37 @@ namespace GLSLPT
         return id;
     }
 
-    void Scene::AddHDR(const std::string& filename)
+    void Scene::AddHDR(const std::string& filename0)
     {
-        delete hdrData;
+        std::string filename;
+        struct stat stt;
+	
+		stat(filename0.c_str(), &stt);
+		
+		char *str = new char [filename0.length() + 1];
+		strcpy(str, filename0.c_str());
+		
+		char *p;
+		for(p = str; *p ; p++) if(*p == WRONG_PATH_SEPARATOR) *p = PATH_SEPARATOR;
+		
+        filename.assign(str);
+        delete[] str;
+		
+		if(hdrData != nullptr) {
+			if(filename == HDRfn) {	
+	
+				if(stt.st_dev == HDRst.st_dev &&
+				   stt.st_size == HDRst.st_size &&
+				   stt.st_ctime == HDRst.st_ctime
+				   )
+				   {
+					printf("Reuse HDR %s\n", filename.c_str());
+					return;
+				   }
+			}
+		}
+		
+		delete hdrData;
 		
 		clock_t time1, time2;
 		
@@ -116,15 +144,45 @@ namespace GLSLPT
         {
             printf("HDR %s loaded\n", filename.c_str());
             renderOptions.useEnvMap = true;
+			HDRfn = filename;
+			HDRst = stt;
         }
 		
 		time2 = clock();
 		printf("%.1fs\n", (float)(time2-time1)/(float)CLOCKS_PER_SEC);
     }
 
-    void Scene::AddEXR(const std::string& filename)
+    void Scene::AddEXR(const std::string& filename0)
     {
-        delete hdrData;
+        std::string filename;
+		struct stat stt;
+	
+		stat(filename0.c_str(), &stt);
+		
+		char *str = new char [filename0.length() + 1];
+		strcpy(str, filename0.c_str());
+		
+		char *p;
+		for(p = str; *p ; p++) if(*p == WRONG_PATH_SEPARATOR) *p = PATH_SEPARATOR;
+		
+        filename.assign(str);
+        delete[] str;
+		
+		if(hdrData != nullptr) {
+			if(filename == HDRfn) {	
+	
+				if(stt.st_dev == HDRst.st_dev &&
+				   stt.st_size == HDRst.st_size &&
+				   stt.st_ctime == HDRst.st_ctime
+				   )
+				   {
+					printf("Reuse EXR %s\n", filename.c_str());
+					return;
+				   }
+			}
+		}		
+		
+		delete hdrData;
 		
 		clock_t time1, time2;
 		
@@ -140,6 +198,8 @@ namespace GLSLPT
         {
             printf("EXR %s loaded\n", filename.c_str());
             renderOptions.useEnvMap = true;
+			HDRfn = filename;
+			HDRst = stt;
         }
 		
 		time2 = clock();
