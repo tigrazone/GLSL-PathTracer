@@ -1,4 +1,4 @@
-
+TV
 GLSL-PathTracer
 ==========
 A physically based path tracer that runs in a GLSL fragment shader.
@@ -26,6 +26,7 @@ Features
 - Save image to png, tga, bmp, jpg, exr, hdr from ui
 - Render fixed samples or fixed time and save image
 - Control many paremeters of camera from keyboard
+- Save image with samples interval or time interval periodically
 
 Build Instructions
 --------
