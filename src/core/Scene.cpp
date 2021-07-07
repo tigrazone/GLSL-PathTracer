@@ -98,21 +98,11 @@ namespace GLSLPT
         return id;
     }
 
-    void Scene::AddHDR(const std::string& filename0)
+    void Scene::AddHDR(const std::string& filename)
     {
-        std::string filename;
         struct stat stt;
 	
-		stat(filename0.c_str(), &stt);
-		
-		char *str = new char [filename0.length() + 1];
-		strcpy(str, filename0.c_str());
-		
-		char *p;
-		for(p = str; *p ; p++) if(*p == WRONG_PATH_SEPARATOR) *p = PATH_SEPARATOR;
-		
-        filename.assign(str);
-        delete[] str;
+		stat(filename.c_str(), &stt);
 		
 		if(hdrData != nullptr) {
 			if(filename == HDRfn) {	
@@ -152,21 +142,11 @@ namespace GLSLPT
 		printf("%.1fs\n", (float)(time2-time1)/(float)CLOCKS_PER_SEC);
     }
 
-    void Scene::AddEXR(const std::string& filename0)
+    void Scene::AddEXR(const std::string& filename)
     {
-        std::string filename;
-		struct stat stt;
+        struct stat stt;
 	
-		stat(filename0.c_str(), &stt);
-		
-		char *str = new char [filename0.length() + 1];
-		strcpy(str, filename0.c_str());
-		
-		char *p;
-		for(p = str; *p ; p++) if(*p == WRONG_PATH_SEPARATOR) *p = PATH_SEPARATOR;
-		
-        filename.assign(str);
-        delete[] str;
+		stat(filename.c_str(), &stt);		
 		
 		if(hdrData != nullptr) {
 			if(filename == HDRfn) {	
