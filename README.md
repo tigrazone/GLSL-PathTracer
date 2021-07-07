@@ -1,4 +1,3 @@
-TV
 GLSL-PathTracer
 ==========
 A physically based path tracer that runs in a GLSL fragment shader.
