@@ -41,15 +41,6 @@
 #include "Texture.h"
 #include "Material.h"
 
-
-#if defined(WIN32) || defined(_WIN32) 
-#define PATH_SEPARATOR '\\' 
-#define WRONG_PATH_SEPARATOR '/' 
-#else 
-#define PATH_SEPARATOR '/'
-#define WRONG_PATH_SEPARATOR '\\'
-#endif
-
 namespace GLSLPT
 {
     class Camera;
