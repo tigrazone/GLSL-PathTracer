@@ -111,6 +111,7 @@ namespace GLSLPT
 
         //Instances
         std::vector<Material> materials;
+        std::vector<bool> materialUsed;
         std::vector<MeshInstance> meshInstances;
         bool instancesModified = false;
 

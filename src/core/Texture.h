@@ -41,6 +41,6 @@ namespace GLSLPT
         int height;
         unsigned char* texData;
         std::string name;
-        std::vector <float*> usedBy;
+        int usedTimes;
     };
 }

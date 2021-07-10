@@ -79,14 +79,14 @@ namespace GLSLPT
 			texture = new Texture;
 			texture->name = filename;
 			
+			texture->usedTimes = 0;
+			
 			//printf("*tex id=%d %s\n", id, (texture->name).c_str());
 			textures.push_back(texture);
 		} else {
 			id = it->second;
 			texture = textures[id];
-		}
-		
-		texture->usedBy.push_back(usedObj);
+		}		
 		
 		*usedObj = id;
     }
@@ -299,6 +299,30 @@ namespace GLSLPT
         bvhTranslator.Process(sceneBvh, meshes, meshInstances);
 
         int verticesCnt = 0;
+		
+		//set true to used materials
+		materialUsed.resize(materials.size(), false);		
+        for (int i = 0; i < meshInstances.size(); i++)
+        {
+			materialUsed[meshInstances[i].materialID] = true;
+		}
+		
+		//calculate textures usage
+		for (int j = 0; j < materials.size(); j++) {
+			if(materialUsed[j]) {
+				if (materials[j].albedoTexID > -1.0f) {
+					textures[(int)materials[j].albedoTexID]->usedTimes ++;
+				}
+				
+				if (materials[j].metallicRoughnessTexID > -1.0f) {
+					textures[(int)materials[j].metallicRoughnessTexID]->usedTimes ++;
+				}
+				
+				if (materials[j].normalmapTexID > -1.0f) {
+					textures[(int)materials[j].normalmapTexID]->usedTimes ++;
+				}
+            }
+		}
 
         //Copy mesh data
         for (int i = 0; i < meshes.size(); i++)
@@ -339,7 +363,7 @@ namespace GLSLPT
         
 		for (i = 0; i < texWrongId; i++)
         {
-			if(! textures[i]->usedBy.size()) {
+			if(! textures[i]->usedTimes) {
 				texWrongId--;
 				std::swap(textures[i], textures[texWrongId]);
 				i--;
