@@ -56,8 +56,6 @@ namespace GLSLPT
         Material green;
         green.albedo = Vec3(0.14f, 0.45f, 0.091f);
 
-        Material* pmat;
-
         int white_mat_id = scene->AddMaterial(white);
         int red_mat_id   = scene->AddMaterial(red);
         int green_mat_id = scene->AddMaterial(green);

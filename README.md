@@ -26,6 +26,7 @@ Features
 - Render fixed samples or fixed time and save image
 - Control many paremeters of camera from keyboard
 - Save image with samples interval or time interval periodically
+- Parallel and optimised textures load
 
 Build Instructions
 --------
