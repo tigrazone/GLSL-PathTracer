@@ -52,26 +52,6 @@ namespace GLSLPT
         Material gold;
         Material red_plastic;
 
-        int headAlbedo = scene->AddTexture("../assets/Figurine/textures/01_Head_Base_Color.png");
-        int bodyAlbedo = scene->AddTexture("../assets/Figurine/textures/02_Body_Base_Color.png");
-        int baseAlbedo = scene->AddTexture("../assets/Figurine/textures/03_Base_Base_Color.png");
-        int bgAlbedo   = scene->AddTexture("../assets/Figurine/textures/grid.jpg");
-
-        int headMatRgh = scene->AddTexture("../assets/Figurine/textures/01_Head_MetallicRoughness.png");
-        int bodyMatRgh = scene->AddTexture("../assets/Figurine/textures/02_Body_MetallicRoughness.png");
-        int baseMatRgh = scene->AddTexture("../assets/Figurine/textures/03_Base_MetallicRoughness.png");
-
-        head.albedoTexID = headAlbedo;
-        head.metallicRoughnessTexID = headMatRgh;
-        
-        body.albedoTexID = bodyAlbedo;
-        body.metallicRoughnessTexID = bodyMatRgh;
-
-        base.albedoTexID = baseAlbedo;
-        base.metallicRoughnessTexID = baseMatRgh;
-
-        white.albedoTexID = bgAlbedo;
-
         gold.albedo = Vec3(1.0f, 0.71f, 0.29f);
         gold.roughness = 0.2f;
         gold.metallic = 1.0f;
@@ -86,6 +66,16 @@ namespace GLSLPT
         int white_mat_id = scene->AddMaterial(white);
         int gold_mat_id  = scene->AddMaterial(gold);
         int red_mat_id   = scene->AddMaterial(red_plastic);
+
+
+        scene->AddTexture("../assets/Figurine/textures/01_Head_Base_Color.png", &(scene->materials[head_mat_id].albedoTexID));
+        scene->AddTexture("../assets/Figurine/textures/02_Body_Base_Color.png", &(scene->materials[body_mat_id].albedoTexID));
+        scene->AddTexture("../assets/Figurine/textures/03_Base_Base_Color.png", &(scene->materials[base_mat_id].albedoTexID));
+        scene->AddTexture("../assets/Figurine/textures/grid.jpg", &(scene->materials[white_mat_id].albedoTexID));
+
+        scene->AddTexture("../assets/Figurine/textures/01_Head_MetallicRoughness.png", &(scene->materials[head_mat_id].metallicRoughnessTexID));
+        scene->AddTexture("../assets/Figurine/textures/02_Body_MetallicRoughness.png", &(scene->materials[body_mat_id].metallicRoughnessTexID));
+        scene->AddTexture("../assets/Figurine/textures/03_Base_MetallicRoughness.png", &(scene->materials[base_mat_id].metallicRoughnessTexID));
 
         Light light;
         light.type = LightType::RectLight;

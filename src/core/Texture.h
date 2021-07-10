@@ -35,11 +35,12 @@ namespace GLSLPT
         Texture() : texData(nullptr), width(0), height(0) {};
         ~Texture() { delete texData; }
 
-        bool LoadTexture(const std::string &filename);
+        bool LoadTexture();
         
         int width;
         int height;
         unsigned char* texData;
         std::string name;
+        std::vector <float*> usedBy;
     };
 }

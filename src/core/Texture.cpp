@@ -28,15 +28,19 @@
 
 namespace GLSLPT
 {
-    bool Texture::LoadTexture(const std::string &filename)
+    bool Texture::LoadTexture()
     {
-        name = filename;
-
-        texData = stbi_load(filename.c_str(), &width, &height, NULL, 3);
+        printf("Loading texture %s ...\n", name.c_str());
+        texData = stbi_load(name.c_str(), &width, &height, NULL, 3);
 
         if (texData != nullptr)
-            return true;
+        {
+            printf("Texture %s loaded\n", name.c_str());
+        }
+        else {
+            printf("NOT texture %s loaded\n", name.c_str());
+        }
 
-        return false;
+        return (texData != nullptr);
     }
 }

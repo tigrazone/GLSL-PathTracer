@@ -64,9 +64,10 @@ namespace GLSLPT
         return id;
     }
 
-    int Scene::AddTexture(const std::string& filename)
+    void Scene::AddTexture(const std::string& filename, float *usedObj)
     {
         int id = -1;
+		Texture* texture;
 		
         // Check if texture was already loaded
 		auto it = tex_names.find(filename);
@@ -74,21 +75,20 @@ namespace GLSLPT
 		if (it == tex_names.end()) {			   
 			id = textures.size();
 			tex_names[filename] = id;
+			
+			texture = new Texture;
+			texture->name = filename;
+			
+			//printf("*tex id=%d %s\n", id, (texture->name).c_str());
+			textures.push_back(texture);
 		} else {
-			return it->second;
+			id = it->second;
+			texture = textures[id];
 		}
-
-        Texture* texture = new Texture;
-
-        if (texture->LoadTexture(filename))
-        {
-            textures.push_back(texture);
-            printf("Texture %s loaded\n", filename.c_str());
-        }
-        else
-            id = -1;
-
-        return id;
+		
+		texture->usedBy.push_back(usedObj);
+		
+		*usedObj = id;
     }
 
     int Scene::AddMaterial(const Material& material)
@@ -330,8 +330,67 @@ namespace GLSLPT
         for (int i = 0; i < meshInstances.size(); i++)
             transforms[i] = meshInstances[i].transform;
 
+
+		//find widow textures
+		texWrongId = textures.size();
+        
+        printf("* textures=%d\n", texWrongId);
+		int i;
+        
+		for (i = 0; i < texWrongId; i++)
+        {
+			if(! textures[i]->usedBy.size()) {
+				texWrongId--;
+				std::swap(textures[i], textures[texWrongId]);
+				i--;
+			}
+		}
+
+        printf("* widow textures=%d\n", textures.size() - texWrongId);
+        
+
+		//load textures in parallel
+        #pragma omp parallel for
+		for (i = 0; i < texWrongId; i++) {
+			textures[i]->LoadTexture();
+		}
+		
+        int notLoadedTex = 0;
+
+		//find not loaded textures
+		for (i = 0; i < texWrongId; i++)
+        {
+			if(textures[i]->texData == nullptr) {
+                auto it = tex_names.find(textures[i]->name);
+                int tex_id = it->second;
+
+                notLoadedTex++;
+
+                for (int j = 0; j < materials.size(); j++) {
+                    if (((int)materials[j].albedoTexID) == tex_id) {
+                        materials[j].albedoTexID = -1.0f;
+                        printf("%d albedoTexID NOT loaded tex\n", j);
+                    }
+                    if (((int)materials[j].metallicRoughnessTexID) == tex_id) {
+                        materials[j].metallicRoughnessTexID = -1.0f;
+                        printf("%d metallicRoughnessTexID NOT loaded tex\n", j);
+                    }
+                    if (((int)materials[j].normalmapTexID) == tex_id) {
+                        materials[j].normalmapTexID = -1.0f;
+                        printf("%d normalmapTexID NOT loaded tex\n", j);
+                    }
+                }
+
+                texWrongId--;
+                std::swap(textures[i], textures[texWrongId]);
+                i--;
+			}
+		}        
+
+        printf("notLoadedTex=%d\n", notLoadedTex);
+        
         //Copy Textures
-        for (int i = 0; i < textures.size(); i++)
+        for (i = 0; i < texWrongId; i++)
         {
             texWidth = textures[i]->width;
             texHeight = textures[i]->height;

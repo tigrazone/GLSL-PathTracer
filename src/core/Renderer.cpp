@@ -134,6 +134,16 @@ namespace GLSLPT
         glBindTexture(GL_TEXTURE_BUFFER, normalsTex);
         glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, normalsBuffer);
 
+		/*
+		for(int ii=0;ii<scene->materials.size();ii++) {
+			printf("- %d\n", ii);
+			printf("albedoTexID %.1f\n", scene->materials[ii].albedoTexID);
+			printf("metallicRoughnessTexID %.1f\n", scene->materials[ii].metallicRoughnessTexID);
+			printf("normalmapTexID %.1f\n", scene->materials[ii].normalmapTexID);
+			printf("\n");
+		}
+		*/
+
         //Create texture for Materials
         glGenTextures(1, &materialsTex);
         glBindTexture(GL_TEXTURE_2D, materialsTex);
@@ -162,12 +172,12 @@ namespace GLSLPT
             glBindTexture(GL_TEXTURE_2D, 0);
         }
 
-        if (!scene->textures.empty())
+        if (scene->texWrongId)
         {
             glGenTextures(1, &textureMapsArrayTex);
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D_ARRAY, textureMapsArrayTex);
-            glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGB8, scene->texWidth, scene->texHeight, scene->textures.size(), 0, GL_RGB, GL_UNSIGNED_BYTE, &scene->textureMapsArray[0]);
+            glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGB8, scene->texWidth, scene->texHeight, scene->texWrongId, 0, GL_RGB, GL_UNSIGNED_BYTE, &scene->textureMapsArray[0]);
             glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glBindTexture(GL_TEXTURE_2D_ARRAY, 0);

@@ -80,7 +80,7 @@ namespace GLSLPT
         ~Scene() { delete camera; delete sceneBvh; delete hdrData; };
 
         int AddMesh(const std::string &filename);
-        int AddTexture(const std::string &filename);
+        void AddTexture(const std::string &filename, float *usedObj);
         int AddMaterial(const Material &material);
         int AddMeshInstance(const MeshInstance &meshInstance);
         int AddLight(const Light &light);
@@ -132,6 +132,7 @@ namespace GLSLPT
         //Texture Data
         std::vector<Texture *> textures;
         std::vector<unsigned char> textureMapsArray;
+        int texWrongId; //first wrong texture id - widow or not loaded
         int texWidth;
         int texHeight; // TODO: allow textures of different sizes
 		

@@ -62,13 +62,7 @@ namespace GLSLPT
 
         setvbuf(file, buf, _IOLBF, buf_sz);
 
-        struct MaterialData
-        {
-            Material mat;
-            int id;
-        };
-
-        std::unordered_map<std::string, MaterialData> materialMap;
+        std::unordered_map<std::string, int> materialMap;
         std::vector<std::string> albedoTex;
         std::vector<std::string> metallicRoughnessTex;
         std::vector<std::string> normalTex;
@@ -82,6 +76,8 @@ namespace GLSLPT
         scene->AddMaterial(defaultMat);
 
         bool cameraAdded = false;
+
+        int mat_id;
 
         while (fgets(line, kMaxLineLength, file))
         {
@@ -130,17 +126,6 @@ namespace GLSLPT
                     sscanf(line, " normalTexture %s", normalTexName);
                 }
 
-                // Albedo Texture
-                if (strcmp(albedoTexName, "None") != 0)
-                    material.albedoTexID = scene->AddTexture(path + albedoTexName);
-             
-                // MetallicRoughness Texture
-                if (strcmp(metallicRoughnessTexName, "None") != 0)
-                    material.metallicRoughnessTexID = scene->AddTexture(path + metallicRoughnessTexName);
-    
-                // Normal Map Texture
-                if (strcmp(normalTexName, "None") != 0)
-                    material.normalmapTexID = scene->AddTexture(path + normalTexName);
 				
 				// -log(state.mat.extinction) / state.mat.atDistance
 				material.extinction1.x = -log(material.extinction.x) / material.atDistance;
@@ -150,8 +135,30 @@ namespace GLSLPT
                 // add material to map
                 if (materialMap.find(name) == materialMap.end()) // New material
                 {
-                    int id = scene->AddMaterial(material);
-                    materialMap[name] = MaterialData{ material, id };
+                    mat_id = scene->AddMaterial(material);
+                    materialMap[name] = mat_id;
+
+                    Material* pmat;
+
+                    pmat = &(scene->materials[mat_id]);
+					
+                    // Albedo Texture
+                    if (strcmp(albedoTexName, "None") != 0) {
+                        scene->AddTexture(path + albedoTexName, &(pmat->albedoTexID));
+					    //printf("mat %d  albedoTexName=%s\n", mat_id, (path + albedoTexName).c_str());
+				    }
+             
+                    // MetallicRoughness Texture
+                    if (strcmp(metallicRoughnessTexName, "None") != 0) {
+                        scene->AddTexture(path + metallicRoughnessTexName, &(pmat->metallicRoughnessTexID));
+					    //printf("mat %d  metallicRoughnessTexName=%s\n", mat_id, (path + metallicRoughnessTexName).c_str());
+				    }
+    
+                    // Normal Map Texture
+                    if (strcmp(normalTexName, "None") != 0) {
+                        scene->AddTexture(path + normalTexName, &(pmat->normalmapTexID));
+					    //printf("mat %d  normalTexName=%s\n", mat_id, (path + normalTexName).c_str());
+				    }
                 }
             }
 
@@ -326,7 +333,7 @@ namespace GLSLPT
                         // look up material in dictionary
                         if (materialMap.find(matName) != materialMap.end())
                         {
-                            material_id = materialMap[matName].id;
+                            material_id = materialMap[matName];
                         }
                         else
                         {

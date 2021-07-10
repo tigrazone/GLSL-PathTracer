@@ -451,7 +451,7 @@ void MainLoop(void* arg)
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplSDL2_NewFrame(loopdata.mWindow);
     ImGui::NewFrame();
-    ImGuizmo::SetOrthographic(false);
+    ImGuizmo::SetOrthographic(true);
 
     ImGuizmo::BeginFrame();
     {

@@ -116,7 +116,7 @@ namespace GLSLPT
 		size_t i3 = 0;
 
         #pragma omp parallel for
-        for (size_t i = 0; i < numTris; ++i)
+        for (int i = 0; i < numTris; ++i)
         {
             const Vec3 v1 = Vec3(verticesUVX[i3]);
             const Vec3 v2 = Vec3(verticesUVX[i3 + 1]);
