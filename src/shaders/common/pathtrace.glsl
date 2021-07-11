@@ -129,7 +129,9 @@ void GetMaterialsAndTextures(inout State state, in Ray r)
         state.normal = normalize(nrm);
     }
 	
-    state.ffnormal = dot(state.normal, r.direction) <= 0.0 ? state.normal : -state.normal;
+	state.isInside = dot(state.normal, r.direction) <= 0.0;
+	
+    state.ffnormal = state.isInside ? state.normal : -state.normal;
 	Onb(state.normal, state.tangent, state.bitangent);
 
     // Calculate anisotropic roughness along the tangent and bitangent directions
@@ -141,7 +143,7 @@ void GetMaterialsAndTextures(inout State state, in Ray r)
 	*/
 
     state.mat = mat;
-    state.eta = dot(state.normal, state.ffnormal) > 0.0 ? (1.0 / mat.ior) : mat.ior;
+    state.eta = state.isInside ? (1.0 / mat.ior) : mat.ior;
 }
 
 //-----------------------------------------------------------------------
@@ -300,7 +302,7 @@ vec3 PathTrace(Ray r)
 #endif
 
         // Reset absorption when ray is going out of surface
-        if (dot(state.normal, state.ffnormal) > 0.0) {
+        if (state.isInside) {
             absorption = vec3(0.0);
 		}
 		else 

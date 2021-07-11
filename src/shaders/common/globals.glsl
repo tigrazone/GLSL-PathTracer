@@ -113,6 +113,7 @@ struct State
     vec3 bitangent;
 
     bool isEmitter;
+    bool isInside;
     bool specularBounce;
 
     vec2 texCoord;
