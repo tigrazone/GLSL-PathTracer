@@ -127,11 +127,9 @@ void GetMaterialsAndTextures(inout State state, in Ray r)
 
         nrm = T * nrm.x + B * nrm.y + state.normal * nrm.z;
         state.normal = normalize(nrm);
-    }
+    }	
 	
-	state.isInside = dot(state.normal, r.direction) <= 0.0;
-	
-    state.ffnormal = state.isInside ? state.normal : -state.normal;
+    state.ffnormal = dot(state.normal, r.direction) <= 0.0 ? state.normal : -state.normal;
 	Onb(state.normal, state.tangent, state.bitangent);
 
     // Calculate anisotropic roughness along the tangent and bitangent directions
@@ -141,6 +139,8 @@ void GetMaterialsAndTextures(inout State state, in Ray r)
     mat.ax = max(0.001, mat.roughness / aspect);
     mat.ay = max(0.001, mat.roughness * aspect);
 	*/
+	
+	state.isInside = dot(state.normal, state.ffnormal) > 0.0;
 
     state.mat = mat;
     state.eta = state.isInside ? (1.0 / mat.ior) : mat.ior;
