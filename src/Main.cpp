@@ -124,6 +124,8 @@ bool LoadScene(std::string sceneName)
 {
     delete scene;
     scene = new Scene();
+	renderOptions.hdrRotate = 0.0f;
+	renderOptions.hdrRotateY = 0.0f;
     if(!LoadSceneFromFile(sceneName, scene, renderOptions))
 		return false;
     //loadCornellTestScene(scene, renderOptions);
@@ -293,6 +295,34 @@ void MoveCameraFromKeyboard(float multiply, float coef)
 			if(ImGui::IsKeyPressed(SDL_SCANCODE_Z)) { // Z env map Multiplier -
 				if(renderOptions.hdrMultiplier - coef > 0.1f - coef*0.1f) {
 					renderOptions.hdrMultiplier -= coef;					
+					scene->renderOptions = renderOptions;
+					scene->camera->isMoving = true;
+				}
+			} else
+			if(ImGui::IsKeyPressed(SDL_SCANCODE_N)) { // N env map Rotate +
+				if(renderOptions.hdrRotate + coef < 180.0f + coef*0.1f) {
+					renderOptions.hdrRotate += coef;					
+					scene->renderOptions = renderOptions;
+					scene->camera->isMoving = true;
+				}
+			} else
+			if(ImGui::IsKeyPressed(SDL_SCANCODE_M)) { // M env map Rotate -
+				if(renderOptions.hdrRotate - coef > -180.0f - coef*0.1f) {
+					renderOptions.hdrRotate -= coef;					
+					scene->renderOptions = renderOptions;
+					scene->camera->isMoving = true;
+				}
+			} else
+			if(ImGui::IsKeyPressed(SDL_SCANCODE_O)) { // O env map RotateY +
+				if(renderOptions.hdrRotateY + coef < 180.0f + coef*0.1f) {
+					renderOptions.hdrRotateY += coef;					
+					scene->renderOptions = renderOptions;
+					scene->camera->isMoving = true;
+				}
+			} else
+			if(ImGui::IsKeyPressed(SDL_SCANCODE_L)) { // L env map RotateY -
+				if(renderOptions.hdrRotateY - coef > -180.0f - coef*0.1f) {
+					renderOptions.hdrRotateY -= coef;					
 					scene->renderOptions = renderOptions;
 					scene->camera->isMoving = true;
 				}
@@ -589,6 +619,7 @@ void MainLoop(void* arg)
                     ImGui::TextUnformatted(scene->hdrData != nullptr ? "loaded" : "NOT loaded");
                     ImGui::EndTooltip();
                 }
+				// IsItemClicked()
 				
 				ImGui::SameLine();
 				if (ImGui::Button("Load EnvMap"))
@@ -616,7 +647,9 @@ void MainLoop(void* arg)
 					}
 				}
 				
-            optionsChanged |= ImGui::SliderFloat("HDR multiplier", &renderOptions.hdrMultiplier, 0.1f, MAXhdrMultiplier);
+            optionsChanged |= ImGui::SliderFloat("HDR multiplier", &renderOptions.hdrMultiplier, 0.1f, MAXhdrMultiplier, "%.2f");
+            optionsChanged |= ImGui::SliderFloat("Xrotate HDR ", &renderOptions.hdrRotate, -180.0f, 180.0f, "%.2f");
+            optionsChanged |= ImGui::SliderFloat("Yrotate HDR", &renderOptions.hdrRotateY, -180.0f, 180.0f, "%.2f");
             requiresReload |= ImGui::Checkbox("Enable RR", &renderOptions.enableRR);
             requiresReload |= ImGui::SliderInt("RR Depth", &renderOptions.RRDepth, 1, 10);
             requiresReload |= ImGui::Checkbox("Enable Constant BG", &renderOptions.useConstantBg);
@@ -638,11 +671,11 @@ void MainLoop(void* arg)
         {
             float fov = Math::Degrees(scene->camera->fov);
             float aperture = scene->camera->aperture * 1000.0f;
-            optionsChanged |= ImGui::SliderFloat("Fov", &fov, 10, 90);
+            optionsChanged |= ImGui::SliderFloat("Fov", &fov, 10, 90, "%.2f");
             scene->camera->SetFov(fov);
-            optionsChanged |= ImGui::SliderFloat("Aperture", &aperture, 0.0f, 10.8f);
+            optionsChanged |= ImGui::SliderFloat("Aperture", &aperture, 0.0f, 10.8f, "%.2f");
             scene->camera->aperture = aperture / 1000.0f;
-            optionsChanged |= ImGui::SliderFloat("Focal Distance", &scene->camera->focalDist, 0.01f, 50.0f);
+            optionsChanged |= ImGui::SliderFloat("Focal Distance", &scene->camera->focalDist, 0.01f, 50.0f, "%.2f");
             // ImGui::Text("Pos: %.2f, %.2f, %.2f", scene->camera->position.x, scene->camera->position.y, scene->camera->position.z);
         }
 
@@ -852,7 +885,9 @@ int main(int argc, char** argv)
 	} else {
 		if (!sceneFile.empty())
 		{
-			scene = new Scene();
+			scene = new Scene();			
+			renderOptions.hdrRotate = 0.0f;
+			renderOptions.hdrRotateY = 0.0f;
 
 			if (!LoadSceneFromFile(sceneFile, scene, renderOptions))
 				exit(0);

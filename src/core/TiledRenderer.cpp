@@ -599,6 +599,8 @@ namespace GLSLPT
         glUniform3f(glGetUniformLocation(shaderObject, "randomVector"), r1, r2, r3);
         glUniform1i(glGetUniformLocation(shaderObject, "useEnvMap"), scene->hdrData == nullptr ? false : scene->renderOptions.useEnvMap);
         glUniform1f(glGetUniformLocation(shaderObject, "hdrMultiplier"), scene->renderOptions.hdrMultiplier);
+        glUniform1f(glGetUniformLocation(shaderObject, "hdrRotate"), Math::Radians(scene->renderOptions.hdrRotate));
+        glUniform1f(glGetUniformLocation(shaderObject, "hdrRotateY"), Math::Radians(scene->renderOptions.hdrRotateY));
         glUniform1i(glGetUniformLocation(shaderObject, "maxDepth"), scene->renderOptions.maxDepth);
         glUniform1i(glGetUniformLocation(shaderObject, "tileX"), tileX);
         glUniform1i(glGetUniformLocation(shaderObject, "tileY"), tileY);
@@ -618,6 +620,8 @@ namespace GLSLPT
         glUniform1f(glGetUniformLocation(shaderObject, "camera.aperture"), scene->camera->aperture);
         glUniform1i(glGetUniformLocation(shaderObject, "useEnvMap"), scene->hdrData == nullptr ? false : scene->renderOptions.useEnvMap);
         glUniform1f(glGetUniformLocation(shaderObject, "hdrMultiplier"), scene->renderOptions.hdrMultiplier);
+        glUniform1f(glGetUniformLocation(shaderObject, "hdrRotate"), Math::Radians(scene->renderOptions.hdrRotate));
+        glUniform1f(glGetUniformLocation(shaderObject, "hdrRotateY"), Math::Radians(scene->renderOptions.hdrRotateY));
         glUniform1i(glGetUniformLocation(shaderObject, "maxDepth"), scene->camera->isMoving || scene->instancesModified ? 2: scene->renderOptions.maxDepth);
         glUniform3f(glGetUniformLocation(shaderObject, "camera.position"), scene->camera->position.x, scene->camera->position.y, scene->camera->position.z);
         glUniform3f(glGetUniformLocation(shaderObject, "bgColor"), scene->renderOptions.bgColor.x, scene->renderOptions.bgColor.y, scene->renderOptions.bgColor.z);

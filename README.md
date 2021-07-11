@@ -27,6 +27,7 @@ Features
 - Control many paremeters of camera from keyboard
 - Save image with samples interval or time interval periodically
 - Parallel and optimised textures load
+- Rotate environment map by X and Y
 
 Build Instructions
 --------
@@ -68,6 +69,8 @@ Controls
 | **Mouse middle**        | Camera pan                                                                            |
 | **Home / End**          | Adjust movement speed                                                                 |
 | **Z / X**               | Adjust environment map emission                                                       |
+| **N / M**               | Rotate environment map by X                                                           |
+| **O / L**               | Rotate environment map by Y                                                           |
 | **Arrow keys**          | Move camera                                                                           |
 | **Page Up / Down**      | Move camera up/down                                                                   |
 | **, / .**               | Change FOV                                                                            |

@@ -269,6 +269,8 @@ namespace GLSLPT
                     sscanf(line, " envMap %s", envMap);
                     sscanf(line, " resolution %d %d", &renderOptions.resolution.x, &renderOptions.resolution.y);
                     sscanf(line, " hdrMultiplier %f", &renderOptions.hdrMultiplier);
+                    sscanf(line, " hdrRotate %f", &renderOptions.hdrRotate);
+                    sscanf(line, " hdrRotateY %f", &renderOptions.hdrRotateY);
                     sscanf(line, " maxDepth %i", &renderOptions.maxDepth);
                     sscanf(line, " tileWidth %i", &renderOptions.tileWidth);
                     sscanf(line, " tileHeight %i", &renderOptions.tileHeight);

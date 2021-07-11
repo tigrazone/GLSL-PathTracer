@@ -45,6 +45,8 @@ namespace GLSLPT
             useEnvMap = false;
             resolution = iVec2(1280, 720);
             hdrMultiplier = 1.0f;
+            hdrRotate = 0.0f;
+            hdrRotateY = 0.0f;
             enableRR = true;
             useConstantBg = false;
             RRDepth = 2;
@@ -64,6 +66,8 @@ namespace GLSLPT
         int RRDepth;
         int denoiserFrameCnt;
         float hdrMultiplier;
+        float hdrRotate;
+        float hdrRotateY;
         Vec3 bgColor;
     };
 
