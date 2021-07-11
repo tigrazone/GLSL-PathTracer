@@ -110,7 +110,7 @@ void GetMaterialsAndTextures(inout State state, in Ray r)
     {
         vec2 matRgh;
         // TODO: Change metallic roughness maps in repo to linear space and remove gamma correction
-        matRgh = pow(texture(textureMapsArrayTex, vec3(texUV, int(mat.texIDs.y))).zy, vec2(2.2));
+        matRgh = pow(texture(textureMapsArrayTex, vec3(texUV, int(mat.texIDs.y))).xy, vec2(2.2));
         mat.metallic = matRgh.x;
         mat.roughness = max(matRgh.y, 0.001);
     }
@@ -133,9 +133,12 @@ void GetMaterialsAndTextures(inout State state, in Ray r)
 	Onb(state.normal, state.tangent, state.bitangent);
 
     // Calculate anisotropic roughness along the tangent and bitangent directions
+	//because not used anisotropy yet
+	/*
     float aspect = sqrt(1.0 - mat.anisotropic * 0.9);
     mat.ax = max(0.001, mat.roughness / aspect);
     mat.ay = max(0.001, mat.roughness * aspect);
+	*/
 
     state.mat = mat;
     state.eta = dot(state.normal, state.ffnormal) > 0.0 ? (1.0 / mat.ior) : mat.ior;
