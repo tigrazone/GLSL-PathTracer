@@ -139,43 +139,31 @@ struct LightSampleRec
 
 uniform Camera camera;
 
-float rand()
+
+float rand0()
 {
     seed -= randomVector.xy;
     return fract(sin(dot(seed, vec2(12.9898, 78.233))) * 43758.5453);
 }
 
-vec3 FaceForward(vec3 a, vec3 b)
-{
-    return dot(a, b) < 0.0 ? -b : b;
-}
 
-uint hash( uint x ) {
-    x += ( x << 10u );
-    x ^= ( x >>  6u );
-    x += ( x <<  3u );
-    x ^= ( x >> 11u );
-    x += ( x << 15u );
+float one111 = 1.0f / float( 0xffffffffU );
+
+#define hashi(x)   lowbias32(x)
+#define hash(x)  ( float( hashi(x) ) * one111 )
+
+uint lowbias32(uint x)
+{
+    x ^= x >> 16;
+    x *= 0x7feb352dU;
+    x ^= x >> 15;
+    x *= 0x846ca68bU;
+    x ^= x >> 16;
     return x;
 }
 
-uint hash( uvec2 v ) { return hash( v.x ^ hash(v.y)                         ); }
 
-float floatConstruct( uint m ) {
-    const uint ieeeMantissa = 0x007FFFFFu; // binary32 mantissa bitmask
-    const uint ieeeOne      = 0x3F800000u; // 1.0 in IEEE binary32
-
-    m &= ieeeMantissa;                     // Keep only mantissa bits (fractional part)
-    m |= ieeeOne;                          // Add fractional part to 1.0
-
-    float  f = uintBitsToFloat( m );       // Range [1:2]
-    return f - 1.0;                        // Range [0:1]
-}
-
-float random( vec2  v ) { return floatConstruct(hash(floatBitsToUint(v))); }
-
-float rand1()
-{
+float rand() { 
 	seed -= randomVector.xy;
-	return random(seed);
+	return hash( floatBitsToUint(seed.x) + hashi(floatBitsToUint(seed.y)) );
 }
