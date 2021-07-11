@@ -98,7 +98,7 @@ namespace GLSLPT
         return id;
     }
 
-    void Scene::AddHDR(const std::string& filename)
+    bool Scene::AddHDR(const std::string& filename)
     {
         struct stat stt;
 	
@@ -113,7 +113,7 @@ namespace GLSLPT
 				   )
 				   {
 					printf("Reuse HDR %s\n", filename.c_str());
-					return;
+					return renderOptions.useEnvMap;
 				   }
 			}
 		}
@@ -140,9 +140,11 @@ namespace GLSLPT
 		
 		time2 = clock();
 		printf("%.1fs\n", (float)(time2-time1)/(float)CLOCKS_PER_SEC);
+		
+		return renderOptions.useEnvMap;
     }
 
-    void Scene::AddEXR(const std::string& filename)
+    bool Scene::AddEXR(const std::string& filename)
     {
         struct stat stt;
 	
@@ -157,7 +159,7 @@ namespace GLSLPT
 				   )
 				   {
 					printf("Reuse EXR %s\n", filename.c_str());
-					return;
+					return renderOptions.useEnvMap;
 				   }
 			}
 		}		
@@ -184,6 +186,8 @@ namespace GLSLPT
 		
 		time2 = clock();
 		printf("%.1fs\n", (float)(time2-time1)/(float)CLOCKS_PER_SEC);
+		
+		return renderOptions.useEnvMap;
     }
 
     int Scene::AddMeshInstance(const MeshInstance &meshInstance)

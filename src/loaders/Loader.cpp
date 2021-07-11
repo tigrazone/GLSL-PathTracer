@@ -284,13 +284,12 @@ namespace GLSLPT
 					
 					if(subString != NULL) {
                         if (strcmp(subString, ".hdr") == 0) {
-                            scene->AddHDR(path + envMap);
+                            renderOptions.useEnvMap = scene->AddHDR(path + envMap);
                         }
                         else if (strcmp(subString, ".exr") == 0) {
-                            scene->AddEXR(path + envMap);
+                            renderOptions.useEnvMap = scene->AddEXR(path + envMap);
                         }
 					}
-					renderOptions.useEnvMap = scene->renderOptions.useEnvMap;
                 }
 
                 if (strcmp(enableRR, "False") == 0)

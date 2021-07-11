@@ -593,11 +593,13 @@ void MainLoop(void* arg)
 						
 						if(subString != NULL) {
 							if (strcmp(subString, ".hdr") == 0) {
-								scene->AddHDR(envMap);
+								renderOptions.useEnvMap = scene->AddHDR(envMap);
+								scene->renderOptions = renderOptions;
 								InitRenderer();
 							}
 							else if (strcmp(subString, ".exr") == 0) {
-								scene->AddEXR(envMap);
+								renderOptions.useEnvMap = scene->AddEXR(envMap);
+								scene->renderOptions = renderOptions;
 								InitRenderer();
 							}
 						}

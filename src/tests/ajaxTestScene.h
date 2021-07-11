@@ -74,7 +74,8 @@ namespace GLSLPT
         scene->AddMeshInstance(instance1);
         scene->AddMeshInstance(instance2);
 
-        scene->AddHDR("../assets/HDR/sunset.hdr");
+        renderOptions.useEnvMap = scene->AddHDR("../assets/HDR/sunset.hdr");
+		scene->renderOptions = renderOptions;
 
         scene->CreateAccelerationStructures();
 
