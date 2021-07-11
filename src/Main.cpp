@@ -581,6 +581,16 @@ void MainLoop(void* arg)
             optionsChanged |= ImGui::SliderInt("Max Depth", &renderOptions.maxDepth, 1, 10);
             requiresReload |= ImGui::Checkbox("Enable EnvMap", &renderOptions.useEnvMap);
 			
+                //show is loaded or no env map			
+                ImGui::TextDisabled(scene->hdrData != nullptr ? "*" : " ");
+                if (ImGui::IsItemHovered())
+                {
+                    ImGui::BeginTooltip();
+                    ImGui::TextUnformatted(scene->hdrData != nullptr ? "loaded" : "NOT loaded");
+                    ImGui::EndTooltip();
+                }
+				
+				ImGui::SameLine();
 				if (ImGui::Button("Load EnvMap"))
 				{					
 					const std::string envMap = openFileDialog("Select environment map file", assetsDir, { "*.hdr", "*.exr"});
