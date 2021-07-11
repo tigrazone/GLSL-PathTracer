@@ -42,6 +42,8 @@ namespace GLSLPT
         void SetRadius(float dr);
         void ComputeViewProjectionMatrix(float* view, float* projection, float ratio);
         void SetFov(float val);
+        void Reset();
+        void Init(Vec3 eye, Vec3 lookat, float fov);
 
         Vec3 position;
         Vec3 up;

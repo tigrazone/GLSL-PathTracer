@@ -119,6 +119,24 @@ namespace GLSLPT
 
     Camera::Camera(Vec3 eye, Vec3 lookat, float fov)
     {
+        Init(eye, lookat, fov);
+    }
+
+    Camera::Camera(const Camera& other)
+    {
+        *this = other;
+    }
+
+    Camera& Camera::operator = (const Camera& other)
+    {
+        ptrdiff_t l = (unsigned char*)&isMoving - (unsigned char*)&position.x;
+        isMoving = memcmp(&position.x, &other.position.x, l) != 0;
+        memcpy(&position.x, &other.position.x, l);
+        return *this;
+    }
+	
+	void Camera::Init(Vec3 eye, Vec3 lookat, float fov)
+    {
         position = eye;
         pivot = lookat;
         worldUp = Vec3(0, 1, 0);
@@ -135,17 +153,9 @@ namespace GLSLPT
         UpdateCamera();
     }
 
-    Camera::Camera(const Camera& other)
+    void Camera::Reset()
     {
-        *this = other;
-    }
-
-    Camera& Camera::operator = (const Camera& other)
-    {
-        ptrdiff_t l = (unsigned char*)&isMoving - (unsigned char*)&position.x;
-        isMoving = memcmp(&position.x, &other.position.x, l) != 0;
-        memcpy(&position.x, &other.position.x, l);
-        return *this;
+        Init(Vec3(0, 0, -1), Vec3(0, 0, 0), 40);
     }
 
     void Camera::OffsetOrientation(float dx, float dy)

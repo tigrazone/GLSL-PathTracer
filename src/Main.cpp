@@ -677,6 +677,12 @@ void MainLoop(void* arg)
             scene->camera->aperture = aperture / 1000.0f;
             optionsChanged |= ImGui::SliderFloat("Focal Distance", &scene->camera->focalDist, 0.01f, 50.0f, "%.2f");
             // ImGui::Text("Pos: %.2f, %.2f, %.2f", scene->camera->position.x, scene->camera->position.y, scene->camera->position.z);
+			
+			if (ImGui::Button("Reset Camera"))
+			{
+                scene->camera->Reset();
+				optionsChanged = true;
+			}
         }
 
         scene->camera->isMoving = false;
@@ -885,9 +891,7 @@ int main(int argc, char** argv)
 	} else {
 		if (!sceneFile.empty())
 		{
-			scene = new Scene();			
-			renderOptions.hdrRotate = 0.0f;
-			renderOptions.hdrRotateY = 0.0f;
+			scene = new Scene();
 
 			if (!LoadSceneFromFile(sceneFile, scene, renderOptions))
 				exit(0);
