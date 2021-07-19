@@ -224,51 +224,67 @@ void Render()
 void MoveCameraFromKeyboard(float multiply, float coef)
 {	
 			if(ImGui::IsKeyPressed(SDL_SCANCODE_W)) { // w
-				scene->camera->position = scene->camera->position + scene->camera->forward * multiply;
+				scene->camera->SetRadius(-multiply);
                 scene->camera->isMoving = true;
 			} else
 			if(ImGui::IsKeyPressed(SDL_SCANCODE_A)) { // a
-				scene->camera->position = scene->camera->position - scene->camera->right * multiply;
+				scene->camera->Strafe(-multiply, 0);
                 scene->camera->isMoving = true;
 			} else
 			if(ImGui::IsKeyPressed(SDL_SCANCODE_S)) { // s
-                scene->camera->position = scene->camera->position - scene->camera->forward * multiply;
+                scene->camera->SetRadius(multiply);
                 scene->camera->isMoving = true;
 			} else
 			if(ImGui::IsKeyPressed(SDL_SCANCODE_D)) { // d
-                scene->camera->position = scene->camera->position + scene->camera->right * multiply;
+                scene->camera->Strafe(multiply, 0);
                 scene->camera->isMoving = true;
 			} else
 			if(ImGui::IsKeyPressed(SDL_SCANCODE_R)) { // r
-                scene->camera->position = scene->camera->position + scene->camera->up * multiply;
+                scene->camera->Strafe(0, multiply);
                 scene->camera->isMoving = true;
 			} else
 			if(ImGui::IsKeyPressed(SDL_SCANCODE_F)) { // f
-                scene->camera->position = scene->camera->position - scene->camera->up * multiply;
+                scene->camera->Strafe(0, -multiply);
+                scene->camera->isMoving = true;
+			} else
+			if(ImGui::IsKeyPressed(SDL_SCANCODE_I)) { // i rot camera Y-
+                scene->camera->OffsetOrientation(0, -coef);
+                scene->camera->isMoving = true;
+			} else
+			if(ImGui::IsKeyPressed(SDL_SCANCODE_J)) { // j rot camera X-
+                scene->camera->OffsetOrientation(-coef, 0);
+                scene->camera->isMoving = true;
+			} else
+			if(ImGui::IsKeyPressed(SDL_SCANCODE_K)) { // k rot camera Y+
+                scene->camera->OffsetOrientation(0, coef);
+                scene->camera->isMoving = true;
+			} else
+			if(ImGui::IsKeyPressed(SDL_SCANCODE_L)) { // l rot camera X+
+                scene->camera->OffsetOrientation(coef, 0);
                 scene->camera->isMoving = true;
 			} else
 			if(ImGui::IsKeyPressed(SDL_SCANCODE_UP)) { 		// up arrow
-				scene->camera->position = scene->camera->position + scene->camera->forward * multiply;
+				scene->camera->SetRadius(-multiply);
                 scene->camera->isMoving = true;
 			} else
 			if(ImGui::IsKeyPressed(SDL_SCANCODE_RIGHT)) { 	// right arrow
-				scene->camera->position = scene->camera->position - scene->camera->right * multiply;
+				scene->camera->Strafe(-multiply, 0);
                 scene->camera->isMoving = true;
 			} else
 			if(ImGui::IsKeyPressed(SDL_SCANCODE_DOWN)) { 	// down arrow
-                scene->camera->position = scene->camera->position - scene->camera->forward * multiply;
+				scene->camera->SetRadius(multiply);
                 scene->camera->isMoving = true;
 			} else
 			if(ImGui::IsKeyPressed(SDL_SCANCODE_LEFT)) { 	// left arrow
-                scene->camera->position = scene->camera->position + scene->camera->right * multiply;
+				scene->camera->Strafe(multiply, 0);
                 scene->camera->isMoving = true;
 			} else
 			if(ImGui::IsKeyPressed(SDL_SCANCODE_PAGEUP)) { 	// PgUp
-                scene->camera->position = scene->camera->position + scene->camera->up * multiply;
+                scene->camera->Strafe(0, multiply);
                 scene->camera->isMoving = true;
 			} else
 			if(ImGui::IsKeyPressed(SDL_SCANCODE_PAGEDOWN)) { // PgDn
-                scene->camera->position = scene->camera->position - scene->camera->up * multiply;
+                scene->camera->Strafe(0, -multiply);
                 scene->camera->isMoving = true;
 			} else
 			if(ImGui::IsKeyPressed(SDL_SCANCODE_COMMA)) { // , fov -
@@ -313,14 +329,14 @@ void MoveCameraFromKeyboard(float multiply, float coef)
 					scene->camera->isMoving = true;
 				}
 			} else
-			if(ImGui::IsKeyPressed(SDL_SCANCODE_O)) { // O env map RotateY +
+			if(ImGui::IsKeyPressed(SDL_SCANCODE_Y)) { // Y env map RotateY +
 				if(renderOptions.hdrRotateY + coef < 180.0f + coef*0.1f) {
 					renderOptions.hdrRotateY += coef;					
 					scene->renderOptions = renderOptions;
 					scene->camera->isMoving = true;
 				}
 			} else
-			if(ImGui::IsKeyPressed(SDL_SCANCODE_L)) { // L env map RotateY -
+			if(ImGui::IsKeyPressed(SDL_SCANCODE_H)) { // H env map RotateY -
 				if(renderOptions.hdrRotateY - coef > -180.0f - coef*0.1f) {
 					renderOptions.hdrRotateY -= coef;					
 					scene->renderOptions = renderOptions;

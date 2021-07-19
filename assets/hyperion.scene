@@ -114,7 +114,8 @@ mesh
 mesh
 {
 	name Chrome Ball
-	file hyperion/chrome.obj
+	#file hyperion/chrome.obj
+	file hyperion/glass.obj
 	material silver
 	position 0.4 1.86 -6.59
 }
@@ -351,7 +352,7 @@ light
 }
 
 
-light
+#light
 {
 	type Sphere
 	emission 300.0 300.0 300.0

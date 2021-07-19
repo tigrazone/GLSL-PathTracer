@@ -70,7 +70,8 @@ Controls
 | **Home / End**          | Adjust movement speed                                                                 |
 | **Z / X**               | Adjust environment map emission                                                       |
 | **N / M**               | Rotate environment map by X                                                           |
-| **O / L**               | Rotate environment map by Y                                                           |
+| **Y / H**               | Rotate environment map by Y                                                           |
+| **I / K / J / L**       | Rotate camera by X, Y                                                                 |
 | **Arrow keys**          | Move camera                                                                           |
 | **Page Up / Down**      | Move camera up/down                                                                   |
 | **, / .**               | Change FOV                                                                            |
