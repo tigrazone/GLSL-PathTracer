@@ -411,6 +411,14 @@ void Update(float secondsElapsed)
 			MoveCameraFromKeyboard(coef * mouseSensitivity, coef);
 		} else 
 		if(specKeys == 0) {
+			if(ImGui::IsKeyPressed(SDL_SCANCODE_P)) { // p print camera
+				Vec3 pivot = scene->camera->getPivot();
+				printf("CAMERA\nposition %.5f %.5f %.5f\n", scene->camera->position.x, scene->camera->position.y, scene->camera->position.z);
+				printf("lookAt %.5f %.5f %.5f\n", pivot.x, pivot.y, pivot.z);
+				printf("aperture %.5f\n", scene->camera->aperture * 1000.0f);
+				printf("focaldist %.5f\n", scene->camera->focalDist);
+				printf("fov %.5f\n\n", Math::Degrees(scene->camera->fov));
+			} else
 			MoveCameraFromKeyboard(coef * mouseSensitivity, coef);
 		}
 	}	

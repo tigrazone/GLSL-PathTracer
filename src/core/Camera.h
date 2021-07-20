@@ -44,6 +44,7 @@ namespace GLSLPT
         void SetFov(float val);
         void Reset();
         void Init(Vec3 eye, Vec3 lookat, float fov);
+        Vec3 getPivot();
 
         Vec3 position;
         Vec3 up;

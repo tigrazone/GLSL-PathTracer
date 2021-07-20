@@ -204,4 +204,9 @@ namespace GLSLPT
         const float fov_v = tanf(fov * 0.5f) / ratio;
         Perspective(Math::Degrees(fov_v), ratio, 0.1f, 1000.f, projection);
     }
+	
+	Vec3 Camera::getPivot()
+	{
+		return pivot;
+	}
 }
