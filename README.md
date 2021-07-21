@@ -28,6 +28,7 @@ Features
 - Save image with samples interval or time interval periodically
 - Parallel and optimised textures load
 - Rotate environment map by X and Y
+- Print current camera params
 
 Build Instructions
 --------
@@ -75,6 +76,7 @@ Controls
 | **Arrow keys**          | Move camera                                                                           |
 | **Page Up / Down**      | Move camera up/down                                                                   |
 | **, / .**               | Change FOV                                                                            |
+| **P**                   | Print current camera params                                                           |
 
 Use Ctrl for 1/10 step, Alt for 1/2 step, Shift for 10x step
 
