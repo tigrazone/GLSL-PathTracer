@@ -177,10 +177,16 @@ HDRData* HDRLoader::load(const char *fileName)
     HDRData *res = new HDRData;
 
     fread(str, 10, 1, file);
-    if (memcmp(str, "#?RADIANCE", 10)) {
-        fclose(file);
-        return nullptr;
-    }
+	
+	//#?RGBE or #?RADIANCE is HDR header
+    if (!memcmp(str, "#?RGBE", 6)) {
+		fseek(file, -4, SEEK_CUR);
+	} else {	
+		if (memcmp(str, "#?RADIANCE", 10)) {
+			fclose(file);
+			return nullptr;
+		}
+	}
 
     fseek(file, 1, SEEK_CUR);
 
