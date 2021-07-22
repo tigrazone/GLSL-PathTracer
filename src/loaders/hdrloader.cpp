@@ -152,6 +152,9 @@ HDRData* HDRLoader::load(const char *fileName)
 {
     int width, height;
     float* image;
+	
+	const size_t buf_sz = 64*1024;
+    char buf[buf_sz];	
 
 	FILE *file;
 
@@ -164,6 +167,8 @@ HDRData* HDRLoader::load(const char *fileName)
 	if(stbi_is_hdr_from_file(file))
 	{
 		fseek(file, 0, SEEK_SET);
+		
+		setvbuf(file, buf, _IOLBF, buf_sz);
 		
 		int num_channels;
 
