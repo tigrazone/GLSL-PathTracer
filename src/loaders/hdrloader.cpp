@@ -12,24 +12,14 @@
 */
 
 #include "hdrloader.h"
+#include "stb_image.h"
 
-#include <math.h>
 #include <memory.h>
 #include <stdio.h>
 
-typedef unsigned char RGBE[4];
-#define R            0
-#define G            1
-#define B            2
-#define E            3
-
-#define  MINELEN    8                // minimum scanline length for encoding
-#define  MAXELEN    0x7fff            // maximum scanline length for encoding
 
 static void RGBAtoRGB(float *image, int len, float *cols, int channels);
-static void workOnRGBE(RGBE *scan, int len, float *cols);
-static bool decrunch(RGBE *scanline, int len, FILE *file);
-static bool oldDecrunch(RGBE *scanline, int len, FILE *file);
+
 
 float Luminance(const Vec3 &c)
 {
@@ -160,88 +150,49 @@ void HDRLoader::buildDistributions(HDRData* res)
 
 HDRData* HDRLoader::load(const char *fileName)
 {
-    int i;
-    char str[200];	
-	
-	const size_t buf_sz = 32*1024;
-    char buf[buf_sz];	
-	
-    FILE *file;
+    int width, height;
+    float* image;
+
+	FILE *file;
 
     file = fopen(fileName, "rb");
     if (!file)
         return nullptr;
+
+    HDRData* res = new HDRData;
 	
-	setvbuf(file, buf, _IOLBF, buf_sz);
+	if(stbi_is_hdr_from_file(file))
+	{
+		fseek(file, 0, SEEK_SET);
+		
+		int num_channels;
 
-    HDRData *res = new HDRData;
+		image = stbi_loadf_from_file(file, &width, &height, &num_channels, 4);
 
-    fread(str, 10, 1, file);
-	
-	//#?RGBE or #?RADIANCE is HDR header
-    if (!memcmp(str, "#?RGBE", 6)) {
-		fseek(file, -4, SEEK_CUR);
-	} else {	
-		if (memcmp(str, "#?RADIANCE", 10)) {
-			fclose(file);
-			return nullptr;
-		}
-	}
+        size_t wh = width * height;
 
-    fseek(file, 1, SEEK_CUR);
+        res->width = width;
+        res->height = height;
 
-    char cmd[200];
-    i = 0;
-    char c = 0, oldc;
-    while(true) {
-        oldc = c;
-        c = fgetc(file);
-        if (c == 0xa && oldc == 0xa)
-            break;
-        cmd[i++] = c;
+        printf("HDR width %d, height %d\n", width, height);
+
+        float* cols = new float[wh * 3];
+
+        res->cols = cols;
+
+        printf("channels = %d\n", num_channels);
+
+        RGBAtoRGB(image, wh, cols, num_channels > 3 ? num_channels : 4);
+
+        buildDistributions(res);
+
+        free(image);
     }
-
-    char reso[200];
-    i = 0;
-    while(true) {
-        c = fgetc(file);
-        reso[i++] = c;
-        if (c == 0xa)
-            break;
-    }
-
-    int w, h;
-    if (!sscanf(reso, "-Y %d +X %d", &h, &w)) {
+    else {
         fclose(file);
         return nullptr;
     }
-
-    res->width = w;
-    res->height = h;
-
-    printf("HDR width %d, height %d\n", w, h);
-
-    float *cols = new float[w * h * 3];
-    res->cols = cols;
-
-    RGBE *scanline = new RGBE[w];
-    if (!scanline) {
-        fclose(file);
-        return nullptr;
-    }
-
-    // convert image 
-    for (int y = h - 1; y >= 0; y--) {
-        if (decrunch(scanline, w, file) == false)
-            break;
-        workOnRGBE(scanline, w, cols);
-        cols += w * 3;
-    }
-
-    delete [] scanline;
-    fclose(file);
-
-    buildDistributions(res);
+	
     return res;
 }
 
@@ -294,33 +245,13 @@ HDRData* EXRLoader::load(const char *fileName)
 	printf("channels = %d\n", header.num_channels);
 	
 	RGBAtoRGB(image, wh, cols, header.num_channels > 3 ? header.num_channels : 4);
+
+    buildDistributions(res);
 	
     free(image);
-	
-    buildDistributions(res);
     return res;
 }
 
-float one256 = 1.0f / 256.0f;
-
-float convertComponent(int expo, int val)
-{
-    float v = val * one256;
-    float d = (float) pow(2, expo);
-    return v * d;
-}
-
-void workOnRGBE(RGBE *scan, int len, float *cols)
-{
-    while (len-- > 0) {
-        int expo = scan[0][E] - 128;
-        cols[0] = convertComponent(expo, scan[0][R]);
-        cols[1] = convertComponent(expo, scan[0][G]);
-        cols[2] = convertComponent(expo, scan[0][B]);
-        cols += 3;
-        scan++;
-    }
-}
 
 void RGBAtoRGB(float *image, int len, float *cols, int channels)
 {
@@ -333,77 +264,3 @@ void RGBAtoRGB(float *image, int len, float *cols, int channels)
     }
 }
 
-bool decrunch(RGBE *scanline, int len, FILE *file)
-{
-    int  i, j;
-                    
-    if (len < MINELEN || len > MAXELEN)
-        return oldDecrunch(scanline, len, file);
-
-    i = fgetc(file);
-    if (i != 2) {
-        fseek(file, -1, SEEK_CUR);
-        return oldDecrunch(scanline, len, file);
-    }
-
-    scanline[0][G] = fgetc(file);
-    scanline[0][B] = fgetc(file);
-    i = fgetc(file);
-
-    if (scanline[0][G] != 2 || scanline[0][B] & 128) {
-        scanline[0][R] = 2;
-        scanline[0][E] = i;
-        return oldDecrunch(scanline + 1, len - 1, file);
-    }
-
-    // read each component
-    for (i = 0; i < 4; i++) {
-        for (j = 0; j < len; ) {
-            unsigned char code = fgetc(file);
-            if (code > 128) { // run
-                code &= 127;
-                unsigned char val = fgetc(file);
-                while (code--)
-                    scanline[j++][i] = val;
-            }
-            else  {    // non-run
-                while(code--)
-                    scanline[j++][i] = fgetc(file);
-            }
-        }
-    }
-
-    return feof(file) ? false : true;
-}
-
-bool oldDecrunch(RGBE *scanline, int len, FILE *file)
-{
-    int i;
-    int rshift = 0;
-    
-    while (len > 0) {
-        scanline[0][R] = fgetc(file);
-        scanline[0][G] = fgetc(file);
-        scanline[0][B] = fgetc(file);
-        scanline[0][E] = fgetc(file);
-        if (feof(file))
-            return false;
-
-        if (scanline[0][R] == 1 &&
-            scanline[0][G] == 1 &&
-            scanline[0][B] == 1) {
-            for (i = scanline[0][E] << rshift; i > 0; i--) {
-                memcpy(&scanline[0][0], &scanline[-1][0], 4);
-                scanline++;
-                len--;
-            }
-            rshift += 8;
-        }
-        else {
-            scanline++;
-            len--;
-            rshift = 0;
-        }
-    }
-    return true;
-}
