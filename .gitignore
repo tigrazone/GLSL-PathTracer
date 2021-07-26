@@ -3,3 +3,7 @@
 .vs/
 build/*
 assets/*
+thirdparty/miniz/build/*
+thirdparty/miniz/bin/*
+thirdparty/miniz/examples/*
+thirdparty/miniz/tests/*

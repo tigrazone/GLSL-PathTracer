@@ -1,0 +1,3 @@
+[submodule "thirdparty/miniz"]
+	path = thirdparty/miniz
+	url = https://github.com/richgel999/miniz
