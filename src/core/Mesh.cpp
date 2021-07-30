@@ -112,11 +112,12 @@ namespace GLSLPT
 		} else
 		if(format == "ply") {
 			
-			TriMesh* trimesh = parse_file_with_miniply(filename.c_str(), true);
+			TriMesh* trimesh = parse_file_with_miniply(filename.c_str(), false);
 			bool ok = trimesh != nullptr;
 
 			Vec3 v1, v2, v3, nrm;
-			size_t idx, idx3;
+			int idx, idx3;
+			int f;
 			float tx, ty;
 			float tys[2], txs[2];
 			bool calc_normal;
@@ -131,7 +132,7 @@ namespace GLSLPT
 				//faces
 				if(trimesh->numIndices) 
 				{
-					for (size_t f = 0; f < trimesh->numIndices; f += 3) 
+					for (f = 0; f < trimesh->numIndices; f += 3) 
 					{
 						calc_normal = false;
 						
@@ -144,8 +145,8 @@ namespace GLSLPT
 						v1.z = trimesh->pos[idx3+2];
 						
 						if(trimesh->uv != nullptr) {
-							tx = trimesh->normal[idx + idx];
-							ty = trimesh->normal[idx + idx + 1];
+							tx = trimesh->uv[idx + idx];
+							ty = trimesh->uv[idx + idx + 1];
 						} else {
 							tx = 0;
 							ty = 0;
@@ -157,7 +158,7 @@ namespace GLSLPT
 							nrm.x = trimesh->normal[idx3];
 							nrm.y = trimesh->normal[idx3+1];
 							nrm.z = trimesh->normal[idx3+2];
-							normalsUVY.push_back(Vec4(nrm.x, nrm.x, nrm.x, ty));
+							normalsUVY.push_back(Vec4(nrm.x, nrm.y, nrm.z, ty));
 						} else {
 							calc_normal = true;
 							tys[0] = ty;
@@ -172,8 +173,8 @@ namespace GLSLPT
 						v2.z = trimesh->pos[idx3+2];
 						
 						if(trimesh->uv != nullptr) {
-							tx = trimesh->normal[idx + idx];
-							ty = trimesh->normal[idx + idx + 1];
+							tx = trimesh->uv[idx + idx];
+							ty = trimesh->uv[idx + idx + 1];
 						} else {
 							tx = 0;
 							ty = 0;
@@ -185,7 +186,7 @@ namespace GLSLPT
 							nrm.x = trimesh->normal[idx3];
 							nrm.y = trimesh->normal[idx3+1];
 							nrm.z = trimesh->normal[idx3+2];
-							normalsUVY.push_back(Vec4(nrm.x, nrm.x, nrm.x, ty));
+							normalsUVY.push_back(Vec4(nrm.x, nrm.y, nrm.z, ty));
 						} else {
 							tys[1] = ty;
 						}
@@ -199,8 +200,8 @@ namespace GLSLPT
 						v3.z = trimesh->pos[idx3+2];
 						
 						if(trimesh->uv != nullptr) {
-							tx = trimesh->normal[idx + idx];
-							ty = trimesh->normal[idx + idx + 1];
+							tx = trimesh->uv[idx + idx];
+							ty = trimesh->uv[idx + idx + 1];
 						} else {
 							tx = 0;
 							ty = 0;
@@ -212,7 +213,7 @@ namespace GLSLPT
 							nrm.x = trimesh->normal[idx3];
 							nrm.y = trimesh->normal[idx3+1];
 							nrm.z = trimesh->normal[idx3+2];
-							normalsUVY.push_back(Vec4(nrm.x, nrm.x, nrm.x, ty));
+							normalsUVY.push_back(Vec4(nrm.x, nrm.y, nrm.z, ty));
 						} else {
 							nrm = v2 - v1;
 							v2 = v3 - v1;
@@ -226,7 +227,7 @@ namespace GLSLPT
 					}
 				} else //vertices
 				{
-					for (size_t f = 0; f < trimesh->numVerts; f += 4) 
+					for (f = 0; f < trimesh->numVerts; f += 4)
 					{
 						calc_normal = false;
 						
@@ -239,8 +240,8 @@ namespace GLSLPT
 						v1.z = trimesh->pos[idx3+2];
 						
 						if(trimesh->uv != nullptr) {
-							tx = trimesh->normal[idx + idx];
-							ty = trimesh->normal[idx + idx + 1];
+							tx = trimesh->uv[idx + idx];
+							ty = trimesh->uv[idx + idx + 1];
 						} else {
 							tx = 0;
 							ty = 0;
@@ -253,7 +254,7 @@ namespace GLSLPT
 							nrm.x = trimesh->normal[idx3];
 							nrm.y = trimesh->normal[idx3+1];
 							nrm.z = trimesh->normal[idx3+2];
-							normalsUVY.push_back(Vec4(nrm.x, nrm.x, nrm.x, ty));
+							normalsUVY.push_back(Vec4(nrm.x, nrm.y, nrm.z, ty));
 						} else {
 							calc_normal = true;
 							tys[0] = ty;
@@ -268,8 +269,8 @@ namespace GLSLPT
 						v2.z = trimesh->pos[idx3+2];
 						
 						if(trimesh->uv != nullptr) {
-							tx = trimesh->normal[idx + idx];
-							ty = trimesh->normal[idx + idx + 1];
+							tx = trimesh->uv[idx + idx];
+							ty = trimesh->uv[idx + idx + 1];
 						} else {
 							tx = 0;
 							ty = 0;
@@ -282,7 +283,7 @@ namespace GLSLPT
 							nrm.x = trimesh->normal[idx3];
 							nrm.y = trimesh->normal[idx3+1];
 							nrm.z = trimesh->normal[idx3+2];
-							normalsUVY.push_back(Vec4(nrm.x, nrm.x, nrm.x, ty));
+							normalsUVY.push_back(Vec4(nrm.x, nrm.y, nrm.z, ty));
 						} else {
 							tys[1] = ty;
 						}
@@ -296,8 +297,8 @@ namespace GLSLPT
 						v3.z = trimesh->pos[idx3+2];
 						
 						if(trimesh->uv != nullptr) {
-							tx = trimesh->normal[idx + idx];
-							ty = trimesh->normal[idx + idx + 1];
+							tx = trimesh->uv[idx + idx];
+							ty = trimesh->uv[idx + idx + 1];
 						} else {
 							tx = 0;
 							ty = 0;
@@ -310,7 +311,7 @@ namespace GLSLPT
 							nrm.x = trimesh->normal[idx3];
 							nrm.y = trimesh->normal[idx3+1];
 							nrm.z = trimesh->normal[idx3+2];
-							normalsUVY.push_back(Vec4(nrm.x, nrm.x, nrm.x, ty));
+							normalsUVY.push_back(Vec4(nrm.x, nrm.y, nrm.z, ty));
 						} else {
 							nrm = v2 - v1;
 							v2 = v3 - v1;
@@ -320,7 +321,7 @@ namespace GLSLPT
 							normalsUVY.push_back(Vec4(nrm.x, nrm.y, nrm.z, tys[0]));
 							normalsUVY.push_back(Vec4(nrm.x, nrm.y, nrm.z, tys[1]));
 							normalsUVY.push_back(Vec4(nrm.x, nrm.y, nrm.z, ty));
-						}
+						}						
 						
 						//vertex 4
 						idx = f+3;
@@ -328,22 +329,31 @@ namespace GLSLPT
 						
 						idx3 = idx + idx +idx;
 						
-						//CBD
+						//CDB
 						v1 = v3;
+						v3 = v2;
 						txs[0] = txs[2];
 						tys[0] = tys[2];
 						
-						v3.x = trimesh->pos[idx3];
-						v3.y = trimesh->pos[idx3+1];
-						v3.z = trimesh->pos[idx3+2];
+						v2.x = trimesh->pos[idx3];
+						v2.y = trimesh->pos[idx3+1];
+						v2.z = trimesh->pos[idx3+2];
 						
 						if(trimesh->uv != nullptr) {
-							tx = trimesh->normal[idx + idx];
-							ty = trimesh->normal[idx + idx + 1];
+							tx = trimesh->uv[idx + idx];
+							ty = trimesh->uv[idx + idx + 1];
 						} else {
 							tx = 0;
 							ty = 0;
 						}
+						nrm.x = tx;
+						nrm.y = ty;
+						
+						tx = txs[1];
+						ty = tys[1];						
+						
+						txs[1] = nrm.x;
+						tys[1] = nrm.y;
 						
 						verticesUVX.push_back(Vec4(v1.x, v1.y, v1.z, txs[0]));					
 						verticesUVX.push_back(Vec4(v2.x, v2.y, v2.z, txs[1]));					
@@ -353,7 +363,7 @@ namespace GLSLPT
 							nrm.x = trimesh->normal[idx3];
 							nrm.y = trimesh->normal[idx3+1];
 							nrm.z = trimesh->normal[idx3+2];
-							normalsUVY.push_back(Vec4(nrm.x, nrm.x, nrm.x, ty));
+							normalsUVY.push_back(Vec4(nrm.x, nrm.y, nrm.z, ty));
 						} else {
 							nrm = v2 - v1;
 							v2 = v3 - v1;
