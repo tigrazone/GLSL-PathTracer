@@ -35,6 +35,8 @@ freely, subject to the following restrictions:
 
 #include <ctime>
 
+#include "ImGuizmo.h"
+
 namespace GLSLPT
 {
     static const int kMaxLineLength = 2048;
@@ -307,11 +309,23 @@ namespace GLSLPT
             if (strstr(line, "mesh"))
             {
                 std::string filename;
-                Vec3 pos;
-                Vec3 scale;
                 Mat4 xform;
                 int material_id = 0; // Default Material ID
                 char meshName[200] = "None";
+				
+				float matrixTranslation[3], matrixRotation[3], matrixScale[3];
+
+                matrixScale[0] = 1;
+                matrixScale[1] = 1;
+                matrixScale[2] = 1;
+
+                matrixTranslation[0] = 0;
+                matrixTranslation[1] = 0;
+                matrixTranslation[2] = 0;
+
+                matrixRotation[0] = 0;
+                matrixRotation[1] = 0;
+                matrixRotation[2] = 0;
 
                 while (fgets(line, kMaxLineLength, file))
                 {
@@ -342,9 +356,14 @@ namespace GLSLPT
                         }
                     }
 
-                    sscanf(line, " position %f %f %f", &xform[3][0], &xform[3][1], &xform[3][2]);
-                    sscanf(line, " scale %f %f %f", &xform[0][0], &xform[1][1], &xform[2][2]);
+					
+					sscanf(line, " position %f %f %f", &(matrixTranslation[0]), &(matrixTranslation[1]), &(matrixTranslation[2]));
+                    sscanf(line, " scale %f %f %f", &(matrixScale[0]), &(matrixScale[1]), &(matrixScale[2]));
+                    sscanf(line, " rotate %f %f %f", &(matrixRotation[0]), &(matrixRotation[1]), &(matrixRotation[2]));
                 }
+                    					
+				ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation, matrixScale, (float*)&xform.data);
+				
                 if (!filename.empty())
                 {
                     int mesh_id = scene->AddMesh(filename);
