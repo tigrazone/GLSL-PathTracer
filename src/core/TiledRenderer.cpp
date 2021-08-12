@@ -55,6 +55,7 @@ namespace GLSLPT
         , numTilesY(-1)
         , currentBuffer(0)
         , sampleCounter(0)
+        , rndMAX1(1.0f / (float) RAND_MAX)
     {
     }
 
@@ -578,9 +579,9 @@ namespace GLSLPT
                 }
             }
 
-            r1 = ((float)rand() / (RAND_MAX));
-            r2 = ((float)rand() / (RAND_MAX));
-            r3 = ((float)rand() / (RAND_MAX));
+            r1 = ((float)rand() * rndMAX1);
+            r2 = ((float)rand() * rndMAX1);
+            r3 = ((float)rand() * rndMAX1);
         }
 
         GLuint shaderObject;

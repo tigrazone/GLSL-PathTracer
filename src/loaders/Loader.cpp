@@ -80,6 +80,8 @@ namespace GLSLPT
         bool cameraAdded = false;
 
         int mat_id;
+		
+        float atDist1;
 
         while (fgets(line, kMaxLineLength, file))
         {
@@ -130,9 +132,10 @@ namespace GLSLPT
 
 				
 				// -log(state.mat.extinction) / state.mat.atDistance
-				material.extinction1.x = -log(material.extinction.x) / material.atDistance;
-				material.extinction1.y = -log(material.extinction.y) / material.atDistance;
-				material.extinction1.z = -log(material.extinction.z) / material.atDistance;
+				atDist1 = 1.0f / material.atDistance;
+				material.extinction1.x = -log(material.extinction.x) * atDist1;
+				material.extinction1.y = -log(material.extinction.y) * atDist1;
+				material.extinction1.z = -log(material.extinction.z) * atDist1;
 
                 // add material to map
                 if (materialMap.find(name) == materialMap.end()) // New material
@@ -362,7 +365,6 @@ namespace GLSLPT
                     sscanf(line, " rotate %f %f %f", &(matrixRotation[0]), &(matrixRotation[1]), &(matrixRotation[2]));
                 }
                     					
-				ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation, matrixScale, (float*)&xform.data);
 				
                 if (!filename.empty())
                 {
@@ -380,6 +382,8 @@ namespace GLSLPT
                             std::size_t pos = filename.find_last_of("/\\");
                             instanceName = filename.substr(pos + 1);
                         }
+
+                        ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation, matrixScale, (float*)&xform.data);
                         
                         MeshInstance instance1(instanceName, mesh_id, xform, material_id);
                         scene->AddMeshInstance(instance1);

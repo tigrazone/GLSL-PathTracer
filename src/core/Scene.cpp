@@ -265,6 +265,7 @@ namespace GLSLPT
     
     void Scene::RebuildInstances()
     {
+		float atD1;
         delete sceneBvh;
         sceneBvh = new RadeonRays::Bvh(10.0f, 64, false);
 
@@ -279,9 +280,10 @@ namespace GLSLPT
         for (int i = 0; i < materials.size(); i++) {
 			if(materials[i].atDistance > 0.0) {
 				// -log(state.mat.extinction) / state.mat.atDistance
-				materials[i].extinction1.x = -log(materials[i].extinction.x) / materials[i].atDistance;
-				materials[i].extinction1.y = -log(materials[i].extinction.y) / materials[i].atDistance;
-				materials[i].extinction1.z = -log(materials[i].extinction.z) / materials[i].atDistance;
+				atD1 = 1.0f / materials[i].atDistance;
+				materials[i].extinction1.x = -log(materials[i].extinction.x) * atD1;
+				materials[i].extinction1.y = -log(materials[i].extinction.y) * atD1;
+				materials[i].extinction1.z = -log(materials[i].extinction.z) * atD1;
 			}
 		}
 
@@ -415,7 +417,8 @@ namespace GLSLPT
 			}
 		}        
 
-        printf("notLoadedTex=%d\n", notLoadedTex);
+        printf("notLoadedTex %d\n", notLoadedTex);
+        printf("*textures %d\n", texWrongId);
         
         //Copy Textures
         for (i = 0; i < texWrongId; i++)
