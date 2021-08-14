@@ -478,6 +478,7 @@ namespace RadeonRays
         int appendprims = req.numprims;
 
         // Split refs if any of them require to be split
+		#pragma omp parallel for
         for (int i = req.startidx; i < req.startidx + req.numprims; ++i)
         {
             assert(static_cast<size_t>(req.startidx + appendprims) < refs.size());

@@ -30,7 +30,9 @@ namespace RadeonRays
 	float bbox::surface_area() const
 	{
 		Vec3 ext = extents();
-		return 2.f * (ext.x * ext.y + ext.x * ext.z + ext.y * ext.z);
+		//return 2.f * (ext.x * ext.y + ext.x * ext.z + ext.y * ext.z);
+		//return ((ext.x + ext.x) * (ext.y + ext.z) + (ext.y + ext.y) * ext.z);
+		return (ext.x * (ext.y + ext.z) + ext.y * ext.z);
 	}
 
 	// Grow the bounding box by a point

@@ -284,6 +284,7 @@ namespace RadeonRays
         Vec3 rootmin = req.centroid_bounds.pmin;
 
         // Evaluate all dimensions
+		#pragma omp parallel for
         for (int axis = 0; axis < 3; ++axis)
         {
             float rootminc = rootmin[axis];
@@ -328,6 +329,7 @@ namespace RadeonRays
             // Start best SAH search
             // i is current split candidate (split between i and i + 1)
             float sahtmp = 0.f;
+			#pragma omp parallel for
             for (int i = 0; i < m_num_bins - 1; ++i)
             {
                 leftbox.grow(bins[axis][i].bounds);
