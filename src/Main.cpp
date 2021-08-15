@@ -749,24 +749,48 @@ void MainLoop(void* arg)
             Vec3 *albedo   = &(*nowMat).albedo;
             Vec3 *emission = &(*nowMat).emission;
             Vec3 *extinction = &(*nowMat).extinction;
+			
+			Vec3 emissionColor = *emission;
+            float emissionPower = Vec3::Length(emissionColor);
+			if(emissionPower < 1.0f) {
+				emissionColor.x *= emissionPower;
+				emissionColor.y *= emissionPower;
+				emissionColor.z *= emissionPower;
+				emissionPower = 1.0f;
+			}
+			
+			if(emissionColor.x > 1.0f || emissionColor.y > 1.0f || emissionColor.z > 1.0f) { 
+				emissionColor = Vec3::Normalize(*emission);
+			}
 
             objectPropChanged |= ImGui::ColorEdit3("Albedo", (float*)albedo, 0);
-            objectPropChanged |= ImGui::SliderFloat("Metallic",  &(*nowMat).metallic, 0.0f, 1.0f);
-            objectPropChanged |= ImGui::SliderFloat("Roughness", &(*nowMat).roughness, 0.0f, 1.0f);
-            objectPropChanged |= ImGui::SliderFloat("Specular", &(*nowMat).specular, 0.0f, 1.0f);
-            objectPropChanged |= ImGui::SliderFloat("SpecularTint", &(*nowMat).specularTint, 0.0f, 1.0f);
-            objectPropChanged |= ImGui::SliderFloat("Subsurface", &(*nowMat).subsurface, 0.0f, 1.0f);
+            objectPropChanged |= ImGui::SliderFloat("Metallic",  &(*nowMat).metallic, 0.0f, 1.0f, "%.2f");
+            objectPropChanged |= ImGui::SliderFloat("Roughness", &(*nowMat).roughness, 0.0f, 1.0f, "%.2f");
+            objectPropChanged |= ImGui::SliderFloat("Specular", &(*nowMat).specular, 0.0f, 1.0f, "%.2f");
+            objectPropChanged |= ImGui::SliderFloat("SpecularTint", &(*nowMat).specularTint, 0.0f, 1.0f, "%.2f");
+            objectPropChanged |= ImGui::SliderFloat("Subsurface", &(*nowMat).subsurface, 0.0f, 1.0f, "%.2f");
             //objectPropChanged |= ImGui::SliderFloat("Anisotropic", &(*nowMat).anisotropic, 0.0f, 1.0f);
-            objectPropChanged |= ImGui::SliderFloat("Sheen", &(*nowMat).sheen, 0.0f, 1.0f);
-            objectPropChanged |= ImGui::SliderFloat("SheenTint", &(*nowMat).sheenTint, 0.0f, 1.0f);
-            objectPropChanged |= ImGui::SliderFloat("Clearcoat", &(*nowMat).clearcoat, 0.0f, 1.0f);
-            objectPropChanged |= ImGui::SliderFloat("clearcoatGloss", &(*nowMat).clearcoatGloss, 0.0f, 1.0f);
-            objectPropChanged |= ImGui::SliderFloat("Transmission", &(*nowMat).transmission, 0.0f, 1.0f);
-            objectPropChanged |= ImGui::SliderFloat("Ior", &(*nowMat).ior, 1.001f, 2.0f);
-            objectPropChanged |= ImGui::SliderFloat("atDistance", &(*nowMat).atDistance, 0.05f, 10.0f);
+            objectPropChanged |= ImGui::SliderFloat("Sheen", &(*nowMat).sheen, 0.0f, 1.0f, "%.2f");
+            objectPropChanged |= ImGui::SliderFloat("SheenTint", &(*nowMat).sheenTint, 0.0f, 1.0f, "%.2f");
+            objectPropChanged |= ImGui::SliderFloat("Clearcoat", &(*nowMat).clearcoat, 0.0f, 1.0f, "%.2f");
+            objectPropChanged |= ImGui::SliderFloat("clearcoatGloss", &(*nowMat).clearcoatGloss, 0.0f, 1.0f, "%.2f");
+            objectPropChanged |= ImGui::SliderFloat("Transmission", &(*nowMat).transmission, 0.0f, 1.0f, "%.2f");
+            objectPropChanged |= ImGui::SliderFloat("Ior", &(*nowMat).ior, 1.00f, 10.0f, "%.2f");
+            objectPropChanged |= ImGui::SliderFloat("atDistance", &(*nowMat).atDistance, 0.05f, 10.0f, "%.2f");
             objectPropChanged |= ImGui::ColorEdit3("Extinction", (float*)extinction, 0);
-            // objectPropChanged |= ImGui::ColorEdit3("Emission", (float*)emission, 0);
+            
+			bool emissionChanged = false;
+			
+			emissionChanged |= ImGui::ColorEdit3("Emission", (float*)&emissionColor, 0);
+			emissionChanged |= ImGui::SliderFloat("Emission power", &emissionPower, 1.0f, 1000.0f, "%.2f");
+			
 			// SliderFloat3(const char* label, float v[3], float v_min, float v_max, const char* format = "%.3f", float power = 1.0f);
+			
+			if (emissionChanged) 
+			{
+				*emission = emissionColor * emissionPower;
+                objectPropChanged = true;
+			}
 
             // Transforms Properties
             ImGui::Separator();

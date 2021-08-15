@@ -13,5 +13,5 @@ CXX_DEFINES = -DBX_CONFIG_ENABLE_MSVC_LEVEL4_WARNINGS=1 -DGLEW_STATIC -DIMGUI_DI
 
 CXX_INCLUDES = @CMakeFiles/PathTracer.dir/includes_CXX.rsp
 
-CXX_FLAGS = -std=gnu++14  -march=native -funroll-loops -mfpmath=sse -msse2 -msse3 -mssse3 -ffast-math -fpermissive  -Wno-format-y2k  -fno-strict-aliasing
+CXX_FLAGS = -std=gnu++14  -march=native -funroll-loops -mfpmath=sse -msse2 -msse3 -mssse3 -ffast-math -fpermissive  -Wno-format-y2k  -fno-strict-aliasing -fopenmp
 
