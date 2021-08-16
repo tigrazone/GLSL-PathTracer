@@ -753,9 +753,6 @@ void MainLoop(void* arg)
 			Vec3 emissionColor = *emission;
             float emissionPower = Vec3::Length(emissionColor);
 			if(emissionPower < 1.0f) {
-				emissionColor.x *= emissionPower;
-				emissionColor.y *= emissionPower;
-				emissionColor.z *= emissionPower;
 				emissionPower = 1.0f;
 			}
 			
