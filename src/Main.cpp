@@ -92,6 +92,9 @@ float lastSaveTime = -1.0f;
 std::string imgDefaultFilename = "img";
 std::string imgDefaultFilenameExt = "png";
 
+bool UIvisible = true;
+
+
 bool addspp = false;
 
 bool oldDefaultMaterial = false;
@@ -421,6 +424,9 @@ void Update(float secondsElapsed)
 				printf("focaldist %.5f\n", scene->camera->focalDist);
 				printf("fov %.5f\n\n", Math::Degrees(scene->camera->fov));
 			} else
+			if(ImGui::IsKeyPressed(SDL_SCANCODE_TAB)) { // TAB UI make visible/invisible
+				UIvisible = 1 - UIvisible;
+			} else
 			MoveCameraFromKeyboard(coef * mouseSensitivity, coef);
 		}
 	}	
@@ -508,23 +514,24 @@ void MainLoop(void* arg)
     ImGui_ImplSDL2_NewFrame(loopdata.mWindow);
     ImGui::NewFrame();
     ImGuizmo::SetOrthographic(true);
-
-    ImGuizmo::BeginFrame();
-    {
-        ImGui::Begin("Settings");
 		
-		int samplesNow = renderer->GetSampleCount();
-		float renderTimeNow = renderer->GetRenderTime();
-
-        ImGui::Text("Samples: %d ", samplesNow);
-        ImGui::Text("Render time: %.1fs", renderTimeNow);		
-			
-			
+	int samplesNow = renderer->GetSampleCount();
+	float renderTimeNow = renderer->GetRenderTime();
+	
+			//show samples and render time in window title
 			char wtitle[1000];
 			
 			sprintf(wtitle, "%s | %d samples, time %.1fs", PROGRAM_NAME, samplesNow, renderTimeNow);
 			SDL_SetWindowTitle(loopdata.mWindow, wtitle);
 			
+
+	if(UIvisible) {
+    ImGuizmo::BeginFrame();
+    {
+        ImGui::Begin("Settings");
+
+        ImGui::Text("Samples: %d ", samplesNow);
+        ImGui::Text("Render time: %.1fs", renderTimeNow);
 		
 		if( maxSPP == samplesNow || (renderTimeNow > maxRenderTime && maxRenderTime>0.0f))
 		{
@@ -824,7 +831,8 @@ void MainLoop(void* arg)
             }
         }
         ImGui::End();
-    }
+      }
+	}
 
     double presentTime = SDL_GetTicks();
     Update((float)(presentTime - lastTime));

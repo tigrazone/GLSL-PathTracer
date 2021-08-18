@@ -29,6 +29,7 @@ Features
 - Parallel and optimised textures load
 - Rotate environment map by X and Y
 - Print current camera params
+- Show samples and render time in window title
 
 Build Instructions
 --------
@@ -77,6 +78,7 @@ Controls
 | **Page Up / Down**      | Move camera up/down                                                                   |
 | **, / .**               | Change FOV                                                                            |
 | **P**                   | Print current camera params                                                           |
+| **Tab**                 | Toggle UI visibility                                                                  |
 
 Use Ctrl for 1/10 step, Alt for 1/2 step, Shift for 10x step
 
