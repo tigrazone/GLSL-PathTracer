@@ -56,6 +56,8 @@
 #include "stb_image.h"
 #include "stb_image_write.h"
 
+#define PROGRAM_NAME "GLSL PathTracer"
+
 using namespace std;
 using namespace GLSLPT;
 
@@ -515,7 +517,14 @@ void MainLoop(void* arg)
 		float renderTimeNow = renderer->GetRenderTime();
 
         ImGui::Text("Samples: %d ", samplesNow);
-        ImGui::Text("Render time: %.1fs", renderTimeNow);
+        ImGui::Text("Render time: %.1fs", renderTimeNow);		
+			
+			
+			char wtitle[1000];
+			
+			sprintf(wtitle, "%s | %d samples, time %.1fs", PROGRAM_NAME, samplesNow, renderTimeNow);
+			SDL_SetWindowTitle(loopdata.mWindow, wtitle);
+			
 		
 		if( maxSPP == samplesNow || (renderTimeNow > maxRenderTime && maxRenderTime>0.0f))
 		{
@@ -544,7 +553,7 @@ void MainLoop(void* arg)
 		
 		if((saveEverySPP>0 && (samplesNow-lastSavedSPP) == saveEverySPP) || (renderTimeNow - lastSaveTime > saveEveryTime && saveEveryTime>0.0f))
 		{
-			printf("%d samples. render time: %.1fs\n", samplesNow, renderTimeNow);
+			printf("%d samples. render time: %.1fs\n", samplesNow, renderTimeNow);			
 			
 			std::string fn = imgDefaultFilename;
 			if(addspp) {
@@ -986,7 +995,7 @@ int main(int argc, char** argv)
     SDL_DisplayMode current;
     SDL_GetCurrentDisplayMode(0, &current);
     SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
-    loopdata.mWindow = SDL_CreateWindow("GLSL PathTracer", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, renderOptions.resolution.x, renderOptions.resolution.y, window_flags);
+    loopdata.mWindow = SDL_CreateWindow(PROGRAM_NAME, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, renderOptions.resolution.x, renderOptions.resolution.y, window_flags);
 
     SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
 
