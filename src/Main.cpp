@@ -425,7 +425,7 @@ void Update(float secondsElapsed)
 				printf("fov %.5f\n\n", Math::Degrees(scene->camera->fov));
 			} else
 			if(ImGui::IsKeyPressed(SDL_SCANCODE_TAB)) { // TAB UI make visible/invisible
-				UIvisible = 1 - UIvisible;
+				UIvisible = ! UIvisible;
 			} else
 			MoveCameraFromKeyboard(coef * mouseSensitivity, coef);
 		}
