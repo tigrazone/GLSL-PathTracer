@@ -110,6 +110,7 @@ float GTR1(float NDotH, float a)
 float GTR2(float NDotH, float a)
 //-----------------------------------------------------------------------
 {
+	if(a < 0.001f) return 0.0f;
     float a2 = a * a;
     float t = 1.0 + (a2 - 1.0) * NDotH * NDotH;
     return a2 / (PI * t * t);
@@ -129,6 +130,7 @@ float GTR2_aniso(float NDotH, float HDotX, float HDotY, float ax, float ay)
 float SmithG_GGX(float NDotV, float alphaG)
 //-----------------------------------------------------------------------
 {
+	if(alphaG < 0.001f) return 1.0 / (NDotV + NDotV);
     float a = alphaG * alphaG;
     float b = NDotV * NDotV;
     return 1.0 / (NDotV + sqrt(a + b - a * b));

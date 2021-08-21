@@ -56,6 +56,8 @@
 #include "stb_image.h"
 #include "stb_image_write.h"
 
+#include "tinyexr.h"
+
 #define PROGRAM_NAME "GLSL PathTracer"
 
 using namespace std;
@@ -170,8 +172,6 @@ void SaveFrame(const std::string filename, const std::string format="png")
     delete data;
 }
 
-
-#include "tinyexr.h"
 
 void SaveRawFrame(const std::string filename, const std::string format="exr")
 {
@@ -509,12 +509,8 @@ void MainLoop(void* arg)
             }    
         }
     }
-
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplSDL2_NewFrame(loopdata.mWindow);
-    ImGui::NewFrame();
-    ImGuizmo::SetOrthographic(true);
-		
+	
+	
 	int samplesNow = renderer->GetSampleCount();
 	float renderTimeNow = renderer->GetRenderTime();
 	
@@ -523,6 +519,12 @@ void MainLoop(void* arg)
 			
 			sprintf(wtitle, "%s | %d samples, time %.1fs", PROGRAM_NAME, samplesNow, renderTimeNow);
 			SDL_SetWindowTitle(loopdata.mWindow, wtitle);
+			
+
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplSDL2_NewFrame(loopdata.mWindow);
+    ImGui::NewFrame();
+    ImGuizmo::SetOrthographic(true);
 			
 
 	if(UIvisible) {

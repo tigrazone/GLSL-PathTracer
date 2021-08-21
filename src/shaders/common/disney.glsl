@@ -41,13 +41,18 @@ vec3 EvalDielectricReflection(State state, vec3 V, vec3 N, vec3 H, float dotNL, 
     if (dotNL <= 0.0)
 		return vec3(0.0);
 
+	if(state.mat.roughness < 0.001f) {
+		return vec3(0);
+	}
+
 	float dotNH = dot(N, H);
 
     float F = DielectricFresnel(dotVH, state.eta);
-    float D = GTR2(dotNH, state.mat.roughness);
-    float FD = F * D;
+		
+	float D = GTR2(dotNH, state.mat.roughness);
+	float FD = F * D;
     
-    pdf = FD * dotNH / (4.0 * abs(dotVH));
+	pdf = FD * dotNH / (4.0 * abs(dotVH));
 
     float G = SmithG_GGX((dotNL), state.mat.roughness) * SmithG_GGX(abs(dot(N, V)), state.mat.roughness);
     return state.mat.albedo * FD * G;
@@ -60,11 +65,18 @@ vec3 EvalDielectricRefraction(State state, vec3 V, vec3 N, vec3 L, vec3 H, float
     pdf = 0.0;
     if (dotNL >= 0.0)
         return vec3(0.0);
-		
-	float dotNH = dot(N, H);
-	float dotLH = dot(L, H);
 
-    float F = DielectricFresnel(abs(dotVH), state.eta);
+
+	
+	if(state.mat.roughness < 0.001f) {
+		return vec3(0);
+	}
+
+		
+    float dotNH = dot(N, H);
+    float dotLH = dot(L, H);
+
+    float F = DielectricFresnel(abs(dotVH), state.eta); 
     float D = GTR2(dotNH, state.mat.roughness);
 
     float denomSqrt = dotLH + dotVH * state.eta;
@@ -82,9 +94,14 @@ vec3 EvalSpecular(State state, vec3 Cspec0, vec3 V, vec3 N, vec3 L, vec3 H, floa
     pdf = 0.0;
     if (dotNL <= 0.0)
         return vec3(0.0);
+
+	if(state.mat.roughness < 0.001f) {
+		return vec3(0);
+	}
 		
 	float dotNH = dot(N, H);
-
+	
+	
     float D = GTR2(dotNH, state.mat.roughness);
     pdf = D * dotNH / (4.0 * dot(V, H));
 
