@@ -65,13 +65,10 @@ vec3 EvalDielectricRefraction(State state, vec3 V, vec3 N, vec3 L, vec3 H, float
     pdf = 0.0;
     if (dotNL >= 0.0)
         return vec3(0.0);
-
-
 	
 	if(state.mat.roughness < 0.001f) {
 		return vec3(0);
 	}
-
 		
     float dotNH = dot(N, H);
     float dotLH = dot(L, H);
@@ -99,8 +96,7 @@ vec3 EvalSpecular(State state, vec3 Cspec0, vec3 V, vec3 N, vec3 L, vec3 H, floa
 		return vec3(0);
 	}
 		
-	float dotNH = dot(N, H);
-	
+	float dotNH = dot(N, H);	
 	
     float D = GTR2(dotNH, state.mat.roughness);
     pdf = D * dotNH / (4.0 * dot(V, H));
