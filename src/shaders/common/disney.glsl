@@ -38,12 +38,13 @@ vec3 EvalDielectricReflection(State state, vec3 V, vec3 N, vec3 H, float dotNL, 
 //-----------------------------------------------------------------------
 {
     pdf = 0.0;
-    if (dotNL <= 0.0)
-		return vec3(0.0);
 
 	if(state.mat.roughness < 0.001f) {
 		return vec3(0);
 	}
+	
+    if (dotNL <= 0.0)
+		return vec3(0.0);
 
 	float dotNH = dot(N, H);
 
@@ -63,12 +64,13 @@ vec3 EvalDielectricRefraction(State state, vec3 V, vec3 N, vec3 L, vec3 H, float
 //-----------------------------------------------------------------------
 {
     pdf = 0.0;
-    if (dotNL >= 0.0)
-        return vec3(0.0);
-	
+
 	if(state.mat.roughness < 0.001f) {
 		return vec3(0);
 	}
+	
+    if (dotNL >= 0.0)
+        return vec3(0.0);
 		
     float dotNH = dot(N, H);
     float dotLH = dot(L, H);
@@ -89,12 +91,13 @@ vec3 EvalSpecular(State state, vec3 Cspec0, vec3 V, vec3 N, vec3 L, vec3 H, floa
 //-----------------------------------------------------------------------
 {
     pdf = 0.0;
-    if (dotNL <= 0.0)
-        return vec3(0.0);
 
 	if(state.mat.roughness < 0.001f) {
 		return vec3(0);
 	}
+	
+    if (dotNL <= 0.0)
+        return vec3(0.0);
 		
 	float dotNH = dot(N, H);	
 	
@@ -181,7 +184,8 @@ vec3 DisneySample(inout State state, vec3 V, vec3 N, inout vec3 L, inout float p
     // TODO: Reuse random numbers and reduce so many calls to rand()
     if (rrand < transWeight)
     {		
-		if(state.mat.roughness < 0.001f) { H = -N; } else {
+		if(state.mat.roughness < 0.001f) { H = -N; } else 
+		{
 			H = ImportanceSampleGTR2(state.mat.roughness, r1, r2);
 			H = state.tangent * H.x + state.bitangent * H.y + N * H.z;
 		}
@@ -233,7 +237,8 @@ vec3 DisneySample(inout State state, vec3 V, vec3 N, inout vec3 L, inout float p
             if (rrand < primarySpecRatio) 
             {
                 // TODO: Implement http://jcgt.org/published/0007/04/01/
-				if(state.mat.roughness < 0.001f) { H = -N; } else {
+				if(state.mat.roughness < 0.001f) { H = -N; } else 
+				{
 					H = ImportanceSampleGTR2(state.mat.roughness, r1, r2);
 					H = state.tangent * H.x + state.bitangent * H.y + N * H.z;
 				}
