@@ -175,12 +175,16 @@ vec3 DisneySample(inout State state, vec3 V, vec3 N, inout vec3 L, inout float p
     vec3 Csheen = mix(vec3(1.0), Ctint, state.mat.sheenTint);
 	
 	float rrand = rand();
+	
+	vec3 H;
 
     // TODO: Reuse random numbers and reduce so many calls to rand()
     if (rrand < transWeight)
-    {
-        vec3 H = ImportanceSampleGTR2(state.mat.roughness, r1, r2);
-        H = state.tangent * H.x + state.bitangent * H.y + N * H.z;
+    {		
+		if(state.mat.roughness < 0.001f) { H = -N; } else {
+			H = ImportanceSampleGTR2(state.mat.roughness, r1, r2);
+			H = state.tangent * H.x + state.bitangent * H.y + N * H.z;
+		}
 		
 		float dotVH = dot(V, H);	
 
@@ -229,8 +233,10 @@ vec3 DisneySample(inout State state, vec3 V, vec3 N, inout vec3 L, inout float p
             if (rrand < primarySpecRatio) 
             {
                 // TODO: Implement http://jcgt.org/published/0007/04/01/
-                vec3 H = ImportanceSampleGTR2(state.mat.roughness, r1, r2);
-                H = state.tangent * H.x + state.bitangent * H.y + N * H.z;
+				if(state.mat.roughness < 0.001f) { H = -N; } else {
+					H = ImportanceSampleGTR2(state.mat.roughness, r1, r2);
+					H = state.tangent * H.x + state.bitangent * H.y + N * H.z;
+				}
 
 				if ( dot(V, H) < 0.0) {
 					H = -H;
