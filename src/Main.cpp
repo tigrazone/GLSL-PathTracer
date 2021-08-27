@@ -657,8 +657,14 @@ void MainLoop(void* arg)
                 ImGui::TextDisabled(scene->hdrData != nullptr ? "*" : " ");
                 if (ImGui::IsItemHovered())
                 {
+					std::string fn = "";
+					std::string LOADEDfn = "loaded ";
+					if(scene->hdrData != nullptr) {
+						fn = scene->HDRfn.substr(scene->HDRfn.find_last_of("/\\") + 1);
+						LOADEDfn += fn;
+					}
                     ImGui::BeginTooltip();
-                    ImGui::TextUnformatted(scene->hdrData != nullptr ? "loaded" : "NOT loaded");
+                    ImGui::TextUnformatted(scene->hdrData != nullptr ? LOADEDfn.c_str() : "NOT loaded");
                     ImGui::EndTooltip();
                 }
 				// IsItemClicked()
