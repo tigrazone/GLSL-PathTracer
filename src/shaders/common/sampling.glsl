@@ -68,6 +68,32 @@ vec3 ImportanceSampleGTR2(float rgh, float r1, float r2)
     return vec3(sinTheta * cosPhi, sinTheta * sinPhi, cosTheta);
 }
 
+
+// Eric Heitz. Sampling the GGX Distribution of Visible Normals
+// http://jcgt.org/published/0007/04/01/
+vec3 GGXVNDF_Sample(float r1, float r2, vec3 n, float rgh, vec3 incoming)
+{
+	float alpha = rgh*rgh;
+    // Section 3.2: transforming the view direction to the hemisphere configuration
+    vec3 Vh = normalize(vec3(alpha * incoming.x, alpha * incoming.y, incoming.z));
+    // Section 4.1: orthonormal basis (with special case if cross product is zero)
+    float lensq = Vh.x * Vh.x + Vh.y * Vh.y;
+    vec3 T1 = lensq > 0 ? (vec3(-Vh.y, Vh.x, 0) / sqrt(lensq)) : (vec3(1, 0, 0));
+    vec3 T2 = cross(Vh, T1);
+    // Section 4.2: parameterization of the projected area
+    float r = sqrt(r2);
+    float phi = TWO_PI * r1;
+    float t1 = r * cos(phi);
+    float t2 = r * sin(phi);
+    float s = 0.5f * (1.0f + Vh.z);
+    t2 = (1.0f - s) * sqrt(1.0f - t1 * t1) + s * t2;
+    // Section 4.3: reprojection onto hemisphere
+    vec3 Nh = t1 * T1 + t2 * T2 + sqrt(max(0.0f, 1.0f - t1 * t1 - t2 * t2)) * Vh;
+    // Section 3.4: transforming the normal back to the ellipsoid configuration
+    vec3 Ne = normalize(vec3(alpha * Nh.x, alpha * Nh.y, max(0.0f, Nh.z)));
+    return Ne;
+}
+
 //-----------------------------------------------------------------------
 float SchlickFresnel(float u)
 //-----------------------------------------------------------------------

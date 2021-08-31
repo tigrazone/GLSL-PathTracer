@@ -607,8 +607,8 @@ void MainLoop(void* arg)
 
         if (ImGui::Button("Load Scene"))
         {			
-			const std::string selected = openFileDialog("Select a scene file", assetsDir, { "*.scene"
-			// , "*.obj", "*.ply", "*.pbf", "*.pbrt"  
+			const std::string selected = openFileDialog("Select a scene file", assetsDir, { "*.scene", "*.obj"
+			// , "*.pbf", "*.pbrt"  
 			});
 			if(!selected.empty()) {
 					if(LoadScene(selected)) {

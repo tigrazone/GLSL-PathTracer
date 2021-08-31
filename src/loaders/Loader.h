@@ -31,6 +31,7 @@ namespace GLSLPT
 {
     class Scene;
 
+    bool LoadSceneFromObjFile(const std::string &filename, Scene *scene, RenderOptions& renderOptions);
     bool LoadSceneFromFile(const std::string &filename, Scene *scene, RenderOptions& renderOptions);
     // logger function. might be set at init time
     extern int(*Log)(const char* szFormat, ...);

@@ -237,9 +237,11 @@ vec3 DisneySample(inout State state, vec3 V, vec3 N, inout vec3 L, inout float p
             if (rrand < primarySpecRatio) 
             {
                 // TODO: Implement http://jcgt.org/published/0007/04/01/
+				// done! tigrazone 31.08.2021
 				if(state.mat.roughness < 0.001f) { H = -N; } else 
 				{
-					H = ImportanceSampleGTR2(state.mat.roughness, r1, r2);
+					//H = ImportanceSampleGTR2(state.mat.roughness, r1, r2);
+					H = GGXVNDF_Sample(r1, r2, N, state.mat.roughness, V);
 					H = state.tangent * H.x + state.bitangent * H.y + N * H.z;
 				}
 

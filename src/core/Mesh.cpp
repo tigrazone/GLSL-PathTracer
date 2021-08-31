@@ -119,7 +119,7 @@ namespace GLSLPT
 			int idx, idx3;
 			int f;
 			float tx, ty;
-			float tys[2], txs[2];
+			float tys[3], txs[3];
 			bool calc_normal;
 			
 			if(ok) {
