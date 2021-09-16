@@ -68,14 +68,19 @@ namespace GLSLPT
 			
 			size_t loadedMaterials = materials.size();
 
-			// Loop over shapes
+			// store used materials
 			for (size_t s = 0; s < shapes.size(); s++) 
 			{
 				size_t mids_in_mesh = shapes[s].mesh.material_ids.size();
 				for (size_t mids = 0; mids < mids_in_mesh; mids++) {
 					materials_map[shapes[s].mesh.material_ids[mids]] = -1;
-				}
-				
+				}			
+			}
+			
+			//convert materials to our disney brdf
+			
+			//assign materials to seshes and save meshes
+			/*				
 				for(auto it = materials_map.begin(); it != materials_map.end(); ++it) {
 					// cout << it->first << " : " << it->second << endl;
 					// конвертнуть и создать материал и поместить в значение materials_map
@@ -89,52 +94,7 @@ namespace GLSLPT
 				} else {
 					//разделить мэш по материалам - создать несколько мэшей
 				}
-				
-				
-				/*
-				// Loop over faces(polygon)
-				size_t index_offset = 0;
-
-				for (size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++) 
-				{
-					int fv = shapes[s].mesh.num_face_vertices[f];
-					// Loop over vertices in the face.
-					for (size_t v = 0; v < fv; v++)
-					{
-						// access to vertex
-						tinyobj::index_t idx = shapes[s].mesh.indices[index_offset + v];
-						
-						size_t idx3 = idx.vertex_index + idx.vertex_index + idx.vertex_index;
-						tinyobj::real_t vx = attrib.vertices[idx3];
-						tinyobj::real_t vy = attrib.vertices[idx3 + 1];
-						tinyobj::real_t vz = attrib.vertices[idx3 + 2];
-						
-						idx3 = idx.normal_index + idx.normal_index + idx.normal_index;
-						tinyobj::real_t nx = attrib.normals[idx3];
-						tinyobj::real_t ny = attrib.normals[idx3 + 1];
-						tinyobj::real_t nz = attrib.normals[idx3 + 2];
-
-						tinyobj::real_t tx, ty;
-						
-						// temporary fix
-						if (!attrib.texcoords.empty())
-						{
-							tx = attrib.texcoords[2 * idx.texcoord_index];
-							ty = attrib.texcoords[2 * idx.texcoord_index + 1];
-						}
-						else
-						{
-							tx = ty = 0;
-						}
-
-						verticesUVX.push_back(Vec4(vx, vy, vz, tx));
-						normalsUVY.push_back(Vec4(nx, ny, nz, ty));
-					}
-		
-					index_offset += fv;
-				}
 				*/
-			}
 
         return true;
 	}

@@ -316,3 +316,129 @@ vec3 EmitterSample(in Ray r, in State state, in LightSampleRec lightSampleRec, i
 
     return Le;
 }
+
+
+
+//-----------------------------------------------------------------------
+void Onb(in vec3 N, out vec3 T, out vec3 B)
+//-----------------------------------------------------------------------
+{
+	float sgn = (N.z > 0.0f) ? 1.0f : -1.0f;
+	float aa = - 1.0f / (sgn + N.z);
+	float bb = N.x * N.y * aa;	
+	
+	T = vec3(1.0f + sgn * N.x * N.x * aa, sgn * bb, -sgn * N.x);
+	B = vec3(bb, sgn + N.y * N.y * aa, -N.y);
+}
+
+//-----------------------------------------------------------------------
+void GetNormalsAndTexCoord(inout State state, inout Ray r)
+//-----------------------------------------------------------------------
+{
+    vec4 n1 = texelFetch(normalsTex, state.triID.x);
+    vec4 n2 = texelFetch(normalsTex, state.triID.y);
+    vec4 n3 = texelFetch(normalsTex, state.triID.z);
+
+    vec2 t1 = vec2(tempTexCoords.x, n1.w);
+    vec2 t2 = vec2(tempTexCoords.y, n2.w);
+    vec2 t3 = vec2(tempTexCoords.z, n3.w);
+
+    state.texCoord = t1 * state.bary.x + t2 * state.bary.y + t3 * state.bary.z;
+
+    vec3 normal = (n1.xyz * state.bary.x + n2.xyz * state.bary.y + n3.xyz * state.bary.z);
+
+    mat3 normalMatrix = transpose(inverse(mat3(transform)));
+   
+    state.normal = normalize(normalMatrix * normal);
+}
+
+//-----------------------------------------------------------------------
+void GetMaterialsAndTextures(inout State state, in Ray r)
+//-----------------------------------------------------------------------
+{
+    int index7 = state.matID * 8;
+    Material mat;
+
+    vec4 param1 = texelFetch(materialsTex, ivec2(index7, 0), 0);
+    vec4 param2 = texelFetch(materialsTex, ivec2(index7 + 1, 0), 0);
+    vec4 param3 = texelFetch(materialsTex, ivec2(index7 + 2, 0), 0);
+    vec4 param4 = texelFetch(materialsTex, ivec2(index7 + 3, 0), 0);
+    vec4 param5 = texelFetch(materialsTex, ivec2(index7 + 4, 0), 0);
+    vec4 param6 = texelFetch(materialsTex, ivec2(index7 + 5, 0), 0);
+    vec4 param7 = texelFetch(materialsTex, ivec2(index7 + 6, 0), 0);
+    vec4 param8 = texelFetch(materialsTex, ivec2(index7 + 7, 0), 0);
+
+    mat.albedo         = param1.xyz;
+    mat.specular       = param1.w;
+
+    mat.emission       = param2.xyz;
+    mat.anisotropic    = param2.w;
+
+    mat.metallic       = param3.x;
+    mat.roughness      = max(param3.y, 0.001);
+
+    mat.subsurface     = param3.z;
+    mat.specularTint   = param3.w;
+
+    mat.sheen          = param4.x;
+    mat.sheenTint      = param4.y;
+    mat.clearcoat      = param4.z;
+    mat.clearcoatGloss = param4.w;
+
+    mat.specTrans      = param5.x;
+    mat.ior            = param5.y;
+    mat.atDistance     = param5.z;
+
+    mat.extinction     = param6.xyz;
+
+    mat.texIDs         = param7.xyz;
+
+    mat.extinction1    = param8.xyz;
+	
+    vec2 texUV = state.texCoord;
+    texUV.y = 1.0 - texUV.y;
+
+    // Albedo Map
+    if (int(mat.texIDs.x) >= 0)
+        mat.albedo *= pow(texture(textureMapsArrayTex, vec3(texUV, int(mat.texIDs.x))).xyz, vec3(2.2));
+
+    // Metallic Roughness Map
+    if (int(mat.texIDs.y) >= 0)
+    {
+        vec2 matRgh;
+        // TODO: Change metallic roughness maps in repo to linear space and remove gamma correction
+        matRgh = pow(texture(textureMapsArrayTex, vec3(texUV, int(mat.texIDs.y))).xy, vec2(2.2));
+        mat.metallic = matRgh.x;
+        mat.roughness = max(matRgh.y, 0.001);
+    }
+
+    // Normal Map
+    if (int(mat.texIDs.z) >= 0)
+    {
+        vec3 nrm = normalize(2.0 * texture(textureMapsArrayTex, vec3(texUV, int(mat.texIDs.z))).xyz - 1.0);
+				
+        // Orthonormal Basis
+        vec3 T, B;
+		
+		Onb(state.normal, T, B);
+
+        nrm = T * nrm.x + B * nrm.y + state.normal * nrm.z;
+        state.normal = normalize(nrm);
+    }
+	
+	state.isInside = dot(state.normal, r.direction) <= 0.0;
+	
+    state.ffnormal = state.isInside ? state.normal : -state.normal;
+	Onb(state.normal, state.tangent, state.bitangent);
+
+    // Calculate anisotropic roughness along the tangent and bitangent directions
+	//because not used anisotropy yet
+	/*
+    float aspect = sqrt(1.0 - mat.anisotropic * 0.9);
+    mat.ax = max(0.001, mat.roughness / aspect);
+    mat.ay = max(0.001, mat.roughness * aspect);
+	*/
+
+    state.mat = mat;
+    state.eta = state.isInside ? (1.0 / mat.ior) : mat.ior;
+}

@@ -13,10 +13,8 @@ Camera
 	#position -15.0 15.0 0.0
 	#lookAt 0 0 0
 	#fov 60
-	#position -7.79997 9.23458 3.24000
-	#lookAt 1.60598 1.61780 3.24000
-	position -4.66223 3.73415 0.54000
-	lookAt 0.15854 -0.16964 0.54000
+	position -7.79997 9.23458 3.24000
+	lookAt 1.60598 1.61780 3.24000
 	aperture 0.00000
 	focaldist 1.00000
 	fov 60.00000

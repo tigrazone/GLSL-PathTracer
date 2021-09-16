@@ -24,6 +24,7 @@
 
 #version 330
 #define TILED
+#define AAA
 
 precision highp float;
 precision highp int;
@@ -34,6 +35,7 @@ precision highp sampler2DArray;
 
 out vec3 color;
 in vec2 TexCoords;
+uniform float invSampleCounter;
 
 #include common/uniforms.glsl
 #include common/globals.glsl
@@ -98,6 +100,54 @@ void main(void)
         accumColor = vec3(0.);
 
     vec3 pixelColor = PathTrace(ray);
+	
+#ifdef AAA
+	vec3 accumColor0 = accumColor * invSampleCounter;
+	vec3 delta = pixelColor - accumColor0;
+	float ddd1 = dot(accumColor0, accumColor0);
+	float ddd2 = dot(pixelColor, pixelColor);
+	
+	if(ddd1 > ddd2) {
+		float temp = ddd2;
+		ddd2 = ddd1;
+		ddd1 = temp;
+	}
+	
+	if(ddd1/ddd2 > 0.75f) 
+	{
+		r1 = rand();
+		r2 = rand();
+		
+		jitter.x = r1 < 1.0 ? sqrt(r1 + r1) - 1.0 : 1.0 - sqrt(2.0 - r1 - r1);
+		jitter.y = r2 < 1.0 ? sqrt(r2 + r2) - 1.0 : 1.0 - sqrt(2.0 - r2 - r2);
+
+		jitter *= screenResolution1;
+		d = coordsTile + jitter;
+
+		d.y *= camera.fovTAN1;
+		d.x *= camera.fovTAN;
+			rayDir = normalize(d.x * camera.right + d.y * camera.up + camera.forward);
+
+		focalPoint = camera.focalDist * rayDir;
+		randomAperturePos = vec3(0);
+		
+	#ifdef CAMERA_APERTURE
+		cam_r1 = rand() * TWO_PI;
+		cam_r2 = rand() * camera.aperture;
+		randomAperturePos = (cos(cam_r1) * camera.right + sin(cam_r1) * camera.up) * sqrt(cam_r2);
+	#endif
+		
+		finalRayDir = normalize(focalPoint - randomAperturePos);
+
+		ray = Ray(camera.position + randomAperturePos, finalRayDir);
+		vec3 accumColor1 = PathTrace(ray);
+		
+		// pixelColor += (accumColor1 - accumColor0)*0.5f;
+		
+		pixelColor += accumColor1;
+		pixelColor *= 0.5f;
+	}
+#endif
 
     color = pixelColor + accumColor;
 }
