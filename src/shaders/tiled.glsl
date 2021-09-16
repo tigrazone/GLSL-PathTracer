@@ -113,7 +113,7 @@ void main(void)
 		ddd1 = temp;
 	}
 	
-	if(ddd1/ddd2 > 0.75f) 
+	if(ddd1/ddd2 > 0.7f) 
 	{
 		r1 = rand();
 		r2 = rand();
@@ -141,8 +141,6 @@ void main(void)
 
 		ray = Ray(camera.position + randomAperturePos, finalRayDir);
 		vec3 accumColor1 = PathTrace(ray);
-		
-		// pixelColor += (accumColor1 - accumColor0)*0.5f;
 		
 		pixelColor += accumColor1;
 		pixelColor *= 0.5f;
