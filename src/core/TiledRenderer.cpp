@@ -146,7 +146,7 @@ namespace GLSLPT
         //Create Texture for FBO
         glGenTextures(1, &pathTraceTexture);
         glBindTexture(GL_TEXTURE_2D, pathTraceTexture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, tileWidth, tileHeight, 0, GL_RGB, GL_FLOAT, 0);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, tileWidth, tileHeight, 0, GL_RGBA, GL_FLOAT, 0);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glBindTexture(GL_TEXTURE_2D, 0);
@@ -176,7 +176,7 @@ namespace GLSLPT
         //Create Texture for FBO
         glGenTextures(1, &accumTexture);
         glBindTexture(GL_TEXTURE_2D, accumTexture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, GLsizei(screenSize.x), GLsizei(screenSize.y), 0, GL_RGB, GL_FLOAT, 0);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, GLsizei(screenSize.x), GLsizei(screenSize.y), 0, GL_RGBA, GL_FLOAT, 0);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glBindTexture(GL_TEXTURE_2D, 0);
@@ -606,7 +606,7 @@ namespace GLSLPT
         glUniform1i(glGetUniformLocation(shaderObject, "tileX"), tileX);
         glUniform1i(glGetUniformLocation(shaderObject, "tileY"), tileY);
         glUniform3f(glGetUniformLocation(shaderObject, "bgColor"), scene->renderOptions.bgColor.x, scene->renderOptions.bgColor.y, scene->renderOptions.bgColor.z);
-        glUniform1f(glGetUniformLocation(shaderObject, "invSampleCounter"), 1.0f / sampleCounter);
+        // glUniform1f(glGetUniformLocation(shaderObject, "invSampleCounter"), 1.0f / sampleCounter);
         pathTraceShader->StopUsing();
 
         pathTraceShaderLowRes->Use();

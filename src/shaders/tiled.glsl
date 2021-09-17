@@ -24,7 +24,7 @@
 
 #version 330
 #define TILED
-#define AAA
+// #define AAA
 
 precision highp float;
 precision highp int;
@@ -33,9 +33,8 @@ precision highp samplerCube;
 precision highp isampler2D;
 precision highp sampler2DArray;
 
-out vec3 color;
+out vec4 color;
 in vec2 TexCoords;
-uniform float invSampleCounter;
 
 #include common/uniforms.glsl
 #include common/globals.glsl
@@ -95,14 +94,17 @@ void main(void)
     Ray ray = Ray(camera.position + randomAperturePos, finalRayDir);
 
     vec3 accumColor = texture(accumTexture, coordsFS).xyz;
+    float accumSPP = texture(accumTexture, coordsFS).w;
 
-    if (isCameraMoving)
+    if (isCameraMoving) {
         accumColor = vec3(0.);
+		accumSPP = 0;
+		}
 
     vec3 pixelColor = PathTrace(ray);
 	
 #ifdef AAA
-	vec3 accumColor0 = accumColor * invSampleCounter;
+	vec3 accumColor0 = accumSPP>1.0f ? accumColor / accumSPP : accumColor;
 	vec3 delta = pixelColor - accumColor0;
 	float ddd1 = dot(accumColor0, accumColor0);
 	float ddd2 = dot(pixelColor, pixelColor);
@@ -143,9 +145,10 @@ void main(void)
 		vec3 accumColor1 = PathTrace(ray);
 		
 		pixelColor += accumColor1;
-		pixelColor *= 0.5f;
+		accumSPP += 1.0f;
 	}
 #endif
-
-    color = pixelColor + accumColor;
+	
+	accumSPP += 1.0f;
+    color = vec4(pixelColor + accumColor,accumSPP);
 }

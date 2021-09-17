@@ -39,5 +39,7 @@ uniform float invSampleCounter;
 
 void main()
 {
-    color = texture(pathTraceTexture, TexCoords) * invSampleCounter;
+    float accumSPP = texture(pathTraceTexture, TexCoords).w;
+	if(accumSPP < 1.0f) accumSPP = 1.0f;
+	color = vec4(texture(pathTraceTexture, TexCoords).xyz / accumSPP, accumSPP);
 }
