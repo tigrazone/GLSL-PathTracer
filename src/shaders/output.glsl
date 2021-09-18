@@ -35,7 +35,6 @@ out vec4 color;
 in vec2 TexCoords;
 
 uniform sampler2D pathTraceTexture;
-uniform float invSampleCounter;
 
 void main()
 {

@@ -257,7 +257,7 @@ namespace GLSLPT
         glUniform1f(glGetUniformLocation(shaderObject, "hdrResolution"), scene->hdrData == nullptr ? 0 : float(scene->hdrData->width * scene->hdrData->height));
         glUniform1i(glGetUniformLocation(shaderObject, "topBVHIndex"), scene->bvhTranslator.topLevelIndex);
         glUniform2f(glGetUniformLocation(shaderObject, "screenResolution"), float(screenSize.x), float(screenSize.y));
-        glUniform2f(glGetUniformLocation(shaderObject, "screenResolution1"), 1.0f / (0.5f * float(screenSize.x)), 1.0f / (0.5f * float(screenSize.y)));
+        glUniform2f(glGetUniformLocation(shaderObject, "screenResolution1"), 2.0f / float(screenSize.x), 2.0f / float(screenSize.y));
         glUniform1i(glGetUniformLocation(shaderObject, "numOfLights"), numOfLights);
         glUniform1i(glGetUniformLocation(shaderObject, "accumTexture"), 0);
         glUniform1i(glGetUniformLocation(shaderObject, "BVH"), 1);
@@ -631,7 +631,7 @@ namespace GLSLPT
 
         outputShader->Use();
         shaderObject = outputShader->getObject();
-        glUniform1f(glGetUniformLocation(shaderObject, "invSampleCounter"), 1.0f / sampleCounter);
+        // glUniform1f(glGetUniformLocation(shaderObject, "invSampleCounter"), 1.0f / sampleCounter);
         outputShader->StopUsing();
     }
 }
