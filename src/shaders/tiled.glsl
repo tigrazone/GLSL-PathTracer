@@ -25,8 +25,6 @@
 #version 330
 #define TILED
 
-#define AAA
-
 precision highp float;
 precision highp int;
 precision highp sampler2D;
@@ -36,6 +34,7 @@ precision highp sampler2DArray;
 
 out vec4 color;
 in vec2 TexCoords;
+uniform int doAAA;
 
 #include common/uniforms.glsl
 #include common/globals.glsl
@@ -110,24 +109,26 @@ void main(void)
 		}
 	
 #ifdef AAA
-	vec3 accumColor0 = accumSPP>1.0f ? accumColor / accumSPP : accumColor;
-	
-	float ddd1 = dot(accumColor0, accumColor0);
-	float ddd2 = dot(pixelColor, pixelColor);
-	
-	if(ddd1 > ddd2) {
-		float temp = ddd2;
-		ddd2 = ddd1;
-		ddd1 = temp;
-	}
-	
-	if(ddd1/ddd2 > 0.6f) 
-	{
-		createNewCamRay();
-		vec3 accumColor1 = PathTrace(ray);
+	if(doAAA == 1) {
+		vec3 accumColor0 = accumSPP>1.0f ? accumColor / accumSPP : accumColor;
 		
-		pixelColor += accumColor1;
-		accumSPP += 1.0f;
+		float ddd1 = dot(accumColor0, accumColor0);
+		float ddd2 = dot(pixelColor, pixelColor);
+		
+		if(ddd1 > ddd2) {
+			float temp = ddd2;
+			ddd2 = ddd1;
+			ddd1 = temp;
+		}
+		
+		if(ddd1/ddd2 > 0.75f) 
+		{
+			createNewCamRay();
+			vec3 accumColor1 = PathTrace(ray);
+			
+			pixelColor += accumColor1;
+			accumSPP += 1.0f;
+		}
 	}
 #endif
 	

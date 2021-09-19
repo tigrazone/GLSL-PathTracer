@@ -28,8 +28,10 @@
 #include "OpenImageDenoise/oidn.hpp"
 #include <ctime>
 
+	extern int aaaEverySPP;
+	
 namespace GLSLPT
-{
+{		
     class Scene;
     class TiledRenderer : public Renderer
     {

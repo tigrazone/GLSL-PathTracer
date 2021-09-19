@@ -84,6 +84,7 @@ std::string sceneFile;
 RenderOptions renderOptions;
 
 int maxSPP = -1;
+int aaaEverySPP;
 float maxRenderTime = -1.0f;
 
 int saveEverySPP = -1;
@@ -429,7 +430,13 @@ void Update(float secondsElapsed)
 			} else
 			MoveCameraFromKeyboard(coef * mouseSensitivity, coef);
 		}
-	}	
+	} else
+	if(specKeys == 2) {
+		if(io.KeyCtrl && io.KeyShift) {
+			coef = 100.0f;
+			MoveCameraFromKeyboard(coef * mouseSensitivity, coef);
+		}
+	}
 
     renderer->Update(secondsElapsed);
 }
@@ -859,6 +866,7 @@ int main(int argc, char** argv)
     bool testAjax = false;
     bool testBoy = false;
 	std::string arg;
+	aaaEverySPP = 0;
 
     for (int i = 1; i < argc; ++i)
     {
@@ -867,6 +875,11 @@ int main(int argc, char** argv)
         if (arg == "-s" || arg == "--scene")
         {
             sceneFile = argv[++i];
+        }
+        else
+        if (arg == "-aaa")
+        {
+            aaaEverySPP = atoi(argv[++i]);
         }
         else
         if (arg == "-spp")

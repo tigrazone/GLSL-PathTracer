@@ -110,6 +110,9 @@ namespace GLSLPT
 		
         if (scene->renderOptions.useConstantBg)
             defines += "#define CONSTANT_BG\n";
+		
+        if (aaaEverySPP>00)
+            defines += "#define AAA " + std::to_string(aaaEverySPP) + "\n";
 
         if (defines.size() > 0)
         {
@@ -606,7 +609,7 @@ namespace GLSLPT
         glUniform1i(glGetUniformLocation(shaderObject, "tileX"), tileX);
         glUniform1i(glGetUniformLocation(shaderObject, "tileY"), tileY);
         glUniform3f(glGetUniformLocation(shaderObject, "bgColor"), scene->renderOptions.bgColor.x, scene->renderOptions.bgColor.y, scene->renderOptions.bgColor.z);
-        // glUniform1f(glGetUniformLocation(shaderObject, "invSampleCounter"), 1.0f / sampleCounter);
+        glUniform1i(glGetUniformLocation(shaderObject, "doAAA"), int(aaaEverySPP > 0 && sampleCounter % aaaEverySPP == 0));
         pathTraceShader->StopUsing();
 
         pathTraceShaderLowRes->Use();
