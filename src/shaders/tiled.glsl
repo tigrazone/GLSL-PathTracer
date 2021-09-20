@@ -86,15 +86,14 @@ void main(void)
     vec2 coordsFS;
 	coordsTile = TexCoords;
 
-    float xoffset = invNumTilesX * float(tileX + tileX) - 1.0;
-    float yoffset = invNumTilesY * float(tileY + tileY) - 1.0;
-
-    coordsTile.x = mix(xoffset, xoffset + invNumTilesX + invNumTilesX, coordsTile.x);
-    coordsTile.y = mix(yoffset, yoffset + invNumTilesY + invNumTilesY, coordsTile.y);
-    
-    coordsFS.x = mix(invNumTilesX * float(tileX), invNumTilesX * float(tileX) + invNumTilesX, TexCoords.x);
-    coordsFS.y = mix(invNumTilesY * float(tileY), invNumTilesY * float(tileY) + invNumTilesY, TexCoords.y);
-
+	vec2 invNumTilesTILE = vec2(invNumTilesX * float(tileX), invNumTilesY * float(tileY));
+	
+	vec2 xyoffset = invNumTilesTILE + invNumTilesTILE - vec2(1.0, 1.0);
+	vec2 invNumTiles = vec2(invNumTilesX, invNumTilesY);
+	
+	coordsTile = mix(xyoffset, xyoffset + invNumTiles + invNumTiles, coordsTile);
+	coordsFS = mix(invNumTilesTILE, invNumTilesTILE + invNumTiles, TexCoords);
+	
     seed = coordsFS;
 	
 	createNewCamRay();

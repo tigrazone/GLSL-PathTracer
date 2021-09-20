@@ -598,8 +598,8 @@ namespace GLSLPT
         glUniform1f(glGetUniformLocation(shaderObject, "camera.fov"), scene->camera->fov);
         glUniform1f(glGetUniformLocation(shaderObject, "camera.focalDist"), scene->camera->focalDist);
         glUniform1f(glGetUniformLocation(shaderObject, "camera.aperture"), scene->camera->aperture);
-        glUniform1f(glGetUniformLocation(shaderObject, "camera.fovTAN"), tan(scene->camera->fov * 0.5));
-        glUniform1f(glGetUniformLocation(shaderObject, "camera.fovTAN1"), float(screenSize.y) / float(screenSize.x) * tan(scene->camera->fov * 0.5));
+        glUniform1f(glGetUniformLocation(shaderObject, "camera.fovTAN"), scene->camera->fovTAN);
+        glUniform1f(glGetUniformLocation(shaderObject, "camera.fovTAN1"), float(screenSize.y) / float(screenSize.x) * scene->camera->fovTAN);
         glUniform3f(glGetUniformLocation(shaderObject, "randomVector"), r1, r2, r3);
         glUniform1i(glGetUniformLocation(shaderObject, "useEnvMap"), scene->hdrData == nullptr ? false : scene->renderOptions.useEnvMap);
         glUniform1f(glGetUniformLocation(shaderObject, "hdrMultiplier"), scene->renderOptions.hdrMultiplier);
@@ -619,8 +619,8 @@ namespace GLSLPT
         glUniform3f(glGetUniformLocation(shaderObject, "camera.up"), scene->camera->up.x, scene->camera->up.y, scene->camera->up.z);
         glUniform3f(glGetUniformLocation(shaderObject, "camera.forward"), scene->camera->forward.x, scene->camera->forward.y, scene->camera->forward.z);
         glUniform1f(glGetUniformLocation(shaderObject, "camera.fov"), scene->camera->fov);
-        glUniform1f(glGetUniformLocation(shaderObject, "camera.fovTAN"), tan(scene->camera->fov * 0.5));
-        glUniform1f(glGetUniformLocation(shaderObject, "camera.fovTAN1"), float(screenSize.y) / float(screenSize.x) * tan(scene->camera->fov * 0.5));
+        glUniform1f(glGetUniformLocation(shaderObject, "camera.fovTAN"), scene->camera->fovTAN);
+        glUniform1f(glGetUniformLocation(shaderObject, "camera.fovTAN1"), float(screenSize.y) / float(screenSize.x) * scene->camera->fovTAN);
         glUniform1f(glGetUniformLocation(shaderObject, "camera.focalDist"), scene->camera->focalDist);
         glUniform1f(glGetUniformLocation(shaderObject, "camera.aperture"), scene->camera->aperture);
         glUniform1i(glGetUniformLocation(shaderObject, "useEnvMap"), scene->hdrData == nullptr ? false : scene->renderOptions.useEnvMap);

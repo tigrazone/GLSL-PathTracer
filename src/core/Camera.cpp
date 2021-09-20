@@ -148,6 +148,8 @@ namespace GLSLPT
         radius = Vec3::Distance(eye, lookat);
 
         this->fov = Math::Radians(fov);
+        this->fovTAN = tanf(this->fov * 0.5f);
+		
         focalDist = 0.1f;
         aperture = 0.0;
         UpdateCamera();
@@ -180,7 +182,8 @@ namespace GLSLPT
 
     void Camera::SetFov(float val)
     {
-        fov = Math::Radians(val);
+        fov = Math::Radians(val);		
+        fovTAN = tanf(fov * 0.5f);
     }
 
     void Camera::UpdateCamera()
