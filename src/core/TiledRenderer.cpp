@@ -82,6 +82,12 @@ namespace GLSLPT
 
         tileX = -1;
         tileY = numTilesY - 1;
+		
+		invNumTilesX = 1.0f / ((float)screenSize.x / tileWidth);
+		invNumTilesY = 1.0f / ((float)screenSize.y / tileHeight);
+		
+		screenResolution1X = 2.0f / float(screenSize.x);
+		screenResolution1Y = 2.0f / float(screenSize.y);
 
         //----------------------------------------------------------
         // Shaders
@@ -235,10 +241,10 @@ namespace GLSLPT
         glUniform1f(glGetUniformLocation(shaderObject, "hdrResolution"), scene->hdrData == nullptr ? 0 : float(scene->hdrData->width * scene->hdrData->height));
         glUniform1i(glGetUniformLocation(shaderObject, "topBVHIndex"), scene->bvhTranslator.topLevelIndex);
         glUniform2f(glGetUniformLocation(shaderObject, "screenResolution"), float(screenSize.x), float(screenSize.y));
-        glUniform2f(glGetUniformLocation(shaderObject, "screenResolution1"), 2.0f / float(screenSize.x), 2.0f / float(screenSize.y));
+        glUniform2f(glGetUniformLocation(shaderObject, "screenResolution1"), screenResolution1X, screenResolution1Y);
         glUniform1i(glGetUniformLocation(shaderObject, "numOfLights"), numOfLights);
-        glUniform1f(glGetUniformLocation(shaderObject, "invNumTilesX"), 1.0f / ((float)screenSize.x / tileWidth));
-        glUniform1f(glGetUniformLocation(shaderObject, "invNumTilesY"), 1.0f / ((float)screenSize.y / tileHeight));
+        glUniform1f(glGetUniformLocation(shaderObject, "invNumTilesX"), invNumTilesX);
+        glUniform1f(glGetUniformLocation(shaderObject, "invNumTilesY"), invNumTilesY);
         glUniform1i(glGetUniformLocation(shaderObject, "accumTexture"), 0);
         glUniform1i(glGetUniformLocation(shaderObject, "BVH"), 1);
         glUniform1i(glGetUniformLocation(shaderObject, "vertexIndicesTex"), 2);
@@ -260,7 +266,7 @@ namespace GLSLPT
         glUniform1f(glGetUniformLocation(shaderObject, "hdrResolution"), scene->hdrData == nullptr ? 0 : float(scene->hdrData->width * scene->hdrData->height));
         glUniform1i(glGetUniformLocation(shaderObject, "topBVHIndex"), scene->bvhTranslator.topLevelIndex);
         glUniform2f(glGetUniformLocation(shaderObject, "screenResolution"), float(screenSize.x), float(screenSize.y));
-        glUniform2f(glGetUniformLocation(shaderObject, "screenResolution1"), 2.0f / float(screenSize.x), 2.0f / float(screenSize.y));
+        glUniform2f(glGetUniformLocation(shaderObject, "screenResolution1"), screenResolution1X, screenResolution1Y);
         glUniform1i(glGetUniformLocation(shaderObject, "numOfLights"), numOfLights);
         glUniform1i(glGetUniformLocation(shaderObject, "accumTexture"), 0);
         glUniform1i(glGetUniformLocation(shaderObject, "BVH"), 1);

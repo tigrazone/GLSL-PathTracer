@@ -69,6 +69,9 @@ namespace GLSLPT
         int sampleCounter;
         float pixelRatio;
         clock_t startRenderTime;
+		
+		float invNumTilesX, invNumTilesY;
+		float screenResolution1X, screenResolution1Y;
 
         Vec3* denoiserInputFramePtr;
         Vec3* frameOutputPtr;
