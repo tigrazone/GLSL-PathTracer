@@ -109,6 +109,7 @@ vec3 DirectLight(in Ray r, in State state)
                 if (bsdfSampleRec.pdf > 0.0) {
 					if(light.area > 0.0) {
 						float lightPdf = - (lightDist * lightDist) / (light.area * dot(lightDir, lightSampleRec.normal));
+						if(int(light.type) == SPHERE_LIGHT) lightPdf += lightPdf;
 						Li += powerHeuristic(lightPdf, bsdfSampleRec.pdf) * bsdfSampleRec.f * abs(dot(state.ffnormal, lightDir)) * lightSampleRec.emission / lightPdf;
 					} else {
 							Li += bsdfSampleRec.f * abs(dot(state.ffnormal, lightDir)) * lightSampleRec.emission;

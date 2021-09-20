@@ -22,6 +22,20 @@
  * SOFTWARE.
  */
 
+
+//-----------------------------------------------------------------------
+void Onb(in vec3 N, out vec3 T, out vec3 B)
+//-----------------------------------------------------------------------
+{
+	float sgn = (N.z > 0.0f) ? 1.0f : -1.0f;
+	float aa = - 1.0f / (sgn + N.z);
+	float bb = N.x * N.y * aa;	
+	
+	T = vec3(1.0f + sgn * N.x * N.x * aa, sgn * bb, -sgn * N.x);
+	B = vec3(bb, sgn + N.y * N.y * aa, -N.y);
+}
+
+
  //----------------------------------------------------------------------
 vec3 ImportanceSampleGTR1(float rgh, float r1, float r2)
 //----------------------------------------------------------------------
@@ -217,11 +231,19 @@ float powerHeuristic(float a, float b)
 }
 
 //-----------------------------------------------------------------------
-void sampleSphereLight(in Light light, inout LightSampleRec lightSampleRec)
+void sampleSphereLight(in Light light, inout LightSampleRec lightSampleRec, in vec3 surfacePos)
 //-----------------------------------------------------------------------
-{
-    lightSampleRec.surfacePos = light.position + UniformSampleSphere() * light.radius;
-    lightSampleRec.normal = normalize(lightSampleRec.surfacePos - light.position);
+{	
+    float r1 = rand();
+    float r2 = rand();
+	vec3 sphereCentertoSurface = normalize(surfacePos - light.position);
+	vec3 sampledDir = UniformSampleHemisphere(r1, r2);
+    vec3 T, B;
+    Onb(sphereCentertoSurface, T, B);
+    sampledDir = T * sampledDir.x + B * sampledDir.y + sphereCentertoSurface * sampledDir.z;
+	
+    lightSampleRec.normal = normalize(sampledDir);
+    lightSampleRec.surfacePos = light.position + lightSampleRec.normal * light.radius;
     lightSampleRec.emission = light.emission * float(numOfLights);
 }
 
@@ -255,7 +277,7 @@ void sampleLight(in Light light, inout LightSampleRec lightSampleRec, in vec3 su
         sampleRectLight(light, lightSampleRec);
     else
 	   if (itype == SPHERE_LIGHT)
-        sampleSphereLight(light, lightSampleRec);
+        sampleSphereLight(light, lightSampleRec, surfacePos);
 	else
 	   if (itype == DISTANT_LIGHT)
         sampleDistantLight(light, lightSampleRec, surfacePos);
@@ -317,19 +339,6 @@ vec3 EmitterSample(in Ray r, in State state, in LightSampleRec lightSampleRec, i
     return Le;
 }
 
-
-
-//-----------------------------------------------------------------------
-void Onb(in vec3 N, out vec3 T, out vec3 B)
-//-----------------------------------------------------------------------
-{
-	float sgn = (N.z > 0.0f) ? 1.0f : -1.0f;
-	float aa = - 1.0f / (sgn + N.z);
-	float bb = N.x * N.y * aa;	
-	
-	T = vec3(1.0f + sgn * N.x * N.x * aa, sgn * bb, -sgn * N.x);
-	B = vec3(bb, sgn + N.y * N.y * aa, -N.y);
-}
 
 //-----------------------------------------------------------------------
 void GetNormalsAndTexCoord(inout State state, inout Ray r)
