@@ -43,6 +43,10 @@ https://drive.google.com/file/d/1UFMMoVb5uB7WIvCeHOfQ2dCQSxNMXluB/view
 
 Gallery
 --------
+![Two dragons](./screenshots/xyzdragons.jpg)
+--------
+![statues](./screenshots/statues.jpg)
+--------
 ![Mustang_red](./screenshots/Mustang_Red.jpg)
 --------
 ![Mustang](./screenshots/Mustang.jpg)
