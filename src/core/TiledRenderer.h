@@ -72,6 +72,7 @@ namespace GLSLPT
 		
 		float invNumTilesX, invNumTilesY;
 		float screenResolution1X, screenResolution1Y;
+		float fovTAN1;
 
         Vec3* denoiserInputFramePtr;
         Vec3* frameOutputPtr;
