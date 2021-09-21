@@ -102,7 +102,7 @@ vec3 EvalSpecular(State state, vec3 Cspec0, vec3 V, vec3 N, vec3 L, vec3 H, floa
 	float dotNH = dot(N, H);	
 	
     float D = GTR2(dotNH, state.mat.roughness);
-    pdf = D * dotNH / (4.0 * dot(V, H));
+    pdf = D * dotNH / (4.0 * dot(L, H));
 
     vec3 F = mix(Cspec0, vec3(1.0), SchlickFresnel(dot(L, H)));
     float G = SmithG_GGX((dotNL), state.mat.roughness) * SmithG_GGX(abs(dot(N, V)), state.mat.roughness);
@@ -120,7 +120,7 @@ vec3 EvalClearcoat(State state, vec3 V, vec3 N, vec3 L, vec3 H, float dotNL, ino
 	float dotNH = dot(N, H);
 
     float D = GTR1(dotNH, mix(0.1, 0.001, state.mat.clearcoatGloss));
-    pdf = D * dotNH / (4.0 * dot(V, H));
+    pdf = D * dotNH / (4.0 * dot(L, H));
 
     float F = mix(0.04, 1.0, SchlickFresnel(dot(L, H)));
     float G = SmithG_GGX(dotNL, 0.25) * SmithG_GGX(dot(N, V), 0.25);
