@@ -109,11 +109,27 @@ void main(void)
 		}
 	
 #ifdef AAA
-	if(doAAA == 1) {
+
+#define aaa_minDist 0.05
+#define aaa_maxDist 0.75
+
+/*
+#define aaa_minDist 0.01
+#define aaa_maxDist 0.5
+*/
+int pass;
+
 		vec3 accumColor0 = accumSPP>1.0f ? accumColor / accumSPP : accumColor;
 		
 		float ddd1 = dot(accumColor0, accumColor0);
 		float ddd2 = dot(pixelColor, pixelColor);
+		float ddd21;
+		
+		//float dist = aaa_maxDist;
+		float dist = aaa_minDist;
+		float delta_dist = (aaa_maxDist - aaa_minDist) / float(AAA-1);
+		
+	for(pass=0; pass < AAA; pass++) {
 		
 		if(ddd1 > ddd2) {
 			float temp = ddd2;
@@ -121,14 +137,30 @@ void main(void)
 			ddd1 = temp;
 		}
 		
-		if(ddd1/ddd2 > 0.75f) 
+			// if(rand() > 0.5f && pass>= AAA/2) break;
+		
+		ddd21 = ddd1/ddd2;
+		
+		if(ddd21 > dist) 
 		{
 			createNewCamRay();
 			vec3 accumColor1 = PathTrace(ray);
 			
 			pixelColor += accumColor1;
 			accumSPP += 1.0f;
+			
+			ddd2 = dot(accumColor1, accumColor1);
+			//dist -= delta_dist;
+			//dist += delta_dist;
+		} 
+		else 
+		{
+		#ifdef AAA_breaks
+			if(rand() > ddd21 && pass>= AAA/2) break;
+		#endif
 		}
+		dist += delta_dist;
+		//dist -= delta_dist;
 	}
 #endif
 	

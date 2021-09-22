@@ -84,7 +84,6 @@ std::string sceneFile;
 RenderOptions renderOptions;
 
 int maxSPP = -1;
-int aaaEverySPP;
 float maxRenderTime = -1.0f;
 
 int saveEverySPP = -1;
@@ -866,7 +865,8 @@ int main(int argc, char** argv)
     bool testAjax = false;
     bool testBoy = false;
 	std::string arg;
-	aaaEverySPP = 0;
+	renderOptions.aaaPasses = 0;
+	renderOptions.aaaBreaks = false;
 
     for (int i = 1; i < argc; ++i)
     {
@@ -879,7 +879,12 @@ int main(int argc, char** argv)
         else
         if (arg == "-aaa")
         {
-            aaaEverySPP = atoi(argv[++i]);
+            renderOptions.aaaPasses = atoi(argv[++i]);
+        }
+        else
+        if (arg == "-aaaBREAKS")
+        {
+            renderOptions.aaaBreaks = true;
         }
         else
         if (arg == "-spp")

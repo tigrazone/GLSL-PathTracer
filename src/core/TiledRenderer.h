@@ -27,8 +27,6 @@
 #include "Renderer.h"
 #include "OpenImageDenoise/oidn.hpp"
 #include <ctime>
-
-	extern int aaaEverySPP;
 	
 namespace GLSLPT
 {		

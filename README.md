@@ -30,7 +30,7 @@ Features
 - Rotate environment map by X and Y
 - Print current camera params
 - Show samples and render time in window title
-- Adaptive antialiasing (-aaa nsamples - adaptive antialiasing pass every nsamples)
+- Adaptive antialiasing (-aaa nsamples - adaptive antialiasing with nsamples maximum every pass)
 
 Build Instructions
 --------

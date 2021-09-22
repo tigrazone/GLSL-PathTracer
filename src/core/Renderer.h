@@ -54,6 +54,8 @@ namespace GLSLPT
             denoiserFrameCnt = 20;
             //enableDenoiser = true;
             enableDenoiser = false;
+            aaaPasses = 0;
+            aaaBreaks = false;
         }
         iVec2 resolution;
         int maxDepth;
@@ -69,6 +71,8 @@ namespace GLSLPT
         float hdrRotate;
         float hdrRotateY;
         Vec3 bgColor;
+        int aaaPasses;
+        bool aaaBreaks;
     };
 
     class Scene;
