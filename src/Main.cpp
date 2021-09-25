@@ -657,7 +657,13 @@ void MainLoop(void* arg)
             Vec3* bgCol = &renderOptions.bgColor;
 
             optionsChanged |= ImGui::SliderInt("Max Depth", &renderOptions.maxDepth, 1, 10);
-            requiresReload |= ImGui::Checkbox("Enable EnvMap", &renderOptions.useEnvMap);
+            requiresReload |= ImGui::Checkbox("Enable RR", &renderOptions.enableRR);
+            requiresReload |= ImGui::SliderInt("RR Depth", &renderOptions.RRDepth, 1, 10);
+			
+			ImGui::Separator();
+			ImGui::Text("HDRI lighting");
+			
+            requiresReload |= ImGui::Checkbox("Enable", &renderOptions.useEnvMap);
 			
                 //show is loaded or no env map			
                 ImGui::TextDisabled(scene->hdrData != nullptr ? "*" : " ");
@@ -676,7 +682,7 @@ void MainLoop(void* arg)
 				// IsItemClicked()
 				
 				ImGui::SameLine();
-				if (ImGui::Button("Load EnvMap"))
+				if (ImGui::Button("Load HDRI"))
 				{					
 					const std::string envMap = openFileDialog("Select environment map file", assetsDir, { "*.hdr", "*.exr"});
 					if(!envMap.empty()) {
@@ -700,16 +706,25 @@ void MainLoop(void* arg)
 						}
 					}
 				}
-				
-            optionsChanged |= ImGui::SliderFloat("HDR multiplier", &renderOptions.hdrMultiplier, 0.1f, MAXhdrMultiplier, "%.2f");
-            optionsChanged |= ImGui::SliderFloat("Xrotate HDR ", &renderOptions.hdrRotate, -180.0f, 180.0f, "%.2f");
-            optionsChanged |= ImGui::SliderFloat("Yrotate HDR", &renderOptions.hdrRotateY, -180.0f, 180.0f, "%.2f");
-            requiresReload |= ImGui::Checkbox("Enable RR", &renderOptions.enableRR);
-            requiresReload |= ImGui::SliderInt("RR Depth", &renderOptions.RRDepth, 1, 10);
+			optionsChanged |= ImGui::SliderFloat("Multiplier", &renderOptions.hdrMultiplier, 0.1f, MAXhdrMultiplier, "%.2f");
+            optionsChanged |= ImGui::SliderFloat("X rotate ", &renderOptions.hdrRotate, -180.0f, 180.0f, "%.2f");
+            optionsChanged |= ImGui::SliderFloat("Y rotate ", &renderOptions.hdrRotateY, -180.0f, 180.0f, "%.2f");
+			
+			ImGui::Separator();
+			ImGui::Text("Adaptive sampling");
+            requiresReload |= ImGui::SliderInt("Passes", &renderOptions.aaaPasses, 0, 10);
+			requiresReload |= ImGui::SliderFloat("min diff ", &renderOptions.aaa_minDist, 0.01f, 0.95f, "%.2f");
+			requiresReload |= ImGui::SliderFloat("max diff ", &renderOptions.aaa_maxDist, 0.01f, 0.95f, "%.2f");
+			
+			ImGui::Separator();			
+            
             requiresReload |= ImGui::Checkbox("Enable Constant BG", &renderOptions.useConstantBg);
             optionsChanged |= ImGui::ColorEdit3("Background Color", (float*)bgCol, 0);
+			
+			ImGui::Separator();			
+            
             ImGui::Checkbox("Enable Denoiser", &renderOptions.enableDenoiser);
-            ImGui::SliderInt("Number of Frames to skip", &renderOptions.denoiserFrameCnt, 5, 50);
+            ImGui::SliderInt("Denoise every frame ", &renderOptions.denoiserFrameCnt, 5, 50);
             
             if (requiresReload)
             {
@@ -865,8 +880,6 @@ int main(int argc, char** argv)
     bool testAjax = false;
     bool testBoy = false;
 	std::string arg;
-	renderOptions.aaaPasses = 0;
-	renderOptions.aaaBreaks = false;
 	
     oldDefaultMaterial = true;
 
@@ -882,11 +895,6 @@ int main(int argc, char** argv)
         if (arg == "-aaa")
         {
             renderOptions.aaaPasses = atoi(argv[++i]);
-        }
-        else
-        if (arg == "-aaaBREAKS")
-        {
-            renderOptions.aaaBreaks = true;
         }
         else
         if (arg == "-spp")
