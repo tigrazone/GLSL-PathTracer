@@ -131,18 +131,15 @@ if(sampleCounter > 1.0f) {
 		float nbPRC = aaa_nbPRCmax;
 		float nbPRC_dist = (aaa_nbPRCmax - aaa_nbPRCmin) / float(AAA-1);
 		
-		neightbors = AAA % 3 +1;
+		neightbors = AAA % 3;
+		if(neightbors == 0) neightbors = 3;
 		dNeightbors = -1;
 		
 	for(pass=0; pass < AAA; pass++) {
 		//look at neighbor pixels
 		
-		if(neightbors ==0) {
-			dNeightbors = 1;
-			neightbors = 2;
-		} else 
-		if(neightbors ==4) {
-			dNeightbors = -1;
+		if(neightbors==0 || neightbors==4) {
+			dNeightbors = -dNeightbors;
 			neightbors = 2;			
 		}
 		
