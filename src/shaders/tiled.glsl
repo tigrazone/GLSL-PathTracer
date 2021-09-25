@@ -127,7 +127,8 @@ vec3 accumColorNear, sumPixelsValue;
 vec2 startPos, nowPos;
 float accumNearSPP, ddd3210, ddd321, dddNear;
 
-
+//dont do aaa for first frame
+if(sampleCounter > 1.0f) {
 		vec3 accumColor0 = (accumColor + pixelColor) *(1.0f/(accumSPP+1.0f));
 		float ddd2 = dot(accumColor0, accumColor0);
 		
@@ -203,6 +204,7 @@ float accumNearSPP, ddd3210, ddd321, dddNear;
 		neightbors--;
 		nbPRC -= nbPRC_dist;
 	}
+}
 #endif
 	
 	accumSPP += 1.0f;

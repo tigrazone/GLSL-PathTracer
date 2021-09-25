@@ -121,9 +121,6 @@ namespace GLSLPT
 		
         if (scene->renderOptions.aaaPasses>0)
             defines += "#define AAA " + std::to_string(scene->renderOptions.aaaPasses) + "\n";
-		
-        if (scene->renderOptions.aaaBreaks)
-            defines += "#define AAA_breaks\n";
 
         if (defines.size() > 0)
         {
@@ -611,6 +608,7 @@ namespace GLSLPT
         glUniform1f(glGetUniformLocation(shaderObject, "camera.aperture"), scene->camera->aperture);
         glUniform1f(glGetUniformLocation(shaderObject, "camera.fovTAN"), scene->camera->fovTAN);
         glUniform1f(glGetUniformLocation(shaderObject, "camera.fovTAN1"), fovTAN1);
+        glUniform1f(glGetUniformLocation(shaderObject, "sampleCounter"), sampleCounter);
         glUniform3f(glGetUniformLocation(shaderObject, "randomVector"), r1, r2, r3);
         glUniform1i(glGetUniformLocation(shaderObject, "useEnvMap"), scene->hdrData == nullptr ? false : scene->renderOptions.useEnvMap);
         glUniform1f(glGetUniformLocation(shaderObject, "hdrMultiplier"), scene->renderOptions.hdrMultiplier);
@@ -633,6 +631,7 @@ namespace GLSLPT
         glUniform1f(glGetUniformLocation(shaderObject, "camera.fovTAN1"), fovTAN1);
         glUniform1f(glGetUniformLocation(shaderObject, "camera.focalDist"), scene->camera->focalDist);
         glUniform1f(glGetUniformLocation(shaderObject, "camera.aperture"), scene->camera->aperture);
+        glUniform1f(glGetUniformLocation(shaderObject, "sampleCounter"), sampleCounter);
         glUniform1i(glGetUniformLocation(shaderObject, "useEnvMap"), scene->hdrData == nullptr ? false : scene->renderOptions.useEnvMap);
         glUniform1f(glGetUniformLocation(shaderObject, "hdrMultiplier"), scene->renderOptions.hdrMultiplier);
         glUniform1f(glGetUniformLocation(shaderObject, "hdrRotate"), Math::Radians(scene->renderOptions.hdrRotate));

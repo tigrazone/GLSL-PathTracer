@@ -48,6 +48,7 @@ uniform sampler2D hdrMarginalDistTex;
 uniform sampler2D hdrCondDistTex;
 
 uniform float hdrResolution;
+uniform float sampleCounter;
 uniform float hdrMultiplier;
 uniform float hdrRotate;
 uniform float hdrRotateY;
