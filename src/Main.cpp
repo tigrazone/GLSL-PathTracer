@@ -867,6 +867,8 @@ int main(int argc, char** argv)
 	std::string arg;
 	renderOptions.aaaPasses = 0;
 	renderOptions.aaaBreaks = false;
+	
+    oldDefaultMaterial = true;
 
     for (int i = 1; i < argc; ++i)
     {
@@ -925,6 +927,11 @@ int main(int argc, char** argv)
         if (arg == "-oldDefaultMaterial")
         {
             oldDefaultMaterial = true;
+        }
+        else
+        if (arg == "-newDefaultMaterial")
+        {
+            oldDefaultMaterial = false;
         }
 		else			
         if (arg == "-o")
