@@ -115,11 +115,7 @@ void main(void)
 #define aaa_nbPRCmin 0.3
 #define aaa_nbPRCmax 0.6
 
-/*
-#define aaa_minDist 0.01
-#define aaa_maxDist 0.5
-*/
-int pass, i, j, pxls, neightbors, startXY, endXY;
+int pass, i, j, pxls, neightbors, startXY, endXY, dNeightbors;
 vec3 accumColorNear, sumPixelsValue;
 vec2 startPos, nowPos;
 float accumNearSPP, ddd3210, ddd321, dddNear;
@@ -129,17 +125,27 @@ if(sampleCounter > 1.0f) {
 		vec3 accumColor0 = (accumColor + pixelColor) *(1.0f/(accumSPP+1.0f));
 		float ddd2 = dot(accumColor0, accumColor0);
 		
-		//float dist = aaa_maxDist;
 		float dist = aaa_minDist;
 		float delta_dist = (aaa_maxDist - aaa_minDist) / float(AAA-1);
 		
 		float nbPRC = aaa_nbPRCmax;
 		float nbPRC_dist = (aaa_nbPRCmax - aaa_nbPRCmin) / float(AAA-1);
 		
-		neightbors = AAA;
+		neightbors = AAA % 3 +1;
+		dNeightbors = -1;
 		
 	for(pass=0; pass < AAA; pass++) {
-		//look at neighbor pixels		
+		//look at neighbor pixels
+		
+		if(neightbors ==0) {
+			dNeightbors = 1;
+			neightbors = 2;
+		} else 
+		if(neightbors ==4) {
+			dNeightbors = -1;
+			neightbors = 2;			
+		}
+		
 		startXY = -neightbors;
 		endXY = neightbors+1;
 		startPos = coordsFS - invScreenResolution*neightbors;
@@ -197,8 +203,8 @@ if(sampleCounter > 1.0f) {
 		}
 		
 		dist += delta_dist;
-		//dist -= delta_dist;
-		neightbors--;
+		
+		neightbors += dNeightbors;
 		nbPRC -= nbPRC_dist;
 	}
 }
