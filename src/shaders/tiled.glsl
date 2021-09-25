@@ -112,9 +112,6 @@ void main(void)
 	
 #ifdef AAA
 
-#define aaa_minDist 0.05
-#define aaa_maxDist 0.75
-
 #define aaa_nbPRCmin 0.3
 #define aaa_nbPRCmax 0.6
 

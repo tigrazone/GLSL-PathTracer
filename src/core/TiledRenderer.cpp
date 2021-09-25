@@ -119,8 +119,18 @@ namespace GLSLPT
         if (scene->renderOptions.useConstantBg)
             defines += "#define CONSTANT_BG\n";
 		
-        if (scene->renderOptions.aaaPasses>0)
+        if (scene->renderOptions.aaaPasses>0) {
             defines += "#define AAA " + std::to_string(scene->renderOptions.aaaPasses) + "\n";
+			
+			char str[10];
+			sprintf(str, "%.2f", scene->renderOptions.aaa_minDist);
+			
+            defines += "#define aaa_minDist " + std::string(str) + "\n";
+			
+			sprintf(str, "%.2f", scene->renderOptions.aaa_maxDist);
+			
+            defines += "#define aaa_maxDist " + std::string(str) + "\n";
+		}
 
         if (defines.size() > 0)
         {
