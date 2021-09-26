@@ -130,19 +130,20 @@ if(sampleCounter > 1.0f) {
 		
 		float nbPRC = aaa_nbPRCmax;
 		float nbPRC_dist = (aaa_nbPRCmax - aaa_nbPRCmin) / float(AAA-1);
-		
-		neightbors = AAA % 3;
-		if(neightbors == 0) neightbors = 3;
-		dNeightbors = -1;
+
+
+		neightbors = 1;
+		dNeightbors = 1;
 		
 	for(pass=0; pass < AAA; pass++) {
 		//look at neighbor pixels
-		
+#if 0
 		if(neightbors==0 || neightbors==4) {
 			dNeightbors = -dNeightbors;
 			neightbors = 2;			
 		}
-		
+#endif
+
 		startXY = -neightbors;
 		endXY = neightbors+1;
 		startPos = coordsFS - invScreenResolution*neightbors;
@@ -161,7 +162,7 @@ if(sampleCounter > 1.0f) {
 				vec3 accumColorNear = accumed.xyz;
 				float accumNearSPP = accumed.w;
 				
-				sumPixelsValue += accumNearSPP > 1 ? accumColorNear/accumNearSPP : accumColorNear;
+				sumPixelsValue += accumNearSPP > 1 ? accumColorNear * (1.0f/accumNearSPP) : accumColorNear;
 				
 				nowPos += vec2(invScreenResolution.x, 0);
 			}
