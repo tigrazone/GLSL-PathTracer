@@ -168,3 +168,13 @@ float rand() {
 	seed -= randomVector.xy;
 	return hash( floatBitsToUint(seed.x) + hashi(floatBitsToUint(seed.y)) );
 }
+
+//temporal conversion
+vec3 rgb_to_ycocg(in vec3 colour) {
+vec3 color4 = colour * 0.25f;
+	return vec3(
+		 color4.x + color4.y + color4.y + color4.z,
+		 color4.x + color4.x - color4.z - color4.z,
+		-color4.x + color4.y + color4.y - color4.z
+	);
+}

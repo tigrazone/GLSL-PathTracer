@@ -6,6 +6,9 @@ Renderer
 	tileHeight 200
 	#envMap HDR/sunset.hdr
 	hdrMultiplier 2.0
+	#aaaPasses 2
+	#aaaMinDiff 0.05
+	#aaaMaxDiff 0.07
 }
 
 Camera

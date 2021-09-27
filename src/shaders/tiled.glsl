@@ -113,7 +113,7 @@ void main(void)
 #ifdef AAA
 
 #define aaa_nbPRCmin 0.3
-#define aaa_nbPRCmax 0.6
+#define aaa_nbPRCmax 0.5
 
 int pass, i, j, pxls, neightbors, startXY, endXY, dNeightbors;
 vec3 accumColorNear, sumPixelsValue;
@@ -122,7 +122,7 @@ float accumNearSPP, ddd3210, ddd321, dddNear;
 
 //dont do aaa for first frame
 if(sampleCounter > 1.0f) {
-		vec3 accumColor0 = (accumColor + pixelColor) *(1.0f/(accumSPP+1.0f));
+		vec3 accumColor0 = rgb_to_ycocg (accumColor + pixelColor) *(1.0f/(accumSPP+1.0f));
 		float ddd2 = dot(accumColor0, accumColor0);
 		
 		float dist = aaa_minDist;
@@ -137,7 +137,7 @@ if(sampleCounter > 1.0f) {
 		
 	for(pass=0; pass < AAA; pass++) {
 		//look at neighbor pixels
-#if 0
+#if 1
 		if(neightbors==0 || neightbors==4) {
 			dNeightbors = -dNeightbors;
 			neightbors = 2;			
@@ -159,7 +159,7 @@ if(sampleCounter > 1.0f) {
 				
 				pxls++;
 				accumed = texture(accumTexture, nowPos);
-				vec3 accumColorNear = accumed.xyz;
+				vec3 accumColorNear = rgb_to_ycocg (accumed.xyz);
 				float accumNearSPP = accumed.w;
 				
 				sumPixelsValue += accumNearSPP > 1 ? accumColorNear * (1.0f/accumNearSPP) : accumColorNear;
@@ -171,9 +171,9 @@ if(sampleCounter > 1.0f) {
 		
 		if(pxls>0) {
 			sumPixelsValue *= nbPRC/pxls;
-			sumPixelsValue += pixelColor * ((1.0f - nbPRC)/extraSPP);
+			sumPixelsValue += rgb_to_ycocg (pixelColor) * ((1.0f - nbPRC)/extraSPP);
 		} else {
-			sumPixelsValue = pixelColor * (1.0f/extraSPP);
+			sumPixelsValue = rgb_to_ycocg (pixelColor) * (1.0f/extraSPP);
 		}
 		
 		dddNear = dot(sumPixelsValue, sumPixelsValue);
