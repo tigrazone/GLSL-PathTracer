@@ -8,8 +8,8 @@ Renderer
 
 Camera
 {
-	position -15.0 15.0 0.0
-	lookAt 0 0 0
+	position -14.34947 16.64049 0.05100
+	lookAt 1.14551 1.14551 0.05100
 	fov 60
 }
 
@@ -107,8 +107,9 @@ mesh
 {
 	file dragon/dragon.obj
 	material glass_dragon
-	position 2.791 0.839 -0.59
-	scale 0.2 0.2 0.2
+	position 3.146 1.194 -1.513
+	rotate -9.851 9.709 -0.839
+	scale 0.25 0.25 0.25
 }
 
 mesh

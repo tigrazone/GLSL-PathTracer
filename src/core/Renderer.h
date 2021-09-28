@@ -55,8 +55,8 @@ namespace GLSLPT
             //enableDenoiser = true;
             enableDenoiser = false;
             aaaPasses = 0;
-			aaa_minDist = 0.05;
-			aaa_maxDist = 0.75;
+			aaa_minDist = 0.15;
+			aaa_maxDist = 0.4;
         }
         iVec2 resolution;
         int maxDepth;
