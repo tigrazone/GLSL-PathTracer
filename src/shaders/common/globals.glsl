@@ -30,17 +30,12 @@
 
 #define TWO_PI_PI    19.739208802178717237668981999752
 
-#define INFINITY  1e15
-#define EPS 0.0001
+#define INFINITY  1000000.0
+#define EPS 0.001
 
 #define QUAD_LIGHT 0
 #define SPHERE_LIGHT 1
 #define DISTANT_LIGHT 2
-
-mat4 transform;
-
-vec2 seed;
-vec3 tempTexCoords;
 
 struct Ray
 {
@@ -67,7 +62,6 @@ struct Material
     float atDistance;
     vec3 extinction;
     vec3 extinction1;
-    vec3 texIDs;
     // Roughness calculated from anisotropic param
     float ax;
     float ay;
@@ -80,8 +74,6 @@ struct Camera
     vec3 forward;
     vec3 position;
     float fov;
-    float fovTAN;
-    float fovTAN1;
     float focalDist;
     float aperture;
 };
@@ -112,13 +104,10 @@ struct State
     vec3 tangent;
     vec3 bitangent;
 
-    bool isEmitter;
-    bool isInside;
-    bool specularBounce;
+    bool isEmitter;	
+	bool isBackside;
 
     vec2 texCoord;
-    vec3 bary;
-    ivec3 triID;
     int matID;
     Material mat;
 };
@@ -132,49 +121,41 @@ struct BsdfSampleRec
 
 struct LightSampleRec
 {
-    vec3 surfacePos;
     vec3 normal;
     vec3 emission;
+    vec3 direction;
+    float dist;
     float pdf;
 };
 
 uniform Camera camera;
 
+//RNG from code by Moroz Mykhailo (https://www.shadertoy.com/view/wltcRS)
 
-float rand0()
+//internal RNG state 
+uvec4 seed;
+ivec2 pixel;
+
+void InitRNG(vec2 p, int frame)
 {
-    seed -= randomVector.xy;
-    return fract(sin(dot(seed, vec2(12.9898, 78.233))) * 43758.5453);
+    pixel = ivec2(p);
+    seed = uvec4(p, uint(frame), uint(p.x) + uint(p.y));
 }
 
-
-float one111 = 1.0f / float( 0xffffffffU );
-
-#define hashi(x)   lowbias32(x)
-#define hash(x)  ( float( hashi(x) ) * one111 )
-
-uint lowbias32(uint x)
+void pcg4d(inout uvec4 v)
 {
-    x ^= x >> 16;
-    x *= 0x7feb352dU;
-    x ^= x >> 15;
-    x *= 0x846ca68bU;
-    x ^= x >> 16;
-    return x;
+    v = v * 1664525u + 1013904223u;
+    v.x += v.y * v.w; v.y += v.z * v.x; v.z += v.x * v.y; v.w += v.y * v.z;
+    v = v ^ (v >> 16u);
+    v.x += v.y * v.w; v.y += v.z * v.x; v.z += v.x * v.y; v.w += v.y * v.z;
 }
 
-
-float rand() { 
-	seed -= randomVector.xy;
-	return hash( floatBitsToUint(seed.x) + hashi(floatBitsToUint(seed.y)) );
+float rand()
+{
+    pcg4d(seed); return float(seed.x) / float(0xffffffffu);
 }
 
-//temporal conversion
-vec3 rgb_to_ycocg(in vec3 colour) {
-vec3 color4 = colour * 0.25f;
-	return vec3(
-		 color4.x + color4.y + color4.y + color4.z,
-		 color4.x + color4.x - color4.z - color4.z,
-		-color4.x + color4.y + color4.y - color4.z
-	);
+vec3 FaceForward(vec3 a, vec3 b)
+{
+    return dot(a, b) < 0.0 ? -b : b;
 }

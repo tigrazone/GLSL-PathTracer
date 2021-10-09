@@ -117,6 +117,9 @@ namespace GLSLPT
 
         //Lights
         std::vector<Light> lights;
+        std::vector<size_t> meshLights;
+        std::unordered_map<size_t, size_t> emissiveMaterials;
+		unsigned long meshLightTris;
 
         //HDR
         HDRData *hdrData;

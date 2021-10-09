@@ -243,65 +243,67 @@ namespace RadeonRays
             float rootminc = rootmin[axis];
             // Range for histogram
             auto centroid_rng = centroid_extents[axis];
-            auto invcentroid_rng = 1.f / centroid_rng;
 
             // If the box is degenerate in that dimension skip it
-            if (centroid_rng == 0.f) continue;
+            if (centroid_rng > 0.f) {
+				
+				auto invcentroid_rng = 1.f / centroid_rng;
 
-            // Initialize bins
-            for (int i = 0; i < m_num_bins; ++i)
-            {
-                bins[axis][i].count = 0;
-                bins[axis][i].bounds = bbox();
-            }
+				// Initialize bins
+				for (int i = 0; i < m_num_bins; ++i)
+				{
+					bins[axis][i].count = 0;
+					bins[axis][i].bounds = bbox();
+				}
 
-            // Calc primitive refs histogram
-            for (int i = req.startidx; i < req.startidx + req.numprims; ++i)
-            {
-                auto idx = i;
-                auto binidx = (int)std::min<float>(static_cast<float>(m_num_bins) * ((refs[idx].center[axis] - rootminc) * invcentroid_rng), static_cast<float>(m_num_bins - 1));
+				// Calc primitive refs histogram
+				for (int i = req.startidx; i < req.startidx + req.numprims; ++i)
+				{
+					auto idx = i;
+					auto binidx = (int)std::min<float>(static_cast<float>(m_num_bins) * ((refs[idx].center[axis] - rootminc) * invcentroid_rng), static_cast<float>(m_num_bins - 1));
 
-                ++bins[axis][binidx].count;
-                bins[axis][binidx].bounds.grow(refs[idx].bounds);
-            }
+					++bins[axis][binidx].count;
+					bins[axis][binidx].bounds.grow(refs[idx].bounds);
+				}
 
-            std::vector<bbox> rightbounds(m_num_bins - 1);
+				std::vector<bbox> rightbounds(m_num_bins - 1);
 
-            // Start with 1-bin right box
-            bbox rightbox = bbox();
-            for (int i = m_num_bins - 1; i > 0; --i)
-            {
-                rightbox.grow(bins[axis][i].bounds);
-                rightbounds[i - 1] = rightbox;
-            }
+				// Start with 1-bin right box
+				bbox rightbox = bbox();
+				for (int i = m_num_bins - 1; i > 0; --i)
+				{
+					rightbox.grow(bins[axis][i].bounds);
+					rightbounds[i - 1] = rightbox;
+				}
 
-            bbox leftbox = bbox();
-            int  leftcount = 0;
-            int  rightcount = req.numprims;
+				bbox leftbox = bbox();
+				int  leftcount = 0;
+				int  rightcount = req.numprims;
 
-            // Start best SAH search
-            // i is current split candidate (split between i and i + 1)
-            float sahtmp = 0.f;
-            for (int i = 0; i < m_num_bins - 1; ++i)
-            {
-                leftbox.grow(bins[axis][i].bounds);
-                leftcount += bins[axis][i].count;
-                rightcount -= bins[axis][i].count;
+				// Start best SAH search
+				// i is current split candidate (split between i and i + 1)
+				float sahtmp = 0.f;
+				for (int i = 0; i < m_num_bins - 1; ++i)
+				{
+					leftbox.grow(bins[axis][i].bounds);
+					leftcount += bins[axis][i].count;
+					rightcount -= bins[axis][i].count;
 
-                // Compute SAH
-                sahtmp = m_traversal_cost + (leftcount * leftbox.surface_area() + rightcount * rightbounds[i].surface_area()) * invarea;
+					// Compute SAH
+					sahtmp = m_traversal_cost + (leftcount * leftbox.surface_area() + rightcount * rightbounds[i].surface_area()) * invarea;
 
-                // Check if it is better than what we found so far
-                if (sahtmp < sah)
-                {
-                    split.dim = axis;
-                    splitidx = i;
-                    sah = sahtmp;
+					// Check if it is better than what we found so far
+					if (sahtmp < sah)
+					{
+						split.dim = axis;
+						splitidx = i;
+						sah = sahtmp;
 
-                    // Calculate percentage of overlap 
-                    split.overlap = intersection(leftbox, rightbounds[i]).surface_area() * invarea;
-                }
-            }
+						// Calculate percentage of overlap 
+						split.overlap = intersection(leftbox, rightbounds[i]).surface_area() * invarea;
+					}
+				}
+			}
         }
 
         // Choose split plane
@@ -478,7 +480,6 @@ namespace RadeonRays
         int appendprims = req.numprims;
 
         // Split refs if any of them require to be split
-		#pragma omp parallel for
         for (int i = req.startidx; i < req.startidx + req.numprims; ++i)
         {
             assert(static_cast<size_t>(req.startidx + appendprims) < refs.size());

@@ -29,7 +29,6 @@
 
 #include <time.h>
 #include <math.h>
-
 #include <cstring>
 #include <string>
 
@@ -41,11 +40,9 @@
 #include "imgui_impl_opengl3.h"
 
 #include "Loader.h"
-#include "ajaxTestScene.h"
-
 #include "boyTestScene.h"
+#include "ajaxTestScene.h"
 #include "cornellTestScene.h"
-
 #include "ImGuizmo.h"
 #include "tinydir.h"
 
@@ -95,12 +92,8 @@ std::string imgDefaultFilename = "img";
 std::string imgDefaultFilenameExt = "png";
 
 bool UIvisible = true;
-
-
 bool addspp = false;
-
 bool oldDefaultMaterial = false;
-
 struct LoopData
 {
     SDL_Window*   mWindow    = nullptr;
@@ -149,7 +142,7 @@ bool InitRenderer()
     return true;
 }
 
-// TODO: Fix occassional crashes when saving screenshot
+
 void SaveFrame(const std::string filename, const std::string format="png")
 {
     unsigned char* data = nullptr;
@@ -389,7 +382,7 @@ void Update(float secondsElapsed)
         }
         scene->camera->isMoving = true;
     }
-	
+
 
     ImGuiIO& io = ImGui::GetIO();
 	
@@ -444,6 +437,7 @@ void EditTransform(const float* view, const float* projection, float* matrix)
 {
     static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::TRANSLATE);
     static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::WORLD);
+
 
     if (ImGui::RadioButton("Translate", mCurrentGizmoOperation == ImGuizmo::TRANSLATE))
     {
@@ -520,18 +514,17 @@ void MainLoop(void* arg)
 	int samplesNow = renderer->GetSampleCount();
 	float renderTimeNow = renderer->GetRenderTime();
 	
-			//show samples and render time in window title
-			char wtitle[1000];
-			
-			sprintf(wtitle, "%s | %d samples, time %.1fs", PROGRAM_NAME, samplesNow, renderTimeNow);
-			SDL_SetWindowTitle(loopdata.mWindow, wtitle);
-			
+	//show samples and render time in window title
+	char wtitle[1000];
+	
+	sprintf(wtitle, "%s | %d samples, time %.1fs", PROGRAM_NAME, samplesNow, renderTimeNow);
+	SDL_SetWindowTitle(loopdata.mWindow, wtitle);
 
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplSDL2_NewFrame(loopdata.mWindow);
     ImGui::NewFrame();
     ImGuizmo::SetOrthographic(true);
-			
+
 
 	if(UIvisible) {
     ImGuizmo::BeginFrame();

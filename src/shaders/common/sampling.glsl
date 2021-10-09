@@ -22,20 +22,6 @@
  * SOFTWARE.
  */
 
-
-//-----------------------------------------------------------------------
-void Onb(in vec3 N, out vec3 T, out vec3 B)
-//-----------------------------------------------------------------------
-{
-	float sgn = (N.z > 0.0f) ? 1.0f : -1.0f;
-	float aa = - 1.0f / (sgn + N.z);
-	float bb = N.x * N.y * aa;	
-	
-	T = vec3(1.0f + sgn * N.x * N.x * aa, sgn * bb, -sgn * N.x);
-	B = vec3(bb, sgn + N.y * N.y * aa, -N.y);
-}
-
-
  //----------------------------------------------------------------------
 vec3 ImportanceSampleGTR1(float rgh, float r1, float r2)
 //----------------------------------------------------------------------
@@ -140,7 +126,7 @@ float GTR1(float NDotH, float a)
 //-----------------------------------------------------------------------
 {
     if (a >= 1.0)
-        return INV_PI;
+        return (INV_PI);
     float a2 = a * a;
     float t = 1.0 + (a2 - 1.0) * NDotH * NDotH;
     return (a2 - 1.0) / (PI * log(a2) * t);
@@ -150,9 +136,11 @@ float GTR1(float NDotH, float a)
 float GTR2(float NDotH, float a)
 //-----------------------------------------------------------------------
 {
+	// if(a > 0) {
     float a2 = a * a;
     float t = 1.0 + (a2 - 1.0) * NDotH * NDotH;
     return a2 / (PI * t * t);
+	// } else return 0;
 }
 
 //-----------------------------------------------------------------------
@@ -169,9 +157,11 @@ float GTR2_aniso(float NDotH, float HDotX, float HDotY, float ax, float ay)
 float SmithG_GGX(float NDotV, float alphaG)
 //-----------------------------------------------------------------------
 {
+	// if(alphaG > 0.0) {
     float a = alphaG * alphaG;
     float b = NDotV * NDotV;
     return 1.0 / (NDotV + sqrt(a + b - a * b));
+	// } else return 1.0 / (NDotV + NDotV); 
 }
 
 //-----------------------------------------------------------------------
@@ -202,20 +192,17 @@ vec3 CosineSampleHemisphere(float r1, float r2)
 vec3 UniformSampleHemisphere(float r1, float r2)
 //-----------------------------------------------------------------------
 {
-    float r = sqrt(max(0.0, 1.0 - r1 * r1));
+    float r = sqrt(1.0 - r1 * r1);
     float phi = TWO_PI * r2;
 
     return vec3(r * cos(phi), r * sin(phi), r1);
 }
 
 //-----------------------------------------------------------------------
-vec3 UniformSampleSphere()
+vec3 UniformSampleSphere(float r1, float r2)
 //-----------------------------------------------------------------------
 {
-    float r1 = rand();
-    float r2 = rand();
-
-    float z = 1.0 - r1 - r1;
+    float z = 1.0 - 2.0 * r1;
     float r = sqrt(max(0.0, 1.0 - z * z));
     float phi = TWO_PI * r2;
 
@@ -231,58 +218,74 @@ float powerHeuristic(float a, float b)
 }
 
 //-----------------------------------------------------------------------
-void sampleSphereLight(in Light light, inout LightSampleRec lightSampleRec, in vec3 surfacePos)
+void Onb(in vec3 N, inout vec3 T, inout vec3 B)
 //-----------------------------------------------------------------------
-{	
-    float r1 = rand();
-    float r2 = rand();
-	vec3 sphereCentertoSurface = normalize(surfacePos - light.position);
-	vec3 sampledDir = UniformSampleHemisphere(r1, r2);
-    vec3 T, B;
-    Onb(sphereCentertoSurface, T, B);
-    sampledDir = T * sampledDir.x + B * sampledDir.y + sphereCentertoSurface * sampledDir.z;
-	
-    lightSampleRec.normal = normalize(sampledDir);
-    lightSampleRec.surfacePos = light.position + lightSampleRec.normal * light.radius;
-    lightSampleRec.emission = light.emission * float(numOfLights);
+{
+    vec3 UpVector = abs(N.z) < 0.999 ? vec3(0, 0, 1) : vec3(1, 0, 0);
+    T = normalize(cross(UpVector, N));
+    B = cross(N, T);
 }
 
 //-----------------------------------------------------------------------
-void sampleRectLight(in Light light, inout LightSampleRec lightSampleRec)
+void sampleSphereLight(in Light light, in vec3 surfacePos, inout LightSampleRec lightSampleRec)
 //-----------------------------------------------------------------------
 {
     float r1 = rand();
     float r2 = rand();
 
-    lightSampleRec.surfacePos = light.position + light.u * r1 + light.v * r2;
+    vec3 sphereCentertoSurface = normalize(surfacePos - light.position);
+    vec3 sampledDir;
+
+    // TODO: Fix this. Currently assumes the light will be hit only from the outside
+    sampledDir = UniformSampleHemisphere(r1, r2);
+    vec3 T, B;
+    Onb(sphereCentertoSurface, T, B);
+    sampledDir = T * sampledDir.x + B * sampledDir.y + sphereCentertoSurface * sampledDir.z;
+
+    vec3 lightSurfacePos = light.position + sampledDir * light.radius;
+
+    lightSampleRec.direction = lightSurfacePos - surfacePos;
+    lightSampleRec.normal = normalize(sampledDir);
+    lightSampleRec.emission = light.emission * float(numOfLights);
+}
+
+//-----------------------------------------------------------------------
+void sampleRectLight(in Light light, in vec3 surfacePos, inout LightSampleRec lightSampleRec)
+//-----------------------------------------------------------------------
+{
+    float r1 = rand();
+    float r2 = rand();
+
+    vec3 lightSurfacePos = light.position + light.u * r1 + light.v * r2;
+    lightSampleRec.direction = lightSurfacePos - surfacePos;
     lightSampleRec.normal = light.nrm;
     lightSampleRec.emission = light.emission * float(numOfLights);
 }
 
-
 //-----------------------------------------------------------------------
-void sampleDistantLight(in Light light, inout LightSampleRec lightSampleRec, in vec3 surfacePos)
+void sampleDistantLight(in Light light, in vec3 surfacePos, inout LightSampleRec lightSampleRec)
 //-----------------------------------------------------------------------
 {
-    lightSampleRec.normal = normalize(surfacePos - light.position);
+    lightSampleRec.direction = normalize(light.position);
+    lightSampleRec.normal = surfacePos - light.position;
     lightSampleRec.emission = light.emission * float(numOfLights);
+    lightSampleRec.dist = INFINITY;
+    lightSampleRec.pdf = 1.0;
 }
 
 //-----------------------------------------------------------------------
-void sampleLight(in Light light, inout LightSampleRec lightSampleRec, in vec3 surfacePos)
+void sampleOneLight(in Light light, in vec3 surfacePos, inout LightSampleRec lightSampleRec)
 //-----------------------------------------------------------------------
 {
-	int itype = int(light.type);
-    if (itype == QUAD_LIGHT)
-        sampleRectLight(light, lightSampleRec);
-    else
-	   if (itype == SPHERE_LIGHT)
-        sampleSphereLight(light, lightSampleRec, surfacePos);
-	else
-	   if (itype == DISTANT_LIGHT)
-        sampleDistantLight(light, lightSampleRec, surfacePos);
-}
+    int type = int(light.type);
 
+    if (type == QUAD_LIGHT)
+        sampleRectLight(light, surfacePos, lightSampleRec);
+    else if (type == SPHERE_LIGHT)
+        sampleSphereLight(light, surfacePos, lightSampleRec);
+    else
+        sampleDistantLight(light, surfacePos, lightSampleRec);
+}
 
 #ifdef ENVMAP
 #ifndef CONSTANT_BG
@@ -331,123 +334,10 @@ vec3 EmitterSample(in Ray r, in State state, in LightSampleRec lightSampleRec, i
 {
     vec3 Le;
 
-    if (state.depth == 0 || state.specularBounce)
+    if (state.depth == 0)
         Le = lightSampleRec.emission;
     else
         Le = powerHeuristic(bsdfSampleRec.pdf, lightSampleRec.pdf) * lightSampleRec.emission;
 
     return Le;
-}
-
-
-//-----------------------------------------------------------------------
-void GetNormalsAndTexCoord(inout State state, inout Ray r)
-//-----------------------------------------------------------------------
-{
-    vec4 n1 = texelFetch(normalsTex, state.triID.x);
-    vec4 n2 = texelFetch(normalsTex, state.triID.y);
-    vec4 n3 = texelFetch(normalsTex, state.triID.z);
-
-    vec2 t1 = vec2(tempTexCoords.x, n1.w);
-    vec2 t2 = vec2(tempTexCoords.y, n2.w);
-    vec2 t3 = vec2(tempTexCoords.z, n3.w);
-
-    state.texCoord = t1 * state.bary.x + t2 * state.bary.y + t3 * state.bary.z;
-
-    vec3 normal = (n1.xyz * state.bary.x + n2.xyz * state.bary.y + n3.xyz * state.bary.z);
-
-    mat3 normalMatrix = transpose(inverse(mat3(transform)));
-   
-    state.normal = normalize(normalMatrix * normal);
-}
-
-//-----------------------------------------------------------------------
-void GetMaterialsAndTextures(inout State state, in Ray r)
-//-----------------------------------------------------------------------
-{
-    int index7 = state.matID * 8;
-    Material mat;
-
-    vec4 param1 = texelFetch(materialsTex, ivec2(index7, 0), 0);
-    vec4 param2 = texelFetch(materialsTex, ivec2(index7 + 1, 0), 0);
-    vec4 param3 = texelFetch(materialsTex, ivec2(index7 + 2, 0), 0);
-    vec4 param4 = texelFetch(materialsTex, ivec2(index7 + 3, 0), 0);
-    vec4 param5 = texelFetch(materialsTex, ivec2(index7 + 4, 0), 0);
-    vec4 param6 = texelFetch(materialsTex, ivec2(index7 + 5, 0), 0);
-    vec4 param7 = texelFetch(materialsTex, ivec2(index7 + 6, 0), 0);
-    vec4 param8 = texelFetch(materialsTex, ivec2(index7 + 7, 0), 0);
-
-    mat.albedo         = param1.xyz;
-    mat.specular       = param1.w;
-
-    mat.emission       = param2.xyz;
-    mat.anisotropic    = param2.w;
-
-    mat.metallic       = param3.x;
-    mat.roughness      = max(param3.y, 0.001);
-
-    mat.subsurface     = param3.z;
-    mat.specularTint   = param3.w;
-
-    mat.sheen          = param4.x;
-    mat.sheenTint      = param4.y;
-    mat.clearcoat      = param4.z;
-    mat.clearcoatGloss = param4.w;
-
-    mat.specTrans      = param5.x;
-    mat.ior            = param5.y;
-    mat.atDistance     = param5.z;
-
-    mat.extinction     = param6.xyz;
-
-    mat.texIDs         = param7.xyz;
-
-    mat.extinction1    = param8.xyz;
-	
-    vec2 texUV = state.texCoord;
-    texUV.y = 1.0 - texUV.y;
-
-    // Albedo Map
-    if (int(mat.texIDs.x) >= 0)
-        mat.albedo *= pow(texture(textureMapsArrayTex, vec3(texUV, int(mat.texIDs.x))).xyz, vec3(2.2));
-
-    // Metallic Roughness Map
-    if (int(mat.texIDs.y) >= 0)
-    {
-        vec2 matRgh;
-        // TODO: Change metallic roughness maps in repo to linear space and remove gamma correction
-        matRgh = pow(texture(textureMapsArrayTex, vec3(texUV, int(mat.texIDs.y))).xy, vec2(2.2));
-        mat.metallic = matRgh.x;
-        mat.roughness = max(matRgh.y, 0.001);
-    }
-
-    // Normal Map
-    if (int(mat.texIDs.z) >= 0)
-    {
-        vec3 nrm = normalize(2.0 * texture(textureMapsArrayTex, vec3(texUV, int(mat.texIDs.z))).xyz - 1.0);
-				
-        // Orthonormal Basis
-        vec3 T, B;
-		
-		Onb(state.normal, T, B);
-
-        nrm = T * nrm.x + B * nrm.y + state.normal * nrm.z;
-        state.normal = normalize(nrm);
-    }
-	
-	state.isInside = dot(state.normal, r.direction) <= 0.0;
-	
-    state.ffnormal = state.isInside ? state.normal : -state.normal;
-	Onb(state.normal, state.tangent, state.bitangent);
-
-    // Calculate anisotropic roughness along the tangent and bitangent directions
-	//because not used anisotropy yet
-	/*
-    float aspect = sqrt(1.0 - mat.anisotropic * 0.9);
-    mat.ax = max(0.001, mat.roughness / aspect);
-    mat.ay = max(0.001, mat.roughness * aspect);
-	*/
-
-    state.mat = mat;
-    state.eta = state.isInside ? (1.0 / mat.ior) : mat.ior;
 }

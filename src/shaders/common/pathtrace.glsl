@@ -23,6 +23,94 @@
  */
 
 //-----------------------------------------------------------------------
+void GetMaterials(inout State state, in Ray r)
+//-----------------------------------------------------------------------
+{
+    int index = state.matID * 8;
+    Material mat;
+
+    vec4 param1 = texelFetch(materialsTex, ivec2(index , 0), 0);
+    vec4 param2 = texelFetch(materialsTex, ivec2(index + 1, 0), 0);
+    vec4 param3 = texelFetch(materialsTex, ivec2(index + 2, 0), 0);
+    vec4 param4 = texelFetch(materialsTex, ivec2(index + 3, 0), 0);
+    vec4 param5 = texelFetch(materialsTex, ivec2(index + 4, 0), 0);
+    vec4 param6 = texelFetch(materialsTex, ivec2(index + 5, 0), 0);
+    vec4 param7 = texelFetch(materialsTex, ivec2(index + 6, 0), 0);
+    vec4 param8 = texelFetch(materialsTex, ivec2(index + 7, 0), 0);
+
+    mat.albedo         = param1.xyz;
+    mat.specular       = param1.w;
+
+    mat.emission       = param2.xyz;
+    mat.anisotropic    = param2.w;
+
+    mat.metallic       = param3.x;
+    mat.roughness      = max(param3.y, 0.001);
+
+    mat.subsurface     = param3.z;
+    mat.specularTint   = param3.w;
+
+    mat.sheen          = param4.x;
+    mat.sheenTint      = param4.y;
+    mat.clearcoat      = param4.z;
+    mat.clearcoatGloss = param4.w;
+
+    mat.specTrans      = param5.x;
+    mat.ior            = param5.y;
+    mat.atDistance     = param5.z;
+
+    mat.extinction     = param6.xyz;
+
+    vec3 texIDs        = param7.xyz;
+
+    mat.extinction1    = param8.xyz;
+
+    vec2 texUV = state.texCoord;
+    texUV.y = 1.0 - texUV.y;
+
+    // Albedo Map
+    if (int(texIDs.x) >= 0)
+        mat.albedo *= pow(texture(textureMapsArrayTex, vec3(texUV, int(texIDs.x))).xyz, vec3(2.2));
+
+    // Metallic Roughness Map
+    if (int(texIDs.y) >= 0)
+    {
+        vec2 matRgh;
+        // TODO: Change metallic roughness maps in repo to linear space and remove gamma correction
+        matRgh = pow(texture(textureMapsArrayTex, vec3(texUV, int(texIDs.y))).xy, vec2(2.2));
+        mat.metallic = matRgh.x;
+        mat.roughness = max(matRgh.y, 0.001);
+    }
+
+    // Normal Map
+    // FIXME: Output when using a normal map doesn't match up with Cycles (Blender) output
+    if (int(texIDs.z) >= 0)
+    {
+        vec3 nrm = texture(textureMapsArrayTex, vec3(texUV, int(texIDs.z))).xyz;
+        nrm = normalize(nrm * 2.0 - 1.0);
+
+        vec3 T, B;
+        Onb(state.normal, T, B);
+
+        nrm = T * nrm.x + B * nrm.y + state.normal * nrm.z;
+        state.normal = normalize(nrm);
+        state.ffnormal = dot(state.normal, r.direction) <= 0.0 ? state.normal : -state.normal;
+
+        Onb(state.normal, state.tangent, state.bitangent);
+    }
+
+    // Commented out the following as anisotropic param is temporarily unused.
+    // Calculate anisotropic roughness along the tangent and bitangent directions
+    // float aspect = sqrt(1.0 - mat.anisotropic * 0.9);
+    // mat.ax = max(0.001, mat.roughness / aspect);
+    // mat.ay = max(0.001, mat.roughness * aspect);
+
+    state.mat = mat;
+    state.isBackside = dot(state.normal, state.ffnormal) > 0.0;
+    state.eta = state.isBackside ? (1.0 / mat.ior) : mat.ior;
+}
+
+//-----------------------------------------------------------------------
 vec3 DirectLight(in Ray r, in State state)
 //-----------------------------------------------------------------------
 {
@@ -43,7 +131,7 @@ vec3 DirectLight(in Ray r, in State state)
         Ray shadowRay = Ray(surfacePos, lightDir);
         bool inShadow = AnyHit(shadowRay, INFINITY - EPS);
 
-        if (!inShadow)
+        if (!inShadow && lightPdf > 0.0)
         {
             bsdfSampleRec.f = DisneyEval(state, -r.direction, state.ffnormal, lightDir, bsdfSampleRec.pdf);
 
@@ -65,55 +153,50 @@ vec3 DirectLight(in Ray r, in State state)
         Light light;
 
         //Pick a light to sample
-        int indexx = int(rand() * float(numOfLights)) * 8;
+        int index = int(rand() * float(numOfLights)) * 8;
 
         // Fetch light Data
-        vec3 position = texelFetch(lightsTex, ivec2(indexx, 0), 0).xyz;
-        vec3 emission = texelFetch(lightsTex, ivec2(indexx + 1, 0), 0).xyz;
-        vec3 u        = texelFetch(lightsTex, ivec2(indexx + 2, 0), 0).xyz; // u vector for rect
-        vec3 v        = texelFetch(lightsTex, ivec2(indexx + 3, 0), 0).xyz; // v vector for rect
-        vec3 nrm      = texelFetch(lightsTex, ivec2(indexx + 4, 0), 0).xyz; // v vector for rect
-        vec3 uu       = texelFetch(lightsTex, ivec2(indexx + 5, 0), 0).xyz; // uu precalc for rect
-        vec3 vv       = texelFetch(lightsTex, ivec2(indexx + 6, 0), 0).xyz; // vv precalc for rect
-        vec3 params   = texelFetch(lightsTex, ivec2(indexx + 7, 0), 0).xyz;
+        vec3 position = texelFetch(lightsTex, ivec2(index, 0), 0).xyz;
+        vec3 emission = texelFetch(lightsTex, ivec2(index + 1, 0), 0).xyz;
+        vec3 u        = texelFetch(lightsTex, ivec2(index + 2, 0), 0).xyz; // u vector for rect
+        vec3 v        = texelFetch(lightsTex, ivec2(index + 3, 0), 0).xyz; // v vector for rect
+        vec3 nrm      = texelFetch(lightsTex, ivec2(index + 4, 0), 0).xyz;
+        vec3 uu 	  = texelFetch(lightsTex, ivec2(index + 5, 0), 0).xyz;
+        vec3 vv 	  = texelFetch(lightsTex, ivec2(index + 6, 0), 0).xyz;
+        vec3 params   = texelFetch(lightsTex, ivec2(index + 7, 0), 0).xyz;
         float radius  = params.x;
         float area    = params.y;
-        float type    = params.z; // 0->rect, 1->sphere, 2->distant
+        float type    = params.z; // 0->Rect, 1->Sphere, 2->Distant
 
         light = Light(position, emission, u, v, nrm, uu, vv, radius, area, type);
-        sampleLight(light, lightSampleRec, surfacePos);
+        sampleOneLight(light, surfacePos, lightSampleRec);
 		
-		vec3 lightDir;
-		
-		if(light.area > 0.0) {
-			lightDir = lightSampleRec.surfacePos - surfacePos;
-		} else {
-			lightDir = light.u;
-		}
-
-        if (dot(lightDir, lightSampleRec.normal) < 0.0)
-        {			
-			float lightDist = INFINITY;
-			if(light.area > 0.0) {
-				lightDist = length(lightDir);
-				lightDir *= 1.0f / lightDist;
+		if (dot(lightSampleRec.direction, lightSampleRec.normal) < 0.0) // Required for quad lights with single sided emission
+        {
+			if(light.area > 0.0) {				
+				lightSampleRec.dist = length(lightSampleRec.direction);
+				lightSampleRec.direction /= lightSampleRec.dist;
 			}
-		
-            Ray shadowRay = Ray(surfacePos, lightDir);
-            bool inShadow = AnyHit(shadowRay, lightDist - EPS);
+			
+            Ray shadowRay = Ray(surfacePos, lightSampleRec.direction);
+            bool inShadow = AnyHit(shadowRay, lightSampleRec.dist - EPS);
 
             if (!inShadow)
             {
-                bsdfSampleRec.f = DisneyEval(state, -r.direction, state.ffnormal, lightDir, bsdfSampleRec.pdf);
+                bsdfSampleRec.f = DisneyEval(state, -r.direction, state.ffnormal, lightSampleRec.direction, bsdfSampleRec.pdf);
 
-                if (bsdfSampleRec.pdf > 0.0) {
-					if(light.area > 0.0) {
-						float lightPdf = - (lightDist * lightDist) / (light.area * dot(lightDir, lightSampleRec.normal));
-						if(int(light.type) == SPHERE_LIGHT) lightPdf += lightPdf;
-						Li += powerHeuristic(lightPdf, bsdfSampleRec.pdf) * bsdfSampleRec.f * abs(dot(state.ffnormal, lightDir)) * lightSampleRec.emission / lightPdf;
-					} else {
-							Li += bsdfSampleRec.f * abs(dot(state.ffnormal, lightDir)) * lightSampleRec.emission;
-					}
+                if(light.area > 0.0) // No MIS for distant light
+				{
+                if (bsdfSampleRec.pdf > 0.0) {					
+					float distSq = lightSampleRec.dist * lightSampleRec.dist;
+					lightSampleRec.pdf = -distSq / (light.area * dot(lightSampleRec.direction, lightSampleRec.normal));					
+					if(int(light.type) == SPHERE_LIGHT) lightSampleRec.pdf += lightSampleRec.pdf;
+					float weight = powerHeuristic(lightSampleRec.pdf, bsdfSampleRec.pdf);
+                    Li += weight * bsdfSampleRec.f * abs(dot(state.ffnormal, lightSampleRec.direction)) * lightSampleRec.emission / lightSampleRec.pdf;
+				}
+				} 
+				else {
+					Li += bsdfSampleRec.f * abs(dot(state.ffnormal, lightSampleRec.direction)) * lightSampleRec.emission;
 				}
             }
         }
@@ -134,15 +217,14 @@ vec3 PathTrace(Ray r)
     LightSampleRec lightSampleRec;
     BsdfSampleRec bsdfSampleRec;
     vec3 absorption = vec3(0.0);
-	
-    state.specularBounce = false;
+	bool useAbsorption = false;
     
     for (int depth = 0; depth < maxDepth; depth++)
     {
         state.depth = depth;
-        float t = ClosestHit(r, state, lightSampleRec);
+        bool hit = ClosestHit(r, state, lightSampleRec);
 
-        if (t == INFINITY)
+        if (!hit)
         {
 #ifdef CONSTANT_BG
             radiance += bgColor * throughput;
@@ -150,15 +232,16 @@ vec3 PathTrace(Ray r)
 #ifdef ENVMAP
             {
                 float misWeight = 1.0f;
-				float phi = hdrRotate + PI + atan(r.direction.z, r.direction.x);
-				if(phi < 0.0f) phi += TWO_PI;
-				if(phi > TWO_PI) phi -= TWO_PI;
-				float theta = hdrRotateY + acos(r.direction.y);
-				if(theta < 0.0f) theta += TWO_PI;
-				if(theta > TWO_PI) theta -= TWO_PI;
+                
+		float phi = hdrRotate + PI + atan(r.direction.z, r.direction.x);
+		if(phi < 0.0f) phi += TWO_PI;
+		if(phi > TWO_PI) phi -= TWO_PI;
+		float theta = hdrRotateY + acos(r.direction.y);
+		if(theta < 0.0f) theta += TWO_PI;
+		if(theta > TWO_PI) theta -= TWO_PI;
                 vec2 uv = vec2(phi * INV_TWO_PI,  theta* INV_PI);
 
-                if (depth > 0 && !state.specularBounce)
+                if (depth > 0)
                 {
                     // TODO: Fix NaNs when using certain HDRs
                     float lightPdf = EnvPdf(r, uv);
@@ -171,8 +254,13 @@ vec3 PathTrace(Ray r)
             return radiance;
         }
 
-        GetNormalsAndTexCoord(state, r);
-        GetMaterialsAndTextures(state, r);
+        GetMaterials(state, r);
+
+        // Reset absorption when ray is going out of surface
+        if (state.isBackside) {
+            absorption = vec3(0.0);
+			useAbsorption = false;
+		}
 
         radiance += state.mat.emission * throughput;
 
@@ -184,30 +272,25 @@ vec3 PathTrace(Ray r)
         }
 #endif
 
-        // Reset absorption when ray is going out of surface
-        if (state.isInside) {
-            absorption = vec3(0.0);
-		}
-		else 
-		{
-			// Add absoption
-			throughput *= exp(-absorption * t);
+        // Add absoption
+		if(useAbsorption) {
+			throughput *= exp(-absorption * state.hitDist);
 		}
 
         radiance += DirectLight(r, state) * throughput;
 
         bsdfSampleRec.f = DisneySample(state, -r.direction, state.ffnormal, bsdfSampleRec.L, bsdfSampleRec.pdf);
 
-		float dotL = dot(state.ffnormal, bsdfSampleRec.L);
-
         // Set absorption only if the ray is currently inside the object.
-        if (dotL < 0.0) {
+		float dotNL = dot(state.ffnormal, bsdfSampleRec.L);
+        if (dotNL < 0.0) {
             absorption = state.mat.extinction1;
-			dotL = - dotL;
+			dotNL = -dotNL;
+			useAbsorption = true;
 		}
 
         if (bsdfSampleRec.pdf > 0.0)
-            throughput *= bsdfSampleRec.f * dotL / bsdfSampleRec.pdf;
+            throughput *= bsdfSampleRec.f * dotNL / bsdfSampleRec.pdf;
         else
             break;
 

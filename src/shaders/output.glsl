@@ -24,21 +24,12 @@
 
 #version 330
 
-precision highp float;
-precision highp int;
-precision highp sampler2D;
-precision highp samplerCube;
-precision highp isampler2D;
-precision highp sampler2DArray;
-
 out vec4 color;
 in vec2 TexCoords;
 
-uniform sampler2D pathTraceTexture;
+uniform sampler2D imgTex;
 
 void main()
 {
-    float accumSPP = texture(pathTraceTexture, TexCoords).w;
-	if(accumSPP < 1.0f) accumSPP = 1.0f;
-	color = vec4(texture(pathTraceTexture, TexCoords).xyz / accumSPP, accumSPP);
+    color = texture(imgTex, TexCoords);
 }

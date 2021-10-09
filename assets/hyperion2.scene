@@ -1,23 +1,16 @@
 Renderer
 {
 	resolution 1280 720
-	maxDepth 8
+	maxDepth 4
 	tileWidth 256
 	tileHeight 144
-	enableRR True
-	RRDepth 5  
 }
 
 Camera
 {
-	#position -15.0 15.0 0.0
-	#lookAt 0 0 0
-	#fov 60
-	position -7.79997 9.23458 3.24000
-	lookAt 1.60598 1.61780 3.24000
-	aperture 0.00000
-	focaldist 1.00000
-	fov 60.00000
+	position -15.0 15.0 0.0
+	lookAt 0 0 0
+	fov 60
 }
 
 material orange
@@ -94,29 +87,12 @@ material marb2
 	clearcoatGloss 0.93
 }
 
-material glass_dragon
-{
-	color 1.0 1.0 1.0
-	extinction 0.905 0.63 0.3
-	roughness 0.1
-	ior 1.45
-	transmission 1.0
-}
-
 mesh
 {
 	name Glass Ball
 	file hyperion/glass.obj
 	material glass
 	position -0.57 1.87 6.55
-}
-
-mesh
-{
-	file dragon/dragon.obj
-	material glass_dragon
-	position 2.226 1.544 -0.96
-	scale 0.2 0.2 0.2
 }
 
 
@@ -201,8 +177,8 @@ mesh
 
 light
 {
-	emission 80.0 80.0 80.0
-	position 0 390.0 -439.0
-	radius 60.0
+	emission 80 80 80
+	position 0 39.0 -43.9
+	radius 6.0
 	type Sphere
 }

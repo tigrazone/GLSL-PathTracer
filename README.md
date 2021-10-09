@@ -1,3 +1,4 @@
+
 GLSL-PathTracer
 ==========
 A physically based path tracer that runs in a GLSL fragment shader.
@@ -20,17 +21,6 @@ Features
 - Analytic Lights (Sphere, Rect, Directional) with MIS
 - IBL
 - Progressive + Tiled Rendering
-- Load Scene from ui
-- Load Environment Map from ui in hdr, exr formats
-- Save image to png, tga, bmp, jpg, exr, hdr from ui
-- Render fixed samples or fixed time and save image
-- Control many paremeters of camera from keyboard
-- Save image with samples interval or time interval periodically
-- Parallel and optimised textures load
-- Rotate environment map by X and Y
-- Print current camera params
-- Show samples and render time in window title
-- Adaptive antialiasing (-aaa nsamples - adaptive antialiasing with nsamples maximum every pass)
 
 Build Instructions
 --------
@@ -42,10 +32,6 @@ A couple of sample scenes are provided in the repository. Additional scenes can 
 https://drive.google.com/file/d/1UFMMoVb5uB7WIvCeHOfQ2dCQSxNMXluB/view
 
 Gallery
---------
-![Two dragons](./screenshots/xyzdragons.jpg)
---------
-![statues](./screenshots/statues.jpg)
 --------
 ![Mustang_red](./screenshots/Mustang_Red.jpg)
 --------
@@ -64,29 +50,6 @@ Gallery
 ![Substance Boy](./screenshots/MeetMat_Maps.png)
 --------
 ![Dragon](./screenshots/dragon.jpg)
-
-Controls
---------
-| Key                     | Action                                                                                |
-|-------------------------|---------------------------------------------------------------------------------------|
-| **W / A / S / D**       | Move camera step forward, left, back, right                                           |
-| **R / F**               | Move camera up/down 																  |
-| **Mouse left**          | Look around                                                                           |
-| **Mouse right**         | Camera forward/back                                                                   |
-| **Mouse middle**        | Camera pan                                                                            |
-| **Home / End**          | Adjust movement speed                                                                 |
-| **Z / X**               | Adjust environment map emission                                                       |
-| **N / M**               | Rotate environment map by X                                                           |
-| **Y / H**               | Rotate environment map by Y                                                           |
-| **I / K / J / L**       | Rotate camera by X, Y                                                                 |
-| **Arrow keys**          | Move camera                                                                           |
-| **Page Up / Down**      | Move camera up/down                                                                   |
-| **, / .**               | Change FOV                                                                            |
-| **P**                   | Print current camera params                                                           |
-| **Tab**                 | Toggle UI visibility                                                                  |
-
-Use Ctrl-Shift for 100x step, Ctrl for 1/10 step, Alt for 1/2 step, Shift for 10x step
-
 
 References/Credits
 --------

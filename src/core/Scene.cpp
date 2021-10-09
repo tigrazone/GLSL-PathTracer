@@ -257,7 +257,9 @@ namespace GLSLPT
         for (int i = 0; i < meshes.size(); i++)
         {
             printf("Building BVH for %s\n", meshes[i]->name.c_str());
-            totalTris += meshes[i]->BuildBVH();
+			meshes[i]->tris = meshes[i]->BuildBVH();
+            totalTris += meshes[i]->tris;
+			
         }	
 		
 		printf("Total %ld tris loaded\n", totalTris);
@@ -313,6 +315,8 @@ namespace GLSLPT
 			materialUsed[meshInstances[i].materialID] = true;
 		}
 		
+		emissiveMaterials.clear();
+		
 		//calculate textures usage
 		for (int j = 0; j < materials.size(); j++) {
 			if(materialUsed[j]) {
@@ -326,6 +330,10 @@ namespace GLSLPT
 				
 				if (materials[j].normalmapTexID > -1.0f) {
 					textures[(int)materials[j].normalmapTexID]->usedTimes ++;
+				}
+				
+				if (Vec3::Dot(materials[j].emission, materials[j].emission) > 0.0f) {
+					emissiveMaterials[j] = 0;
 				}
             }
 		}
@@ -352,14 +360,24 @@ namespace GLSLPT
             normalsUVY.insert(normalsUVY.end(), meshes[i]->normalsUVY.begin(), meshes[i]->normalsUVY.end());
 
             verticesCnt += meshes[i]->verticesUVX.size();
-        }
+        }		
+		
+		meshLightTris = 0;
+		unsigned long mesh_tri_sz;
 
         //Copy transforms
         transforms.resize(meshInstances.size());
         #pragma omp parallel for
-        for (int i = 0; i < meshInstances.size(); i++)
+        for (int i = 0; i < meshInstances.size(); i++) {
             transforms[i] = meshInstances[i].transform;
-
+			if(emissiveMaterials.find(meshInstances[i].materialID) != emissiveMaterials.end()) {
+				mesh_tri_sz = meshes[meshInstances[i].meshID]->tris;
+				emissiveMaterials[meshInstances[i].materialID] += mesh_tri_sz;
+				meshLightTris += mesh_tri_sz;
+				meshLights.push_back(i);
+			}
+			
+		}
 
 		//find widow textures
 		texWrongId = textures.size();
@@ -430,6 +448,9 @@ namespace GLSLPT
         }
 		
 		time2 = clock();
-		printf("%.1fs\n", (float)(time2-time1)/(float)CLOCKS_PER_SEC);
+		printf("%.1fs\n", (float)(time2-time1)/(float)CLOCKS_PER_SEC);		
+		
+		printf("=============================\nLights: %d\n", lights.size());
+		printf("Mesh lights: %d\nEmissive triangles: %d\n\n", meshLights.size(), meshLightTris);
     }
 }
