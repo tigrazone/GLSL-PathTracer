@@ -213,13 +213,20 @@ float powerHeuristic(float a, float b)
     return t / (b * b + t);
 }
 
+
+// Building an Orthonormal Basis, Revisited
+// by Tom Duff, James Burgess, Per Christensen, Christophe Hery, Andrew Kensler, Max Liani, Ryusuke Villemin
+// https://graphics.pixar.com/library/OrthonormalB/
 //-----------------------------------------------------------------------
 void Onb(in vec3 N, inout vec3 T, inout vec3 B)
 //-----------------------------------------------------------------------
 {
-    vec3 UpVector = abs(N.z) < 0.999 ? vec3(0, 0, 1) : vec3(1, 0, 0);
-    T = normalize(cross(UpVector, N));
-    B = cross(N, T);
+	float sgn = (N.z > 0.0f) ? 1.0f : -1.0f;
+	float aa = - 1.0f / (sgn + N.z);
+	float bb = N.x * N.y * aa;	
+	
+	T = vec3(1.0f + sgn * N.x * N.x * aa, sgn * bb, -sgn * N.x);
+	B = vec3(bb, sgn + N.y * N.y * aa, -N.y);
 }
 
 //-----------------------------------------------------------------------

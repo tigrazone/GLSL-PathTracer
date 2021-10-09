@@ -89,10 +89,7 @@ void GetMaterials(inout State state, in Ray r)
         vec3 nrm = texture(textureMapsArrayTex, vec3(texUV, int(texIDs.z))).xyz;
         nrm = normalize(nrm * 2.0 - 1.0);
 
-        vec3 T, B;
-        Onb(state.normal, T, B);
-
-        nrm = T * nrm.x + B * nrm.y + state.normal * nrm.z;
+        nrm = state.tangent * nrm.x + state.bitangent * nrm.y + state.normal * nrm.z;
         state.normal = normalize(nrm);
         state.ffnormal = dot(state.normal, r.direction) <= 0.0 ? state.normal : -state.normal;
 
