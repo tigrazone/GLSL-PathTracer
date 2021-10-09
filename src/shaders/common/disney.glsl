@@ -156,10 +156,10 @@ vec3 EvalDiffuseSpecularClearcoat(State state, vec3 Csheen, vec3 Cspec0, vec3 V,
     float dotNH = dot(N, H);
 	float pdfMul = dotNH / (4.0 * dot(V, H));
 	
-	/*
+	
 	pdfS = 0;
 	if(state.mat.roughness > 0.0) {
-		*/
+	
 		float D = GTR2(dotNH, state.mat.roughness);
 	
 		pdfS = D * pdfMul;
@@ -167,7 +167,7 @@ vec3 EvalDiffuseSpecularClearcoat(State state, vec3 Csheen, vec3 Cspec0, vec3 V,
 		vec3 Fs = mix(Cspec0, vec3(1.0), FH);
 		float Gs = SmithG_GGX((dotNL), state.mat.roughness) * SmithG_GGX(abs(dotNV), state.mat.roughness);
 		f += Fs * D * Gs;
-	//}
+	}
 	
 	//clearcoat
     float Dc = GTR1(dotNH, mix(0.1, 0.001, state.mat.clearcoatGloss));
@@ -206,7 +206,7 @@ vec3 DisneySample(inout State state, vec3 V, vec3 N, inout vec3 L, inout float p
     // TODO: Reuse random numbers and reduce so many calls to rand()
     if (rand() < transWeight)
     {
-		// if(state.mat.roughness > 0.0) {
+		if(state.mat.roughness > 0.0) {
         vec3 H = ImportanceSampleGTR2(state.mat.roughness, r1, r2);
 		//GGXVNDF_Sample(float r1, float r2, vec3 n, float rgh, vec3 incoming)
         //vec3 H = GGXVNDF_Sample(r1, r2, N, state.mat.roughness, V);
@@ -244,7 +244,7 @@ vec3 DisneySample(inout State state, vec3 V, vec3 N, inout vec3 L, inout float p
 
         f *= transWeight;
         pdf *= transWeight;
-		//}
+		}
     }
     else
     {
@@ -268,7 +268,7 @@ vec3 DisneySample(inout State state, vec3 V, vec3 N, inout vec3 L, inout float p
             // Sample primary specular lobe
             if (rand() < primarySpecRatio) 
             {
-				//if(state.mat.roughness > 0.0) {
+				if(state.mat.roughness > 0.0) {
 					// TODO: Implement http://jcgt.org/published/0007/04/01/
 					vec3 H = ImportanceSampleGTR2(state.mat.roughness, r1, r2);
 					//vec3 H = GGXVNDF_Sample(r1, r2, N, state.mat.roughness, V);
@@ -287,7 +287,7 @@ vec3 DisneySample(inout State state, vec3 V, vec3 N, inout vec3 L, inout float p
 						f = EvalSpecular(state, Cspec0, V, N, L, H, pdf, dotVH);
 						pdf *= primarySpecRatio * (1.0 - diffuseRatio);
 					}
-				//}
+				}
             }
             else // Sample clearcoat lobe
             {

@@ -266,7 +266,7 @@ void sampleRectLight(in Light light, in vec3 surfacePos, inout LightSampleRec li
 void sampleDistantLight(in Light light, in vec3 surfacePos, inout LightSampleRec lightSampleRec)
 //-----------------------------------------------------------------------
 {
-    lightSampleRec.direction = normalize(light.position);
+    lightSampleRec.direction = light.u;
     lightSampleRec.normal = surfacePos - light.position;
     lightSampleRec.emission = light.emission * float(numOfLights);
     lightSampleRec.dist = INFINITY;
