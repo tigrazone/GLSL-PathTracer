@@ -221,7 +221,7 @@ float powerHeuristic(float a, float b)
 void Onb(in vec3 N, inout vec3 T, inout vec3 B)
 //-----------------------------------------------------------------------
 {
-	float sgn = (N.z > 0.0f) ? 1.0f : -1.0f;
+	float sgn = N.z >= 0.0f ? 1.0f : -1.0f;
 	float aa = - 1.0f / (sgn + N.z);
 	float bb = N.x * N.y * aa;	
 	
