@@ -158,8 +158,7 @@ vec3 EvalDiffuseSpecularClearcoat(State state, vec3 Csheen, vec3 Cspec0, vec3 V,
 	
 	
 	pdfS = 0;
-	if(state.mat.roughness > 0.0) {
-	
+	if(state.mat.roughness > 0.0) {	
 		float D = GTR2(dotNH, state.mat.roughness);
 	
 		pdfS = D * pdfMul;
@@ -207,43 +206,43 @@ vec3 DisneySample(inout State state, vec3 V, vec3 N, inout vec3 L, inout float p
     if (rand() < transWeight)
     {
 		if(state.mat.roughness > 0.0) {
-        vec3 H = ImportanceSampleGTR2(state.mat.roughness, r1, r2);
-		//GGXVNDF_Sample(float r1, float r2, vec3 n, float rgh, vec3 incoming)
-        //vec3 H = GGXVNDF_Sample(r1, r2, N, state.mat.roughness, V);
-        H = state.tangent * H.x + state.bitangent * H.y + N * H.z;
-		
-		dotVH = dot(V, H);
+            vec3 H = ImportanceSampleGTR2(state.mat.roughness, r1, r2);
+            //GGXVNDF_Sample(float r1, float r2, vec3 n, float rgh, vec3 incoming)
+            //vec3 H = GGXVNDF_Sample(r1, r2, N, state.mat.roughness, V);
+            H = state.tangent * H.x + state.bitangent * H.y + N * H.z;
+            
+            dotVH = dot(V, H);
 
-        if (dotVH < 0.0) {
-            H = -H;
-			dotVH = -dotVH;
-		}
+            if (dotVH < 0.0) {
+                H = -H;
+                dotVH = -dotVH;
+            }
 
-        vec3 R = reflect(-V, H);
-        float F = DielectricFresnel(abs(dot(R, H)), state.eta);
+            vec3 R = reflect(-V, H);
+            float F = DielectricFresnel(abs(dot(R, H)), state.eta);
 
-        // Reflection/Total internal reflection
-        if (rand() < F)
-        {
-            L = //normalize
-			(R);			
-			if (dot(N, L) > 0.0)
-			{
-				f = EvalDielectricReflection(state, V, N, L, H, pdf, dotVH);
-			}
-        }
-        else // Transmission
-        {
-            L = //normalize
-			(refract(-V, H, state.eta));
-			if (dot(N, L) < 0.0)
-			{
-				f = EvalDielectricRefraction(state, V, N, L, H, pdf, dotVH);
-			}
-        }
+            // Reflection/Total internal reflection
+            if (rand() < F)
+            {
+                L = //normalize
+                (R);			
+                if (dot(N, L) > 0.0)
+                {
+                    f = EvalDielectricReflection(state, V, N, L, H, pdf, dotVH);
+                }
+            }
+            else // Transmission
+            {
+                L = //normalize
+                (refract(-V, H, state.eta));
+                if (dot(N, L) < 0.0)
+                {
+                    f = EvalDielectricRefraction(state, V, N, L, H, pdf, dotVH);
+                }
+            }
 
-        f *= transWeight;
-        pdf *= transWeight;
+            f *= transWeight;
+            pdf *= transWeight;
 		}
     }
     else
@@ -346,8 +345,8 @@ vec3 DisneyEval(State state, vec3 V, vec3 N, vec3 L, inout float pdf)
     float brdfPdf = 0.0;
     float bsdfPdf = 0.0;
 
-    if (transWeight > 0.0
-	//&& state.mat.roughness > 0.0
+    if (transWeight > 0.0 
+	&& state.mat.roughness > 0.0
 	)
     {
         // Reflection

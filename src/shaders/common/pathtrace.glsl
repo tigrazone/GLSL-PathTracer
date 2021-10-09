@@ -233,12 +233,14 @@ vec3 PathTrace(Ray r)
             {
                 float misWeight = 1.0f;
                 
-		float phi = hdrRotate + PI + atan(r.direction.z, r.direction.x);
-		if(phi < 0.0f) phi += TWO_PI;
-		if(phi > TWO_PI) phi -= TWO_PI;
-		float theta = hdrRotateY + acos(r.direction.y);
-		if(theta < 0.0f) theta += TWO_PI;
-		if(theta > TWO_PI) theta -= TWO_PI;
+                float phi = hdrRotate + PI + atan(r.direction.z, r.direction.x);
+                if(phi < 0.0f) phi += TWO_PI;
+                if(phi > TWO_PI) phi -= TWO_PI;
+                
+                float theta = hdrRotateY + acos(r.direction.y);
+                if(theta < 0.0f) theta += TWO_PI;
+                if(theta > TWO_PI) theta -= TWO_PI;
+
                 vec2 uv = vec2(phi * INV_TWO_PI,  theta* INV_PI);
 
                 if (depth > 0)

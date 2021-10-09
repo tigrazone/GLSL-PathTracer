@@ -142,14 +142,6 @@ namespace GLSLPT
     void Camera::Reset()
     {
         Init(Vec3(0, 0, -1), Vec3(0, 0, 0), 40);
-
-
-
-
-
-
-
-
     }
 
     Camera::Camera(const Camera& other)

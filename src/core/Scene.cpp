@@ -258,8 +258,7 @@ namespace GLSLPT
         {
             printf("Building BVH for %s\n", meshes[i]->name.c_str());
 			meshes[i]->tris = meshes[i]->BuildBVH();
-            totalTris += meshes[i]->tris;
-			
+            totalTris += meshes[i]->tris;			
         }	
 		
 		printf("Total %ld tris loaded\n", totalTris);
