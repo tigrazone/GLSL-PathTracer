@@ -1,5 +1,6 @@
 #include "Utils.h"
 #include "tinyfiledialogs.h"
+#include <sys/stat.h>
 
 std::string openFileDialog(const std::string message, const std::string defaultPath, const std::vector<const char*> filter)
 {
@@ -11,4 +12,9 @@ std::string saveFileDialog(const std::string message, const std::string defaultP
 {
     char const *selected = tinyfd_saveFileDialog(message.c_str(), defaultPath.c_str(), filter.size(), filter.data(), NULL);
     return (selected) ? std::string(selected) : "";
+}
+
+bool fileExists (const std::string& name) {
+  struct stat buffer;   
+  return (stat (name.c_str(), &buffer) == 0); 
 }

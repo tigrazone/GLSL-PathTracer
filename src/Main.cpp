@@ -682,21 +682,23 @@ void MainLoop(void* arg)
 			ImGui::Separator();
 			ImGui::Text("HDRI lighting");
 			
+			bool envMapLoaded = (scene->hdrData != nullptr);
+			
 			//& for not reload shader if Env map not loaded - just toggle switch 
-            requiresReload |= ImGui::Checkbox("Enable", &renderOptions.useEnvMap) & (scene->hdrData != nullptr);
+            requiresReload |= ImGui::Checkbox("Enable", &renderOptions.useEnvMap) & (envMapLoaded);
 			
                 //show is loaded or no env map			
-                ImGui::TextDisabled(scene->hdrData != nullptr ? "*" : " ");
+                ImGui::TextDisabled(envMapLoaded ? "*" : " ");
                 if (ImGui::IsItemHovered())
                 {
 					std::string fn = "";
 					std::string LOADEDfn = "loaded ";
-					if(scene->hdrData != nullptr) {
+					if(envMapLoaded) {
 						fn = scene->HDRfn.substr(scene->HDRfn.find_last_of("/\\") + 1);
 						LOADEDfn += fn;
 					}
                     ImGui::BeginTooltip();
-                    ImGui::TextUnformatted(scene->hdrData != nullptr ? LOADEDfn.c_str() : "NOT loaded");
+                    ImGui::TextUnformatted(envMapLoaded ? LOADEDfn.c_str() : "NOT loaded");
                     ImGui::EndTooltip();
                 }
 				// IsItemClicked()
@@ -726,9 +728,9 @@ void MainLoop(void* arg)
 						}
 					}
 				}
-			optionsChanged |= ImGui::SliderFloat("Multiplier", &renderOptions.hdrMultiplier, 0.1f, MAXhdrMultiplier, "%.2f") & (scene->hdrData != nullptr);
-            optionsChanged |= ImGui::SliderFloat("X rotate ", &renderOptions.hdrRotate, -180.0f, 180.0f, "%.2f") & (scene->hdrData != nullptr);
-            optionsChanged |= ImGui::SliderFloat("Y rotate ", &renderOptions.hdrRotateY, -180.0f, 180.0f, "%.2f") & (scene->hdrData != nullptr);
+			optionsChanged |= ImGui::SliderFloat("Multiplier", &renderOptions.hdrMultiplier, 0.05f, MAXhdrMultiplier, "%.3f") & (envMapLoaded);
+            optionsChanged |= ImGui::SliderFloat("X rotate ", &renderOptions.hdrRotate, -180.0f, 180.0f, "%.2f") & (envMapLoaded);
+            optionsChanged |= ImGui::SliderFloat("Y rotate ", &renderOptions.hdrRotateY, -180.0f, 180.0f, "%.2f") & (envMapLoaded);
 			
 			ImGui::Separator();
 			ImGui::Text("Adaptive sampling");
@@ -765,7 +767,6 @@ void MainLoop(void* arg)
             optionsChanged |= ImGui::SliderFloat("Aperture", &aperture, 0.0f, 10.8f, "%.2f");
             scene->camera->aperture = aperture / 1000.0f;
             optionsChanged |= ImGui::SliderFloat("Focal Distance", &scene->camera->focalDist, 0.01f, 50.0f, "%.2f");
-            // ImGui::Text("Pos: %.2f, %.2f, %.2f", scene->camera->position.x, scene->camera->position.y, scene->camera->position.z);
 			
 			if (ImGui::Button("Reset Camera"))
 			{

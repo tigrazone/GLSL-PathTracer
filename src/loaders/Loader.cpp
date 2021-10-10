@@ -25,6 +25,7 @@ freely, subject to the following restrictions:
     Link to original code: https://github.com/mmacklin/tinsel
 */
 
+#include "Utils.h"
 #include "Loader.h"
 #include <tiny_obj_loader.h>
 #include <iostream>
@@ -107,6 +108,7 @@ namespace GLSLPT
 		
 		char *subString, *p;
 		std::string format = "scene";
+		std::string fn = "";
 						
 		subString = strrchr((char*) filename.c_str(), '.');
 		p = subString;
@@ -170,9 +172,9 @@ namespace GLSLPT
 				if (sscanf(line, " material %s", name) == 1)
 				{
 					Material material;
-					char albedoTexName[100] = "None";
-					char metallicRoughnessTexName[100] = "None";
-					char normalTexName[100] = "None";
+					char albedoTexName[FILENAME_MAX] = "";
+					char metallicRoughnessTexName[FILENAME_MAX] = "";
+					char normalTexName[FILENAME_MAX] = "";
 
 					while (fgets(line, kMaxLineLength, file))
 					{
@@ -220,20 +222,26 @@ namespace GLSLPT
 						pmat = &(scene->materials[mat_id]);
 						
 						// Albedo Texture
-						if (strcmp(albedoTexName, "None") != 0) {
-							scene->AddTexture(path + albedoTexName, &(pmat->albedoTexID));
+						if (strlen(albedoTexName) != 0) {
+							fn = albedoTexName;
+							if(!fileExists(fn)) fn = path + albedoTexName;
+							scene->AddTexture(fn, &(pmat->albedoTexID));
 							//printf("mat %d  albedoTexName=%s\n", mat_id, (path + albedoTexName).c_str());
 						}
 				 
 						// MetallicRoughness Texture
-						if (strcmp(metallicRoughnessTexName, "None") != 0) {
-							scene->AddTexture(path + metallicRoughnessTexName, &(pmat->metallicRoughnessTexID));
+						if (strlen(metallicRoughnessTexName) != 0) {
+							fn = metallicRoughnessTexName;
+							if(!fileExists(fn)) fn = path + metallicRoughnessTexName;
+							scene->AddTexture(fn, &(pmat->metallicRoughnessTexID));
 							//printf("mat %d  metallicRoughnessTexName=%s\n", mat_id, (path + metallicRoughnessTexName).c_str());
 						}
 		
 						// Normal Map Texture
-						if (strcmp(normalTexName, "None") != 0) {
-							scene->AddTexture(path + normalTexName, &(pmat->normalmapTexID));
+						if (strlen(normalTexName) != 0) {
+							fn = normalTexName;
+							if(!fileExists(fn)) fn = path + normalTexName;
+							scene->AddTexture(fn, &(pmat->normalmapTexID));
 							//printf("mat %d  normalTexName=%s\n", mat_id, (path + normalTexName).c_str());
 						}
 					}
@@ -333,9 +341,10 @@ namespace GLSLPT
 
 				if (strstr(line, "Renderer"))
 				{
-					char envMap[200] = "None";
+					char envMap[FILENAME_MAX] = "";
 					char enableRR[10] = "None";
 					char *subString, *p;
+					fn = "";
 
 					while (fgets(line, kMaxLineLength, file))
 					{
@@ -358,18 +367,21 @@ namespace GLSLPT
 						sscanf(line, " aaaMaxDiff %f", &renderOptions.aaa_maxDist);
 					}
 
-					if (strcmp(envMap, "None") != 0)
+					if (strlen(envMap) != 0)
 					{
 						subString = strrchr(envMap, '.');
 						p = subString;
 						for ( ; *p; ++p) *p = tolower(*p);
 						
 						if(subString != NULL) {
+							fn = envMap;
+							if(!fileExists(fn)) fn = path + envMap;
+							
 							if (strcmp(subString, ".hdr") == 0) {
-								renderOptions.useEnvMap = scene->AddHDR(path + envMap);
+								renderOptions.useEnvMap = scene->AddHDR(fn);
 							}
-							else if (strcmp(subString, ".exr") == 0) {
-								renderOptions.useEnvMap = scene->AddEXR(path + envMap);
+							else if (strcmp(subString, ".exr") == 0) {								
+								renderOptions.useEnvMap = scene->AddEXR(fn);
 							}
 						}
 					}
@@ -386,10 +398,10 @@ namespace GLSLPT
 
 				if (strstr(line, "mesh"))
 				{
-					std::string filename;
+					fn = "";
 					Mat4 xform;
 					int material_id = 0; // Default Material ID
-					char meshName[200] = "None";
+					char meshName[FILENAME_MAX] = "";
 					
 					float matrixTranslation[3], matrixRotation[3], matrixScale[3];
 
@@ -418,7 +430,8 @@ namespace GLSLPT
 
 						if (sscanf(line, " file %s", file) == 1)
 						{
-							filename = path + file;
+							fn = file;
+							if(!fileExists(fn)) fn = path + file;
 						}
 
 						if (sscanf(line, " material %s", matName) == 1)
@@ -441,21 +454,21 @@ namespace GLSLPT
 					}
 											
 					
-					if (!filename.empty())
+					if (!fn.empty())
 					{
-						int mesh_id = scene->AddMesh(filename);
+						int mesh_id = scene->AddMesh(fn);
 						if (mesh_id != -1)
 						{
 							std::string instanceName;
 
-							if (strcmp(meshName, "None") != 0)
+							if (strlen(meshName) != 0)
 							{
 								instanceName = std::string(meshName);
 							}
 							else
 							{
-								std::size_t pos = filename.find_last_of("/\\");
-								instanceName = filename.substr(pos + 1);
+								std::size_t pos = fn.find_last_of("/\\");
+								instanceName = fn.substr(pos + 1);
 							}
 
 							ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation, matrixScale, (float*)&xform.data);

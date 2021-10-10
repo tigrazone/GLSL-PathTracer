@@ -90,6 +90,8 @@ namespace GLSLPT
 
         tile.x = -1;
         tile.y = numTiles.y - 1;
+		
+		bool envMapLoaded = (scene->hdrData != nullptr);
 
         //----------------------------------------------------------
         // Shaders
@@ -103,7 +105,7 @@ namespace GLSLPT
 
         // Add preprocessor defines for conditional compilation
         std::string defines = "";
-        if (scene->renderOptions.useEnvMap && scene->hdrData != nullptr)
+        if (scene->renderOptions.useEnvMap && envMapLoaded)
             defines += "#define ENVMAP\n";
         if (!scene->lights.empty())
             defines += "#define LIGHTS\n";
@@ -225,7 +227,7 @@ namespace GLSLPT
         pathTraceShader->Use();
         shaderObject = pathTraceShader->getObject();
 
-        glUniform1f(glGetUniformLocation(shaderObject, "hdrResolution"), scene->hdrData == nullptr ? 0 : float(scene->hdrData->width * scene->hdrData->height));
+        glUniform1f(glGetUniformLocation(shaderObject, "hdrResolution"), !envMapLoaded ? 0 : float(scene->hdrData->width * scene->hdrData->height));
         glUniform1i(glGetUniformLocation(shaderObject, "topBVHIndex"), scene->bvhTranslator.topLevelIndex);
         glUniform2f(glGetUniformLocation(shaderObject, "screenResolution"), float(screenSize.x), float(screenSize.y));
         glUniform2f(glGetUniformLocation(shaderObject, "screenResolution1"), float(invScreenSize.x), float(invScreenSize.y));
@@ -249,7 +251,7 @@ namespace GLSLPT
         pathTraceShaderLowRes->Use();
         shaderObject = pathTraceShaderLowRes->getObject();
 
-        glUniform1f(glGetUniformLocation(shaderObject, "hdrResolution"), scene->hdrData == nullptr ? 0 : float(scene->hdrData->width * scene->hdrData->height));
+        glUniform1f(glGetUniformLocation(shaderObject, "hdrResolution"), !envMapLoaded ? 0 : float(scene->hdrData->width * scene->hdrData->height));
         glUniform1i(glGetUniformLocation(shaderObject, "topBVHIndex"), scene->bvhTranslator.topLevelIndex);
         glUniform2f(glGetUniformLocation(shaderObject, "screenResolution"), float(screenSize.x), float(screenSize.y));
         glUniform2f(glGetUniformLocation(shaderObject, "screenResolution1"), float(invScreenSize.x), float(invScreenSize.y));
