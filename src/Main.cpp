@@ -147,20 +147,42 @@ void SaveFrame(const std::string filename, const std::string format="png")
 {
     unsigned char* data = nullptr;
     int w, h;
+	int ret;
+	
     renderer->GetOutputBuffer(&data, w, h);
     stbi_flip_vertically_on_write(true);
 	
 	if(format == "png") {
-		stbi_write_png(filename.c_str(), w, h, 3, data, w*3);
+		ret = stbi_write_png(filename.c_str(), w, h, 3, data, w*3);
+		if (ret == 0) {
+		  fprintf(stderr, "Failed to save PNG image %s\n", filename.c_str());
+		} else {
+			printf("Saved %s\n", filename.c_str());
+		}
 	} else
 	if(format == "bmp") {
-		stbi_write_bmp(filename.c_str(), w, h, 3, data);
+		ret = stbi_write_bmp(filename.c_str(), w, h, 3, data);
+		if (ret == 0) {
+		  fprintf(stderr, "Failed to save BMP image %s\n", filename.c_str());
+		} else {
+			printf("Saved %s\n", filename.c_str());
+		}
 	} else
 	if(format == "tga") {
-		stbi_write_tga(filename.c_str(), w, h, 3, data);
+		ret = stbi_write_tga(filename.c_str(), w, h, 3, data);
+		if (ret == 0) {
+		  fprintf(stderr, "Failed to save TGA image %s\n", filename.c_str());
+		} else {
+			printf("Saved %s\n", filename.c_str());
+		}
 	} else	
 	if(format == "jpg") {
-		stbi_write_jpg(filename.c_str(), w, h, 3, data, 92);
+		ret = stbi_write_jpg(filename.c_str(), w, h, 3, data, 92);
+		if (ret == 0) {
+		  fprintf(stderr, "Failed to save JPG image %s\n", filename.c_str());
+		} else {
+			printf("Saved %s\n", filename.c_str());
+		}
 	}
     delete data;
 }
@@ -185,12 +207,14 @@ void SaveRawFrame(const std::string filename, const std::string format="exr")
 						,&err
 					);
 						
-		  if (ret != TINYEXR_SUCCESS) {
+		if (ret != TINYEXR_SUCCESS) {
 			if (err) {
 			  fprintf(stderr, "Save EXR err: %s(code %d)\n", err, ret);
 			} else {
 			  fprintf(stderr, "Failed to save EXR image. code = %d\n", ret);
 			}
+		} else {
+			printf("Saved %s\n", filename.c_str());
 		}
 	} else
 	if(format == "hdr") {
@@ -198,6 +222,8 @@ void SaveRawFrame(const std::string filename, const std::string format="exr")
 		ret = stbi_write_hdr(filename.c_str(), w, h, 3, data);
 		if (ret == 0) {
 		  fprintf(stderr, "Failed to save HDR image %s\n", filename.c_str());
+		} else {
+			printf("Saved %s\n", filename.c_str());
 		}
 	}
 	
