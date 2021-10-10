@@ -24,12 +24,15 @@
 
 #version 330
 
+
 out vec4 color;
 in vec2 TexCoords;
 
-uniform sampler2D imgTex;
+uniform sampler2D pathTraceTexture;
 
 void main()
 {
-    color = texture(imgTex, TexCoords);
+    float accumSPP = texture(pathTraceTexture, TexCoords).w;
+	if(accumSPP < 1.0f) accumSPP = 1.0f;
+	color = vec4(texture(pathTraceTexture, TexCoords).xyz / accumSPP, accumSPP);
 }

@@ -22,40 +22,21 @@
  * SOFTWARE.
  */
 
-uniform bool isCameraMoving;
-uniform bool useEnvMap;
-uniform vec3 randomVector;
-uniform vec2 invScreenResolution;
-uniform vec2 screenResolution1;
-uniform vec2 screenResolution;
-uniform float hdrTexSize;
-uniform int tileX;
-uniform int tileY;
-uniform float invNumTilesX;
-uniform float invNumTilesY;
+#version 330
 
-uniform sampler2D accumTexture;
-uniform samplerBuffer BVH;
-uniform isamplerBuffer vertexIndicesTex;
-uniform samplerBuffer verticesTex;
-uniform samplerBuffer normalsTex;
-uniform sampler2D materialsTex;
-uniform sampler2D transformsTex;
-uniform sampler2D lightsTex;
-uniform sampler2DArray textureMapsArrayTex;
+precision highp float;
+precision highp int;
+precision highp sampler2D;
+precision highp samplerCube;
+precision highp isampler2D;
+precision highp sampler2DArray;
 
-uniform sampler2D hdrTex;
-uniform sampler2D hdrMarginalDistTex;
-uniform sampler2D hdrCondDistTex;
+out vec4 color;
+in vec2 TexCoords;
 
-uniform float hdrResolution;
-uniform float sampleCounter;
-uniform float hdrMultiplier;
-uniform float hdrRotate;
-uniform float hdrRotateY;
-uniform vec3 bgColor;
-uniform int numOfLights;
-uniform int maxDepth;
-uniform int topBVHIndex;
-uniform int vertIndicesSize;
-uniform int frame;
+uniform sampler2D pathTraceTexture;
+
+void main()
+{
+    color = texture(pathTraceTexture, TexCoords);
+}

@@ -54,6 +54,7 @@ namespace GLSLPT
         float focalDist;
         float aperture;
         float fov;
+        float fovTAN;
         bool isMoving;
         
     private:

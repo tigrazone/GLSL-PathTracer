@@ -26,42 +26,44 @@
 bool AnyHit(Ray r, float maxDist)
 //-----------------------------------------------------------------------
 {
-float dt;
+
 #ifdef LIGHTS
     // Intersect Emitters
     for (int i = 0; i < numOfLights; i++)
     {
+        int indexx = i * 8;
         // Fetch light Data
-		int idx = i * 8;
-        vec3 position = texelFetch(lightsTex, ivec2(idx , 0), 0).xyz;
-        vec3 emission = texelFetch(lightsTex, ivec2(idx + 1, 0), 0).xyz;
-        vec3 u        = texelFetch(lightsTex, ivec2(idx + 2, 0), 0).xyz;
-        vec3 v        = texelFetch(lightsTex, ivec2(idx + 3, 0), 0).xyz;
-        vec3 normal   = texelFetch(lightsTex, ivec2(idx + 4, 0), 0).xyz;
-        vec3 uu 	  = texelFetch(lightsTex, ivec2(idx + 5, 0), 0).xyz;
-        vec3 vv 	  = texelFetch(lightsTex, ivec2(idx + 6, 0), 0).xyz;
-        vec3 params   = texelFetch(lightsTex, ivec2(idx + 7, 0), 0).xyz;
-        float radius  = params.x;
-        float area    = params.y;
-        int type    = int(params.z);
+        vec3 position = texelFetch(lightsTex, ivec2(indexx, 0), 0).xyz;
+        vec3 emission = texelFetch(lightsTex, ivec2(indexx + 1, 0), 0).xyz;
+        vec3 u = texelFetch(lightsTex, ivec2(indexx + 2, 0), 0).xyz;
+        vec3 v = texelFetch(lightsTex, ivec2(indexx + 3, 0), 0).xyz;
+        vec3 normal = texelFetch(lightsTex, ivec2(indexx + 4, 0), 0).xyz;
+        vec3 uu = texelFetch(lightsTex, ivec2(indexx + 5, 0), 0).xyz;
+        vec3 vv = texelFetch(lightsTex, ivec2(indexx + 6, 0), 0).xyz;
+        vec3 params = texelFetch(lightsTex, ivec2(indexx + 7, 0), 0).xyz;
+        float radius = params.x;
+        float area = params.y;
+        float type = params.z;
+		
+		int itype = int(type);
 
         // Intersect rectangular area light
-        if (type == QUAD_LIGHT)
+        if (itype == QUAD_LIGHT)
         {
-            vec4 plane = vec4(normal, radius);
+            vec4 plane = vec4(normal, radius);			
 			
-			float d = RectIntersect(position, uu, vv, plane, r, dt);
-            if (d > 0.0 && d < maxDist)
-                return true;
-        }
+			float d = RectIntersect(position, uu, vv, plane, r);
 
-        // Intersect spherical area light
-        if (type == SPHERE_LIGHT)
-        {
-            float d = SphereIntersect(u.x, position, r);
             if (d > 0.0 && d < maxDist)
                 return true;
-        }
+        } else 
+			// Intersect spherical area light
+			if (itype == SPHERE_LIGHT)
+			{
+				float d = SphereIntersect(u.x, position, r); //precalculated
+				if (d > 0.0 && d < maxDist)
+					return true;
+			}
     }
 #endif
 
@@ -70,45 +72,62 @@ float dt;
     int ptr = 0;
     stack[ptr++] = -1;
 
-    int index = topBVHIndex;
+    int idx = topBVHIndex;
     float leftHit = 0.0;
     float rightHit = 0.0;
 
-    bool BLAS = false;
+    int currMatID = 0;
+    bool meshBVH = false;
 
-    Ray rTrans;
-    rTrans.origin = r.origin;
-    rTrans.direction = r.direction;
+    Ray r_trans;
+    mat4 temp_transform;
+    r_trans.origin = r.origin;
+    r_trans.direction = r.direction;
 
-    while (index != -1)
+    while (idx > -1 || meshBVH)
     {
+        int n = idx;
+
+        if (meshBVH && idx < 0)
+        {
+            meshBVH = false;
+
+            idx = stack[--ptr];
+
+            r_trans.origin = r.origin;
+            r_trans.direction = r.direction;
+            continue;
+        }
+
+        int index = n;
         ivec3 LRLeaf = ivec3(texelFetch(BVH, index * 3 + 2).xyz);
 
-        int leftIndex  = int(LRLeaf.x);
+        int leftIndex = int(LRLeaf.x);
         int rightIndex = int(LRLeaf.y);
-        int leaf       = int(LRLeaf.z);
+        int leaf = int(LRLeaf.z);
 
         if (leaf > 0) // Leaf node of BLAS
         {
             for (int i = 0; i < rightIndex; i++) // Loop through tris
             {
-                ivec3 vertIndices = ivec3(texelFetch(vertexIndicesTex, leftIndex + i).xyz);
+                int index = leftIndex + i;
+                ivec3 vert_indices = ivec3(texelFetch(vertexIndicesTex, index).xyz);
 
-                vec4 v0 = texelFetch(verticesTex, vertIndices.x);
-                vec4 v1 = texelFetch(verticesTex, vertIndices.y);
-                vec4 v2 = texelFetch(verticesTex, vertIndices.z);
+                vec4 v0 = texelFetch(verticesTex, vert_indices.x);
+                vec4 v1 = texelFetch(verticesTex, vert_indices.y);
+                vec4 v2 = texelFetch(verticesTex, vert_indices.z);
 
                 vec3 e0 = v1.xyz - v0.xyz;
                 vec3 e1 = v2.xyz - v0.xyz;
-                vec3 pv = cross(rTrans.direction, e1);
+                vec3 pv = cross(r_trans.direction, e1);
                 float det = dot(e0, pv);
 
-                vec3 tv = rTrans.origin - v0.xyz;
+                vec3 tv = r_trans.origin - v0.xyz;
                 vec3 qv = cross(tv, e0);
 
                 vec4 uvt;
                 uvt.x = dot(tv, pv);
-                uvt.y = dot(rTrans.direction, qv);
+                uvt.y = dot(r_trans.direction, qv);
                 uvt.z = dot(e1, qv);
                 uvt.xyz *= 1.0f / det;
                 uvt.w = 1.0 - uvt.x - uvt.y;
@@ -119,40 +138,41 @@ float dt;
         }
         else if (leaf < 0) // Leaf node of TLAS
         {
+            idx = leftIndex;
+
 			int leaf4 = (-leaf - 1) << 2;
-            vec4 r1 = texelFetch(transformsTex, ivec2(leaf4 , 0), 0).xyzw;
+
+            vec4 r1 = texelFetch(transformsTex, ivec2(leaf4, 0), 0).xyzw;
             vec4 r2 = texelFetch(transformsTex, ivec2(leaf4 + 1, 0), 0).xyzw;
             vec4 r3 = texelFetch(transformsTex, ivec2(leaf4 + 2, 0), 0).xyzw;
             vec4 r4 = texelFetch(transformsTex, ivec2(leaf4 + 3, 0), 0).xyzw;
 
-            mat4 transform = mat4(r1, r2, r3, r4);
+            temp_transform = mat4(r1, r2, r3, r4);
 
-            rTrans.origin    = vec3(inverse(transform) * vec4(r.origin, 1.0));
-            rTrans.direction = vec3(inverse(transform) * vec4(r.direction, 0.0));
+            r_trans.origin = vec3(inverse(temp_transform) * vec4(r.origin, 1.0));
+            r_trans.direction = vec3(inverse(temp_transform) * vec4(r.direction, 0.0));
 
-            // Add a marker. We'll return to this spot after we've traversed the entire BLAS
             stack[ptr++] = -1;
-
-            index = leftIndex;
-            BLAS = true;
+            meshBVH = true;
+            currMatID = rightIndex;
             continue;
         }
         else
         {
-            leftHit =  AABBIntersect(texelFetch(BVH, leftIndex  * 3 ).xyz, texelFetch(BVH, leftIndex  * 3 + 1).xyz, rTrans);
-            rightHit = AABBIntersect(texelFetch(BVH, rightIndex * 3 ).xyz, texelFetch(BVH, rightIndex * 3 + 1).xyz, rTrans);
+            leftHit =  AABBIntersect(texelFetch(BVH, leftIndex  * 3).xyz, texelFetch(BVH, leftIndex  * 3 + 1).xyz, r_trans);
+            rightHit = AABBIntersect(texelFetch(BVH, rightIndex * 3).xyz, texelFetch(BVH, rightIndex * 3 + 1).xyz, r_trans);
 
             if (leftHit > 0.0 && rightHit > 0.0)
             {
                 int deferred = -1;
                 if (leftHit > rightHit)
                 {
-                    index = rightIndex;
+                    idx = rightIndex;
                     deferred = leftIndex;
                 }
                 else
                 {
-                    index = leftIndex;
+                    idx = leftIndex;
                     deferred = rightIndex;
                 }
 
@@ -161,28 +181,16 @@ float dt;
             }
             else if (leftHit > 0.)
             {
-                index = leftIndex;
+                idx = leftIndex;
                 continue;
             }
             else if (rightHit > 0.)
             {
-                index = rightIndex;
+                idx = rightIndex;
                 continue;
             }
         }
-        index = stack[--ptr];
-
-        // If we've traversed the entire BLAS then switch to back to TLAS and resume where we left off
-        if (BLAS && index == -1)
-        {
-            BLAS = false;
-
-            index = stack[--ptr];
-
-            rTrans.origin = r.origin;
-            rTrans.direction = r.direction;
-            continue;
-        }
+        idx = stack[--ptr];
     }
 
     return false;

@@ -27,7 +27,7 @@ float SphereIntersect(float rad, vec3 pos, Ray r)
 //-----------------------------------------------------------------------
 {
     vec3 op = pos - r.origin;
-    
+	
     float b = dot(op, r.direction);
     float det = b * b - dot(op, op) + rad;
     if (det < 0.0)
@@ -46,7 +46,30 @@ float SphereIntersect(float rad, vec3 pos, Ray r)
 }
 
 //-----------------------------------------------------------------------
-float RectIntersect(in vec3 pos, in vec3 u, in vec3 v, in vec4 plane, in Ray r, out float dt)
+float RectIntersect(in vec3 pos, in vec3 u, in vec3 v, in vec4 plane, in Ray r)
+//-----------------------------------------------------------------------
+{
+    vec3 n = vec3(plane);
+    float dt = dot(r.direction, n);
+    float t = (plane.w - dot(n, r.origin)) / dt;
+    if (t > EPS)
+    {
+        vec3 p = r.origin + r.direction * t;
+        vec3 vi = p - pos;
+        float a1 = dot(u, vi);
+        if (a1 >= 0. && a1 <= 1.)
+        {
+            float a2 = dot(v, vi);
+            if (a2 >= 0. && a2 <= 1.)
+                return t;
+        }
+    }
+
+    return INFINITY;
+}
+
+//-----------------------------------------------------------------------
+float RectIntersect1(in vec3 pos, in vec3 u, in vec3 v, in vec4 plane, in Ray r, out float dt)
 //-----------------------------------------------------------------------
 {
     vec3 n = vec3(plane);
