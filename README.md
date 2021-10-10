@@ -2,6 +2,8 @@ GLSL-PathTracer
 ==========
 A physically based path tracer that runs in a GLSL fragment shader.
 
+![HDRI power](./screenshots/hyperion-hdri.jpg)
+
 ![RenderMan Swatch](./screenshots/Renderman_swatch.png)
 
 ![Stormtrooper](./screenshots/stormtrooper.jpg)

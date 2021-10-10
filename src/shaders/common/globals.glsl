@@ -30,8 +30,8 @@
 
 #define TWO_PI_PI    19.739208802178717237668981999752
 
-#define INFINITY  1000000.0
-#define EPS 0.001
+#define INFINITY  1e6
+#define EPS 1e-4
 
 #define QUAD_LIGHT 0
 #define SPHERE_LIGHT 1
@@ -136,6 +136,8 @@ uniform Camera camera;
 uvec4 seed;
 ivec2 pixel;
 
+#define oneOFbig 2.3283064370807973754314699618685e-10
+
 void InitRNG(vec2 p, int frame)
 {
     pixel = ivec2(p);
@@ -152,10 +154,7 @@ void pcg4d(inout uvec4 v)
 
 float rand()
 {
-    pcg4d(seed); return float(seed.x) / float(0xffffffffu);
-}
-
-vec3 FaceForward(vec3 a, vec3 b)
-{
-    return dot(a, b) < 0.0 ? -b : b;
+    pcg4d(seed); 
+	// return float(seed.x) / float(0xffffffffu);
+	return float(seed.x) * oneOFbig;
 }
