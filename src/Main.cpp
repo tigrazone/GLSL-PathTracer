@@ -700,9 +700,9 @@ void MainLoop(void* arg)
 						}
 					}
 				}
-			optionsChanged |= ImGui::SliderFloat("Multiplier", &renderOptions.hdrMultiplier, 0.1f, MAXhdrMultiplier, "%.2f");
-            optionsChanged |= ImGui::SliderFloat("X rotate ", &renderOptions.hdrRotate, -180.0f, 180.0f, "%.2f");
-            optionsChanged |= ImGui::SliderFloat("Y rotate ", &renderOptions.hdrRotateY, -180.0f, 180.0f, "%.2f");
+			optionsChanged |= ImGui::SliderFloat("Multiplier", &renderOptions.hdrMultiplier, 0.1f, MAXhdrMultiplier, "%.2f") & (scene->hdrData != nullptr);
+            optionsChanged |= ImGui::SliderFloat("X rotate ", &renderOptions.hdrRotate, -180.0f, 180.0f, "%.2f") & (scene->hdrData != nullptr);
+            optionsChanged |= ImGui::SliderFloat("Y rotate ", &renderOptions.hdrRotateY, -180.0f, 180.0f, "%.2f") & (scene->hdrData != nullptr);
 			
 			ImGui::Separator();
 			ImGui::Text("Adaptive sampling");
