@@ -656,7 +656,8 @@ void MainLoop(void* arg)
 			ImGui::Separator();
 			ImGui::Text("HDRI lighting");
 			
-            requiresReload |= ImGui::Checkbox("Enable", &renderOptions.useEnvMap);
+			//& for not reload shader if Env map not loaded - just toggle switch 
+            requiresReload |= ImGui::Checkbox("Enable", &renderOptions.useEnvMap) & (scene->hdrData != nullptr);
 			
                 //show is loaded or no env map			
                 ImGui::TextDisabled(scene->hdrData != nullptr ? "*" : " ");
