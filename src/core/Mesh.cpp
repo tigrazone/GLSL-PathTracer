@@ -25,6 +25,8 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
 
+#include "Utils.h"
+
 #include "Mesh.h"
 #include <iostream>
 
@@ -384,7 +386,8 @@ namespace GLSLPT
 		}
 		
 		time2 = clock();
-		printf("%.1fs\n", (float)(time2-time1)/(float)CLOCKS_PER_SEC);
+		
+		show_elapsed_time(time2, time1);
 
         return true;
     }
@@ -397,7 +400,18 @@ namespace GLSLPT
 		
         const size_t numTris = verticesUVX.size() / 3;
 		
-		printf("%ld tris\n", numTris);
+		if(numTris > 10005) {
+			float sz, sz1;
+			char kb_mega_giga;
+			
+			sz = numTris;
+			convert_mega_giga(sz, sz1, kb_mega_giga);
+			
+			printf("%.2f%c triangles\n", sz1, kb_mega_giga);
+		}
+		else {
+			printf("%d triangles\n", numTris);
+		}
 		
         std::vector<RadeonRays::bbox> bounds(numTris);
 		
@@ -420,7 +434,8 @@ namespace GLSLPT
         bvh->Build(&bounds[0], numTris);		
 		
 		time2 = clock();
-		printf("%.1fs\n", (float)(time2-time1)/(float)CLOCKS_PER_SEC);
+		
+		show_elapsed_time(time2, time1);
 
         return numTris;
     }

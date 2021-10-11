@@ -26,6 +26,7 @@
 
 #include "Scene.h"
 #include "Camera.h"
+#include "Utils.h"
 
 #include <ctime>
 
@@ -139,7 +140,8 @@ namespace GLSLPT
         }
 		
 		time2 = clock();
-		printf("%.1fs\n", (float)(time2-time1)/(float)CLOCKS_PER_SEC);
+		
+		show_elapsed_time(time2, time1);
 		
 		return renderOptions.useEnvMap;
     }
@@ -185,7 +187,8 @@ namespace GLSLPT
         }
 		
 		time2 = clock();
-		printf("%.1fs\n", (float)(time2-time1)/(float)CLOCKS_PER_SEC);
+		
+		show_elapsed_time(time2, time1);
 		
 		return renderOptions.useEnvMap;
     }
@@ -260,9 +263,20 @@ namespace GLSLPT
 			meshes[i]->tris = meshes[i]->BuildBVH();
             totalTris += meshes[i]->tris;
 			
-        }	
+        }
 		
-		printf("Total %ld tris loaded\n", totalTris);
+		if(totalTris > 10005) {
+			float sz, sz1;
+			char kb_mega_giga;
+			
+			sz = totalTris;
+			convert_mega_giga(sz, sz1, kb_mega_giga);
+			
+			printf("Total %.2f%c triangles loaded\n", sz1, kb_mega_giga);
+		}
+		else {
+			printf("Total %d triangles loaded\n", totalTris);
+		}
     }
     
     void Scene::RebuildInstances()
@@ -448,9 +462,43 @@ namespace GLSLPT
         }
 		
 		time2 = clock();
-		printf("%.1fs\n", (float)(time2-time1)/(float)CLOCKS_PER_SEC);		
+		
+		show_elapsed_time(time2, time1);
 		
 		printf("=============================\nLights: %d\n", lights.size());
-		printf("Mesh lights: %d\nEmissive triangles: %d\n\n", meshLights.size(), meshLightTris);
+		printf("Mesh lights: %d\nEmissive triangles: ", meshLights.size());
+		
+		float sz, sz1;
+		char kb_mega_giga;
+		
+		if(meshLightTris > 10005) {
+			
+			sz = meshLightTris;
+			convert_mega_giga(sz, sz1, kb_mega_giga);
+			
+			printf("%.2f%c\n", sz1, kb_mega_giga);
+		}
+		else {
+			printf("%d\n", meshLightTris);
+		}
+		
+		printf("-----------------------------\n");
+		
+		sz = sizeof(Vec4) * verticesUVX.size();
+		convert_mega_giga(sz, sz1, kb_mega_giga);
+		
+		printf("verticesUVX mem: %.2f%c\n", sz1, kb_mega_giga);
+		
+		sz = sizeof(Vec4) * normalsUVY.size();
+		convert_mega_giga(sz, sz1, kb_mega_giga);
+		
+		printf("normalsUVY mem: %.2f%c\n", sz1, kb_mega_giga);
+		
+		sz = sizeof(RadeonRays::BvhTranslator::Node) * bvhTranslator.nodes.size();
+		convert_mega_giga(sz, sz1, kb_mega_giga);
+		
+		printf("bvh mem: %.2f%c  NODES: %d\n", sz1, kb_mega_giga, bvhTranslator.nodes.size());
+		
+		printf("-----------------------------\n");		
     }
 }

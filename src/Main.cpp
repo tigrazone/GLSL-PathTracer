@@ -542,8 +542,11 @@ void MainLoop(void* arg)
 	
 	//show samples and render time in window title
 	char wtitle[1000];
+	char timestr[100];
 	
-	sprintf(wtitle, "%s | %d samples, time %.1fs", PROGRAM_NAME, samplesNow, renderTimeNow);
+	get_time_str(timestr, renderTimeNow);
+	
+	sprintf(wtitle, "%s | %d samples, time %s", PROGRAM_NAME, samplesNow, timestr);
 	SDL_SetWindowTitle(loopdata.mWindow, wtitle);
 
     ImGui_ImplOpenGL3_NewFrame();
@@ -558,11 +561,11 @@ void MainLoop(void* arg)
         ImGui::Begin("Settings");
 
         ImGui::Text("Samples: %d ", samplesNow);
-        ImGui::Text("Render time: %.1fs", renderTimeNow);
+        ImGui::Text("Render time: %s", timestr);
 		
 		if( maxSPP == samplesNow || (renderTimeNow > maxRenderTime && maxRenderTime>0.0f))
 		{
-			printf("%d samples. render time: %.1fs\n", samplesNow, renderTimeNow);
+			printf("%d samples. render time: %s\n", samplesNow, timestr);
 			
 			std::string fn = imgDefaultFilename;
 			fn += "_"+to_string(samplesNow)+"spp";
@@ -587,7 +590,7 @@ void MainLoop(void* arg)
 		
 		if((saveEverySPP>0 && (samplesNow-lastSavedSPP) == saveEverySPP) || (renderTimeNow - lastSaveTime > saveEveryTime && saveEveryTime>0.0f))
 		{
-			printf("%d samples. render time: %.1fs\n", samplesNow, renderTimeNow);			
+			printf("%d samples. render time: %s\n", samplesNow, timestr);			
 			
 			std::string fn = imgDefaultFilename;
 			if(addspp) {

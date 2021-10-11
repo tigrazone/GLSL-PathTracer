@@ -489,7 +489,8 @@ namespace GLSLPT
 			scene->renderOptions = renderOptions;
 		}
 		time2 = clock();
-		printf("%.1fs\n", (float)(time2-time1)/(float)CLOCKS_PER_SEC);
+		
+		show_elapsed_time(time2, time1);
 
         scene->CreateAccelerationStructures();
 

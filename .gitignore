@@ -3,7 +3,7 @@
 .vs/
 build/*
 build-mingw/*
-
+assets/*
 thirdparty/miniz/build/*
 thirdparty/miniz/bin/*
 thirdparty/miniz/examples/*
