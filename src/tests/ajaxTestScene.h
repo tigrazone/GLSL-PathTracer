@@ -35,8 +35,6 @@ namespace GLSLPT
         renderOptions.tileWidth = 128;
         renderOptions.hdrMultiplier = 5.0f;
         renderOptions.useEnvMap = true;
-        renderOptions.resolution = iVec2(1280, 720);
-        renderOptions.useEnvMap = false;
         scene->AddCamera(Vec3(0.0f, 0.125f, -0.45f), Vec3(0.0f, 0.125f, 0.0f), 60.0f);
 
         int mesh_id = scene->AddMesh("../assets/ajax/ajax.obj");

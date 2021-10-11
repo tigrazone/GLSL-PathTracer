@@ -327,42 +327,42 @@ void MoveCameraFromKeyboard(float multiply, float coef)
 			} else
 			if(ImGui::IsKeyPressed(SDL_SCANCODE_X)) { // X env map Multiplier +
 				if(renderOptions.hdrMultiplier + coef < MAXhdrMultiplier + coef*0.1f) {
-					renderOptions.hdrMultiplier += coef;					
+					renderOptions.hdrMultiplier += coef;		
 					scene->renderOptions = renderOptions;
 					scene->camera->isMoving = true;
 				}
 			} else
 			if(ImGui::IsKeyPressed(SDL_SCANCODE_Z)) { // Z env map Multiplier -
 				if(renderOptions.hdrMultiplier - coef > 0.1f - coef*0.1f) {
-					renderOptions.hdrMultiplier -= coef;					
+					renderOptions.hdrMultiplier -= coef;		
 					scene->renderOptions = renderOptions;
 					scene->camera->isMoving = true;
 				}
 			} else
 			if(ImGui::IsKeyPressed(SDL_SCANCODE_N)) { // N env map Rotate +
 				if(renderOptions.hdrRotate + coef < 180.0f + coef*0.1f) {
-					renderOptions.hdrRotate += coef;					
+					renderOptions.hdrRotate += coef;		
 					scene->renderOptions = renderOptions;
 					scene->camera->isMoving = true;
 				}
 			} else
 			if(ImGui::IsKeyPressed(SDL_SCANCODE_M)) { // M env map Rotate -
 				if(renderOptions.hdrRotate - coef > -180.0f - coef*0.1f) {
-					renderOptions.hdrRotate -= coef;					
+					renderOptions.hdrRotate -= coef;		
 					scene->renderOptions = renderOptions;
 					scene->camera->isMoving = true;
 				}
 			} else
 			if(ImGui::IsKeyPressed(SDL_SCANCODE_Y)) { // Y env map RotateY +
 				if(renderOptions.hdrRotateY + coef < 180.0f + coef*0.1f) {
-					renderOptions.hdrRotateY += coef;					
+					renderOptions.hdrRotateY += coef;		
 					scene->renderOptions = renderOptions;
 					scene->camera->isMoving = true;
 				}
 			} else
 			if(ImGui::IsKeyPressed(SDL_SCANCODE_H)) { // H env map RotateY -
 				if(renderOptions.hdrRotateY - coef > -180.0f - coef*0.1f) {
-					renderOptions.hdrRotateY -= coef;					
+					renderOptions.hdrRotateY -= coef;		
 					scene->renderOptions = renderOptions;
 					scene->camera->isMoving = true;
 				}
@@ -590,7 +590,7 @@ void MainLoop(void* arg)
 		
 		if((saveEverySPP>0 && (samplesNow-lastSavedSPP) == saveEverySPP) || (renderTimeNow - lastSaveTime > saveEveryTime && saveEveryTime>0.0f))
 		{
-			printf("%d samples. render time: %s\n", samplesNow, timestr);			
+			printf("%d samples. render time: %s\n", samplesNow, timestr);
 			
 			std::string fn = imgDefaultFilename;
 			if(addspp) {
@@ -671,8 +671,6 @@ void MainLoop(void* arg)
 
         bool optionsChanged = false;
 
-        ImGui::SliderFloat("Mouse Sensitivity", &mouseSensitivity, 0.01f, 1.0f);
-
         if (ImGui::CollapsingHeader("Render Settings"))
         {
             bool requiresReload = false;
@@ -741,12 +739,12 @@ void MainLoop(void* arg)
 			requiresReload |= ImGui::SliderFloat("min diff ", &renderOptions.aaa_minDist, 0.01f, 0.95f, "%.2f");
 			requiresReload |= ImGui::SliderFloat("max diff ", &renderOptions.aaa_maxDist, 0.01f, 0.95f, "%.2f");
 			
-			ImGui::Separator();			
+			ImGui::Separator();
             
             requiresReload |= ImGui::Checkbox("Enable Constant BG", &renderOptions.useConstantBg);
             optionsChanged |= ImGui::ColorEdit3("Background Color", (float*)bgCol, 0);
 			
-			ImGui::Separator();			
+			ImGui::Separator();
             
             ImGui::Checkbox("Enable Denoiser", &renderOptions.enableDenoiser);
             ImGui::SliderInt("Denoise every frame ", &renderOptions.denoiserFrameCnt, 5, 50);
@@ -759,6 +757,10 @@ void MainLoop(void* arg)
 
             scene->renderOptions.enableDenoiser = renderOptions.enableDenoiser;
             scene->renderOptions.denoiserFrameCnt = renderOptions.denoiserFrameCnt;
+			
+			ImGui::Separator();
+
+			ImGui::SliderFloat("Mouse Sensitivity", &mouseSensitivity, 0.01f, 1.0f);
         }
         
         if (ImGui::CollapsingHeader("Camera"))
@@ -970,7 +972,7 @@ int main(int argc, char** argv)
         {
             imgDefaultFilename = argv[++i];
 			
-			char *subString1, *p1, *pp1, *fn;			
+			char *subString1, *p1, *pp1, *fn;
 			size_t str_sz = imgDefaultFilename.length();
 			
 			pp1 = new char [ str_sz + 1];
@@ -981,7 +983,7 @@ int main(int argc, char** argv)
 						
 						fn =  new char [ subString1 - pp1 ];
 						strncpy(fn, pp1, subString1 - pp1);
-						fn[ subString1 - pp1 ] = 0;						
+						fn[ subString1 - pp1 ] = 0;			
 						imgDefaultFilename.assign(fn);
 						
 						p1 = subString1;

@@ -31,18 +31,11 @@
 #define TWO_PI_PI    19.739208802178717237668981999752
 
 #define INFINITY  1e6
-#define EPS 1e-4
+#define EPS 0.001
 
 #define QUAD_LIGHT 0
 #define SPHERE_LIGHT 1
 #define DISTANT_LIGHT 2
-
-#define oneOFbig 2.3283064370807973754314699618685e-10
-
-mat4 transform;
-
-//vec2 seed;
-vec3 tempTexCoords;
 
 struct Ray
 {
@@ -69,7 +62,6 @@ struct Material
     float atDistance;
     vec3 extinction;
     vec3 extinction1;
-    vec3 texIDs;
     // Roughness calculated from anisotropic param
     float ax;
     float ay;
@@ -82,8 +74,6 @@ struct Camera
     vec3 forward;
     vec3 position;
     float fov;
-    float fovTAN;
-    float fovTAN1;
     float focalDist;
     float aperture;
 };
@@ -114,13 +104,10 @@ struct State
     vec3 tangent;
     vec3 bitangent;
 
-    bool isEmitter;
-    bool isInside;
-    bool specularBounce;
+    bool isEmitter;	
+	bool isBackside;
 
     vec2 texCoord;
-    vec3 bary;
-    ivec3 triID;
     int matID;
     Material mat;
 };
@@ -134,80 +121,22 @@ struct BsdfSampleRec
 
 struct LightSampleRec
 {
-    vec3 surfacePos;
     vec3 normal;
     vec3 emission;
+    vec3 direction;
+    float dist;
     float pdf;
 };
 
 uniform Camera camera;
-
-
-/*
-//#define hashi(x)   lowbias32(x)
-//#define hashi(x)   triple32(x)
-#define hashi(x)   triple32inv(x)
-#define hash(x)  ( float( hashi(x) ) * oneOFbig )
-
-uint lowbias32(uint x)
-{
-    x ^= x >> 16;
-    x *= 0x7feb352dU;
-    x ^= x >> 15;
-    x *= 0x846ca68bU;
-    x ^= x >> 16;
-    return x;
-}
-
-uint triple32(uint x)
-{
-    x ^= x >> 17;
-    x *= 0xed5ad4bbU;
-    x ^= x >> 11;
-    x *= 0xac4c1b51U;
-    x ^= x >> 15;
-    x *= 0x31848babU;
-    x ^= x >> 14;
-    return x;
-}
-
-uint triple32inv(uint x)
-{
-    x ^= x >> 14 ^ x >> 28;
-    x *= 0x32b21703U;
-    x ^= x >> 15 ^ x >> 30;
-    x *= 0x469e0db1U;
-    x ^= x >> 11 ^ x >> 22;
-    x *= 0x79a85073U;
-    x ^= x >> 17;
-    x--;
-	return x;
-}
-
-
-float rand() { 
-	seed -= randomVector.xy;
-	return hash( floatBitsToUint(seed.x) + hashi(floatBitsToUint(seed.y)) );
-}
-*/
-
-//temporal conversion
-vec3 rgb_to_ycocg(in vec3 colour) {
-vec3 color4 = colour * 0.25f;
-	return vec3(
-		 color4.x + color4.y + color4.y + color4.z,
-		 color4.x + color4.x - color4.z - color4.z,
-		-color4.x + color4.y + color4.y - color4.z
-	);
-}
-
-
 
 //RNG from code by Moroz Mykhailo (https://www.shadertoy.com/view/wltcRS)
 
 //internal RNG state 
 uvec4 seed;
 ivec2 pixel;
+
+#define oneOFbig 2.3283064370807973754314699618685e-10
 
 void InitRNG(vec2 p, int frame)
 {
@@ -226,6 +155,6 @@ void pcg4d(inout uvec4 v)
 float rand()
 {
     pcg4d(seed); 
-	//return float(seed.x) / float(0xffffffffu);
+	// return float(seed.x) / float(0xffffffffu);
 	return float(seed.x) * oneOFbig;
 }

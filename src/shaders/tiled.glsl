@@ -24,9 +24,8 @@
 
 #version 330
 
-out vec4 color;
+out vec3 color;
 in vec2 TexCoords;
-uniform int doAAA;
 
 #include common/uniforms.glsl
 #include common/globals.glsl
@@ -37,171 +36,40 @@ uniform int doAAA;
 #include common/disney.glsl
 #include common/pathtrace.glsl
 
-
-float r1, r2, cam_r1, cam_r2;
-vec2 coordsTile, jitter, d;
-vec3 rayDir, focalPoint, randomAperturePos, finalRayDir;
-Ray ray;
-
-void createNewCamRay()
+void main(void)
 {
-    r1 = rand();
-    r2 = rand();
-	
+    vec2 coordsTile = mix(tileOffset, tileOffset + invNumTiles, TexCoords);
+
+    InitRNG(coordsTile * screenResolution, frame);
+
+    float r1 = rand();
+    float r2 = rand();
+
+    vec2 jitter;
     jitter.x = r1 < 1.0 ? sqrt(r1 + r1) - 1.0 : 1.0 - sqrt(2.0 - r1 - r1);
     jitter.y = r2 < 1.0 ? sqrt(r2 + r2) - 1.0 : 1.0 - sqrt(2.0 - r2 - r2);
 
     jitter *= screenResolution1;
-    d = coordsTile + jitter;
+    vec2 d = (coordsTile + coordsTile + jitter) - 1.0;
 
-    d.y *= camera.fovTAN1;
-    d.x *= camera.fovTAN;
-    rayDir = normalize(d.x * camera.right + d.y * camera.up + camera.forward);
-
-    focalPoint = camera.focalDist * rayDir;
-    randomAperturePos = vec3(0);
+    d.y *= screenSizeYXfov;
+    d.x *= fov1;
+    vec3 rayDir = normalize(d.x * camera.right + d.y * camera.up + camera.forward);
 	
-#ifdef CAMERA_APERTURE
-    cam_r1 = rand() * TWO_PI;
-    cam_r2 = rand() * camera.aperture;
-    randomAperturePos = (cos(cam_r1) * camera.right + sin(cam_r1) * camera.up) * sqrt(cam_r2);
-#endif
+	Ray ray = Ray(camera.position, rayDir);
 	
-    finalRayDir = normalize(focalPoint - randomAperturePos);
-
-    ray = Ray(camera.position + randomAperturePos, finalRayDir);
-}
-
-
-void main(void)
-{    
-    vec2 coordsFS;
-	coordsTile = TexCoords;	
-	
-	vec2 invNumTiles = vec2(invNumTilesX, invNumTilesY);
-
-	vec2 invNumTilesTILE = invNumTiles * vec2(float(tileX), float(tileY));
-	
-	vec2 xyoffset = invNumTilesTILE + invNumTilesTILE - vec2(1.0f, 1.0f);
-	
-	coordsTile = mix(xyoffset, xyoffset + invNumTiles + invNumTiles, coordsTile);
-	coordsFS = mix(invNumTilesTILE, invNumTilesTILE + invNumTiles, TexCoords);
-	
-    //seed = coordsFS;
-
-    InitRNG(coordsFS * screenResolution, frame);
-	
-	createNewCamRay();
-    vec3 pixelColor = PathTrace(ray);
-	float extraSPP = 1.0;
-
-	vec4 accumed = texture(accumTexture, coordsFS);
-    vec3 accumColor = accumed.xyz;
-    float accumSPP = accumed.w;
-
-    if (isCameraMoving) {
-        accumColor = vec3(0.);
-		accumSPP = 0;
-		}
-	
-#ifdef AAA
-
-#define aaa_nbPRCmin 0.3
-#define aaa_nbPRCmax 0.5
-
-int pass, i, j, pxls, neightbors, startXY, endXY, dNeightbors;
-vec3 accumColorNear, sumPixelsValue;
-vec2 startPos, nowPos;
-float accumNearSPP, ddd3210, ddd321, dddNear;
-
-//dont do aaa for first frame
-if(sampleCounter > 1.0f) {
-		vec3 accumColor0 = rgb_to_ycocg (accumColor + pixelColor) *(1.0f/(accumSPP+1.0f));
-		float ddd2 = dot(accumColor0, accumColor0);
+	if(camera.aperture > 0.0) {
+		vec3 focalPoint = camera.focalDist * rayDir;
+		float cam_r1 = rand() * TWO_PI;
+		vec3 randomAperturePos = (cos(cam_r1) * camera.right + sin(cam_r1) * camera.up) * sqrt(rand() * camera.aperture);
+		vec3 finalRayDir = normalize(focalPoint - randomAperturePos);
 		
-		float dist = aaa_minDist;
-		float delta_dist = (aaa_maxDist - aaa_minDist) / float(AAA-1);
-		
-		float nbPRC = aaa_nbPRCmax;
-		float nbPRC_dist = (aaa_nbPRCmax - aaa_nbPRCmin) / float(AAA-1);
-
-
-		neightbors = 1;
-		dNeightbors = 1;
-		
-	for(pass=0; pass < AAA; pass++) {
-		//look at neighbor pixels
-#if 1
-		if(neightbors==0 || neightbors==4) {
-			dNeightbors = -dNeightbors;
-			neightbors = 2;			
-		}
-#endif
-
-		startXY = -neightbors;
-		endXY = neightbors+1;
-		startPos = coordsFS - invScreenResolution*neightbors;
-		
-		pxls = 0;
-		sumPixelsValue = vec3(0);
-
-		for(j=startXY;j<endXY;j++) {
-			nowPos = startPos;
-			for(i=startXY;i<endXY;i++) {
-				if(i==0 && j==0) continue;				
-				if(nowPos.x<0 || nowPos.x>=1 || nowPos.y<0 || nowPos.y>=1) continue;
-				
-				pxls++;
-				accumed = texture(accumTexture, nowPos);
-				vec3 accumColorNear = rgb_to_ycocg (accumed.xyz);
-				float accumNearSPP = accumed.w;
-				
-				sumPixelsValue += accumNearSPP > 1 ? accumColorNear * (1.0f/accumNearSPP) : accumColorNear;
-				
-				nowPos += vec2(invScreenResolution.x, 0);
-			}
-			startPos += vec2(0, invScreenResolution.y);
-		}
-		
-		if(pxls>0) {
-			sumPixelsValue *= nbPRC/pxls;
-			sumPixelsValue += rgb_to_ycocg (pixelColor) * ((1.0f - nbPRC)/extraSPP);
-		} else {
-			sumPixelsValue = rgb_to_ycocg (pixelColor) * (1.0f/extraSPP);
-		}
-		
-		dddNear = dot(sumPixelsValue, sumPixelsValue);
-		
-		ddd3210 = ddd2;
-		
-		if(dddNear > ddd3210) {
-			float temp = ddd3210;
-			ddd3210 = dddNear;
-			dddNear = temp;
-		}
-		
-		ddd321 = dddNear / ddd3210;
-		
-		if(ddd321 > dist) 
-		{
-			createNewCamRay();
-			vec3 accumColor1 = PathTrace(ray);
-			
-			pixelColor += accumColor1;
-			accumSPP += 1.0f;
-			extraSPP += 1.0f;
-			
-			ddd2 = dddNear;
-		}
-		
-		dist += delta_dist;
-		
-		neightbors += dNeightbors;
-		nbPRC -= nbPRC_dist;
+		ray = Ray(camera.position + randomAperturePos, finalRayDir);
 	}
-}
-#endif
-	
-	accumSPP += 1.0f;
-    color = vec4(pixelColor + accumColor,accumSPP);
+
+    vec3 accumColor = texture(accumTexture, coordsTile).xyz;
+
+    vec3 pixelColor = PathTrace(ray);
+
+    color = pixelColor + accumColor;
 }

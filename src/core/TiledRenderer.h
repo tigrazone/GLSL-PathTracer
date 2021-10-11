@@ -26,10 +26,9 @@
 
 #include "Renderer.h"
 #include "OpenImageDenoise/oidn.hpp"
-#include <ctime>
-	
+
 namespace GLSLPT
-{		
+{
     class Scene;
     class TiledRenderer : public Renderer
     {
@@ -43,7 +42,6 @@ namespace GLSLPT
         // Shaders
         Program* pathTraceShader;
         Program* pathTraceShaderLowRes;
-        Program* accumShader;
         Program* outputShader;
         Program* tonemapShader;
 
@@ -51,13 +49,16 @@ namespace GLSLPT
         GLuint pathTraceTexture;
         GLuint pathTraceTextureLowRes;
         GLuint accumTexture;
-        GLuint tileOutputTexture[3];
+        GLuint tileOutputTexture[2];
         GLuint denoisedTexture;
 
-        int tileX;
-        int tileY;
-        int numTilesX;
-        int numTilesY;
+        iVec2 tile;
+        iVec2 numTiles;
+        Vec2 invNumTiles;
+        Vec2 invScreenSize;
+		float screenSizeYXfov;
+		float fov1;
+		
         int tileWidth;
         int tileHeight;
 
@@ -67,10 +68,6 @@ namespace GLSLPT
         int sampleCounter;
         float pixelRatio;
         clock_t startRenderTime;
-		
-		float invNumTilesX, invNumTilesY;
-		float screenResolution1X, screenResolution1Y;
-		float fovTAN1;
 
         Vec3* denoiserInputFramePtr;
         Vec3* frameOutputPtr;
@@ -93,7 +90,5 @@ namespace GLSLPT
         void GetOutputBuffer(unsigned char**, int &w, int &h);
 		void GetRawOutputBuffer(float** data, int &w, int &h, bool flipVert);
 		void flipVertical(float* array, unsigned int cols, unsigned int rows);
-		
-		float rndMAX1;
     };
 }

@@ -39,13 +39,13 @@ vec3 EvalDielectricReflection(State state, vec3 V, vec3 N, vec3 L, vec3 H, inout
 {	
     float dotNH = dot(N, H);
 	
-    float F = DielectricFresnel(dotVH, state.eta);
-    float D = GTR2(dotNH, state.mat.roughness);
+    float FD = DielectricFresnel(dotVH, state.eta) * GTR2(dotNH, state.mat.roughness);
     
-    pdf = D * dotNH * F / (4.0 * abs(dotVH));
+    pdf = FD * dotNH / (4.0 * abs(dotVH));
 
-    float G = SmithG_GGX((dot(N, L)), state.mat.roughness) * SmithG_GGX(abs(dot(N, V)), state.mat.roughness);
-    return state.mat.albedo * F * D * G;
+    //float G = SmithG_GGX((dot(N, L)), state.mat.roughness) * SmithG_GGX(abs(dot(N, V)), state.mat.roughness);
+    float G = SmithG_GGX2((dot(N, L)), abs(dot(N, V)), state.mat.roughness);
+    return state.mat.albedo * FD * G;
 }
 
 //-----------------------------------------------------------------------
@@ -62,8 +62,9 @@ vec3 EvalDielectricRefraction(State state, vec3 V, vec3 N, vec3 L, vec3 H, inout
     float pdf0 = (1.0 - F) * D * abs(dotLH) / (denomSqrt * denomSqrt);
     pdf = dotNH * pdf0;
 
-    float G = SmithG_GGX(abs(dot(N, L)), state.mat.roughness) * SmithG_GGX(abs(dot(N, V)), state.mat.roughness);
-    return state.mat.albedo * pdf0 * G * abs(dotVH) * 4.0 * state.eta * state.eta;
+    //float G = SmithG_GGX(abs(dot(N, L)), state.mat.roughness) * SmithG_GGX(abs(dot(N, V)), state.mat.roughness);
+    float G = SmithG_GGX2(abs(dot(N, L)), abs(dot(N, V)), state.mat.roughness);
+    return state.mat.albedo * (pdf0 * G * abs(dotVH) * 4.0 * state.eta * state.eta);
 }
 
 //-----------------------------------------------------------------------
@@ -75,8 +76,9 @@ vec3 EvalSpecular(State state, vec3 Cspec0, vec3 V, vec3 N, vec3 L, vec3 H, inou
     pdf = D * dotNH / (4.0 * dotVH);
 
     vec3 F = mix(Cspec0, vec3(1.0), SchlickFresnel(dot(L, H)));
-    float G = SmithG_GGX((dot(N, L)), state.mat.roughness) * SmithG_GGX(abs(dot(N, V)), state.mat.roughness);
-    return F * D * G;
+    //float G = SmithG_GGX((dot(N, L)), state.mat.roughness) * SmithG_GGX(abs(dot(N, V)), state.mat.roughness);
+    float G = SmithG_GGX2((dot(N, L)), abs(dot(N, V)), state.mat.roughness);
+    return F * (D * G);
 }
 
 //-----------------------------------------------------------------------
@@ -87,9 +89,9 @@ vec3 EvalClearcoat(State state, vec3 V, vec3 N, vec3 L, vec3 H, inout float pdf,
     float D = GTR1(dotNH, mix(0.1, 0.001, state.mat.clearcoatGloss));
     pdf = D * dotNH / (4.0 * dotVH);
 
-    float FH = SchlickFresnel(dot(L, H));
-    float F = mix(0.04, 1.0, FH);
-    float G = SmithG_GGX(dot(N, L), 0.25) * SmithG_GGX(dot(N, V), 0.25);
+    float F = mix(0.04, 1.0, SchlickFresnel(dot(L, H)));
+    //float G = SmithG_GGX(dot(N, L), 0.25) * SmithG_GGX(dot(N, V), 0.25);
+    float G = SmithG_GGX2(dot(N, L), dot(N, V), 0.25);
     return vec3(0.25 * state.mat.clearcoat * F * D * G);
 }
 
@@ -157,15 +159,17 @@ vec3 EvalDiffuseSpecularClearcoat(State state, vec3 Csheen, vec3 Cspec0, vec3 V,
 	float pdfMul = dotNH / (4.0 * dot(V, H));
 	
 	
-	pdfS = 0;
-	if(state.mat.roughness > 0.0) {	
+	//pdfS = 0;
+	//if(state.mat.roughness > 0.0) 
+	{	
 		float D = GTR2(dotNH, state.mat.roughness);
 	
 		pdfS = D * pdfMul;
 
 		vec3 Fs = mix(Cspec0, vec3(1.0), FH);
-		float Gs = SmithG_GGX((dotNL), state.mat.roughness) * SmithG_GGX(abs(dotNV), state.mat.roughness);
-		f += Fs * D * Gs;
+		//float Gs = SmithG_GGX((dotNL), state.mat.roughness) * SmithG_GGX(abs(dotNV), state.mat.roughness);
+		float Gs = SmithG_GGX2((dotNL), abs(dotNV), state.mat.roughness);
+		f += Fs * (D * Gs);
 	}
 	
 	//clearcoat
@@ -174,7 +178,8 @@ vec3 EvalDiffuseSpecularClearcoat(State state, vec3 Csheen, vec3 Cspec0, vec3 V,
 	
 	if(state.mat.clearcoat > 0.0) {
 		float Fc = mix(0.04, 1.0, FH);
-		float Gc = SmithG_GGX(dotNL, 0.25) * SmithG_GGX(dotNV, 0.25);
+		//float Gc = SmithG_GGX(dotNL, 0.25) * SmithG_GGX(dotNV, 0.25);
+		float Gc = SmithG_GGX2(dotNL, dotNV, 0.25);
 		return f + vec3(0.25 * state.mat.clearcoat * Fc * Dc * Gc);
 	}
 	
@@ -205,7 +210,8 @@ vec3 DisneySample(inout State state, vec3 V, vec3 N, inout vec3 L, inout float p
     // TODO: Reuse random numbers and reduce so many calls to rand()
     if (rand() < transWeight)
     {
-		if(state.mat.roughness > 0.0) {
+		//if(state.mat.roughness > 0.0) 
+		{
             vec3 H = ImportanceSampleGTR2(state.mat.roughness, r1, r2);
             //GGXVNDF_Sample(float r1, float r2, vec3 n, float rgh, vec3 incoming)
             //vec3 H = GGXVNDF_Sample(r1, r2, N, state.mat.roughness, V);
@@ -267,7 +273,8 @@ vec3 DisneySample(inout State state, vec3 V, vec3 N, inout vec3 L, inout float p
             // Sample primary specular lobe
             if (rand() < primarySpecRatio) 
             {
-				if(state.mat.roughness > 0.0) {
+				//if(state.mat.roughness > 0.0) 
+				{
 					// TODO: Implement http://jcgt.org/published/0007/04/01/
 					vec3 H = ImportanceSampleGTR2(state.mat.roughness, r1, r2);
 					//vec3 H = GGXVNDF_Sample(r1, r2, N, state.mat.roughness, V);
@@ -346,7 +353,7 @@ vec3 DisneyEval(State state, vec3 V, vec3 N, vec3 L, inout float pdf)
     float bsdfPdf = 0.0;
 
     if (transWeight > 0.0 
-	&& state.mat.roughness > 0.0
+	//&& state.mat.roughness > 0.0
 	)
     {
         // Reflection

@@ -23,14 +23,6 @@
  */
 
 #version 330
-#define PROGRESSIVE
-
-precision highp float;
-precision highp int;
-precision highp sampler2D;
-precision highp samplerCube;
-precision highp isampler2D;
-precision highp sampler2DArray;
 
 out vec3 color;
 in vec2 TexCoords;
@@ -46,8 +38,6 @@ in vec2 TexCoords;
 
 void main(void)
 {
-    //seed = TexCoords;
-	
     InitRNG(gl_FragCoord.xy, 1);
 
     float r1 = rand();
@@ -58,24 +48,23 @@ void main(void)
     jitter.y = r2 < 1.0 ? sqrt(r2 + r2) - 1.0 : 1.0 - sqrt(2.0 - r2 - r2);
 
     jitter *= screenResolution1;
-    vec2 d = (TexCoords + TexCoords - 1.0) + jitter;    
+    vec2 d = (TexCoords + TexCoords + jitter) - 1.0;
 
-    d.y *= camera.fovTAN1;
-    d.x *= camera.fovTAN;
+    d.y *= screenSizeYXfov;
+    d.x *= fov1;
     vec3 rayDir = normalize(d.x * camera.right + d.y * camera.up + camera.forward);
-
-    vec3 focalPoint = camera.focalDist * rayDir;
-	vec3 randomAperturePos = vec3(0);
 	
-#ifdef CAMERA_APERTURE
+	Ray ray = Ray(camera.position, rayDir);
+	
+	if(camera.aperture > 0.0) {
+		vec3 focalPoint = camera.focalDist * rayDir;
 		float cam_r1 = rand() * TWO_PI;
-		float cam_r2 = rand() * camera.aperture;
-		randomAperturePos = (cos(cam_r1) * camera.right + sin(cam_r1) * camera.up) * sqrt(cam_r2);
-#endif
-	
-    vec3 finalRayDir = normalize(focalPoint - randomAperturePos);
+		vec3 randomAperturePos = (cos(cam_r1) * camera.right + sin(cam_r1) * camera.up) * sqrt(rand() * camera.aperture);
+		vec3 finalRayDir = normalize(focalPoint - randomAperturePos);
+		
+		ray = Ray(camera.position + randomAperturePos, finalRayDir);
+	}
 
-    Ray ray = Ray(camera.position + randomAperturePos, finalRayDir);
 
     vec3 pixelColor = PathTrace(ray);
 

@@ -121,20 +121,6 @@ namespace GLSLPT
     {
         Init(eye, lookat, fov);
     }
-
-    Camera::Camera(const Camera& other)
-    {
-        *this = other;
-    }
-
-    Camera& Camera::operator = (const Camera& other)
-    {
-        ptrdiff_t l = (unsigned char*)&isMoving - (unsigned char*)&position.x;
-        isMoving = memcmp(&position.x, &other.position.x, l) != 0;
-        memcpy(&position.x, &other.position.x, l);
-        return *this;
-    }
-	
 	void Camera::Init(Vec3 eye, Vec3 lookat, float fov)
     {
         position = eye;
@@ -148,8 +134,6 @@ namespace GLSLPT
         radius = Vec3::Distance(eye, lookat);
 
         this->fov = Math::Radians(fov);
-        this->fovTAN = tanf(this->fov * 0.5f);
-		
         focalDist = 0.1f;
         aperture = 0.0;
         UpdateCamera();
@@ -158,6 +142,19 @@ namespace GLSLPT
     void Camera::Reset()
     {
         Init(Vec3(0, 0, -1), Vec3(0, 0, 0), 40);
+    }
+
+    Camera::Camera(const Camera& other)
+    {
+        *this = other;
+    }
+
+    Camera& Camera::operator = (const Camera& other)
+    {
+        ptrdiff_t l = (unsigned char*)&isMoving - (unsigned char*)&position.x;
+        isMoving = memcmp(&position.x, &other.position.x, l) != 0;
+        memcpy(&position.x, &other.position.x, l);
+        return *this;
     }
 
     void Camera::OffsetOrientation(float dx, float dy)
@@ -182,8 +179,7 @@ namespace GLSLPT
 
     void Camera::SetFov(float val)
     {
-        fov = Math::Radians(val);		
-        fovTAN = tanf(fov * 0.5f);
+        fov = Math::Radians(val);
     }
 
     void Camera::UpdateCamera()
