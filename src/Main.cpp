@@ -202,7 +202,7 @@ void SaveRawFrame(const std::string filename, const std::string format="exr")
 	
 	if(is_exr) {
 		ret = SaveEXR(data, w, h, 3 // =RGB
-						,1 // = save as fp16 format, else fp32 bit
+						,0 // = save as fp16 format, else fp32 bit
 						,filename.c_str()
 						,&err
 					);

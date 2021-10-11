@@ -36,9 +36,12 @@ void get_time_str(char * s, float elapsedTime)
 		 if(hours>0) sprintf(s,"%s%dh",s,hours);
 		 if(mins>0) 
 			{
-			if(hours>0) strcat(s,":");
-			sprintf(s,"%s%d:%02ds",s,mins,secs);
-			} else {
+			if(hours>0) strcat(s," ");
+			sprintf(s,"%s%dm %ds",s,mins,secs);
+			} else 
+			if(secs>0)
+			{
+				if(hours>0) strcat(s," ");
 				sprintf(s,"%s%ds",s,secs);
 			}
 		}
