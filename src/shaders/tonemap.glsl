@@ -110,7 +110,12 @@ vec3 reinhardTonemap(vec3 color)
 
 void main()
 {
-    color = texture(pathTraceTexture, TexCoords) * invSampleCounter;
+    //color = texture(pathTraceTexture, TexCoords) * invSampleCounter;
+	vec4 accumed = texture(pathTraceTexture, TexCoords);
+	
+    float accumSPP = accumed.w;
+	if(accumSPP < 1.0f) accumSPP = 1.0f;
+	color = vec4(accumed.xyz / accumSPP, accumSPP);
 	
     //color = pow(ToneMap(color, 1.5), vec4(1.0 / 2.2));
 #ifdef tonemapClassicTonemap	

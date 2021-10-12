@@ -58,3 +58,5 @@ uniform int maxDepth;
 uniform int topBVHIndex;
 uniform int vertIndicesSize;
 uniform int frame;
+
+uniform float sampleCounter;

@@ -159,3 +159,14 @@ float rand()
 	// return float(seed.x) / float(0xffffffffu);
 	return float(seed.x) * oneOFbig;
 }
+
+
+//temporal conversion
+vec3 rgb_to_ycocg(in vec3 colour) {
+vec3 color4 = colour * 0.25f;
+	return vec3(
+		 color4.x + color4.y + color4.y + color4.z,
+		 color4.x + color4.x - color4.z - color4.z,
+		-color4.x + color4.y + color4.y - color4.z
+	);
+}

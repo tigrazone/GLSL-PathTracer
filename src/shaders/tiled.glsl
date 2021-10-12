@@ -24,7 +24,7 @@
 
 #version 330
 
-out vec3 color;
+out vec4 color;
 in vec2 TexCoords;
 
 #include common/uniforms.glsl
@@ -36,12 +36,11 @@ in vec2 TexCoords;
 #include common/disney.glsl
 #include common/pathtrace.glsl
 
-void main(void)
+vec2 coordsTile;
+Ray ray;
+
+void CreateCamRay()
 {
-    vec2 coordsTile = mix(tileOffset, tileOffset + invNumTiles, TexCoords);
-
-    InitRNG(coordsTile * screenResolution, frame);
-
     float r1 = rand();
     float r2 = rand();
 
@@ -56,7 +55,7 @@ void main(void)
     d.x *= fov1;
     vec3 rayDir = normalize(d.x * camera.right + d.y * camera.up + camera.forward);
 	
-	Ray ray = Ray(camera.position, rayDir);
+	ray = Ray(camera.position, rayDir);
 	
 	if(camera.aperture > 0.0) {
 		vec3 focalPoint = camera.focalDist * rayDir;
@@ -66,10 +65,126 @@ void main(void)
 		
 		ray = Ray(camera.position + randomAperturePos, finalRayDir);
 	}
+}
 
-    vec3 accumColor = texture(accumTexture, coordsTile).xyz;
+void main(void)
+{
+    coordsTile = mix(tileOffset, tileOffset + invNumTiles, TexCoords);
+
+    InitRNG(coordsTile * screenResolution, frame);
+	
+	CreateCamRay();
 
     vec3 pixelColor = PathTrace(ray);
+	
+	float extraSPP = 1.0;
 
-    color = pixelColor + accumColor;
+	vec4 accumed = texture(accumTexture, coordsTile);
+    vec3 accumColor = accumed.xyz;
+    float accumSPP = accumed.w;
+
+
+	
+#ifdef AAA
+
+#define aaa_nbPRCmin 0.3
+#define aaa_nbPRCmax 0.5
+
+int pass, i, j, pxls, neightbors, startXY, endXY, dNeightbors;
+vec3 accumColorNear, sumPixelsValue;
+vec2 startPos, nowPos;
+float accumNearSPP, ddd3210, ddd321, dddNear;
+
+vec2 invScreenResolution = screenResolution1 * 0.5f;
+
+//dont do aaa for first frame
+if(sampleCounter > 1.0f) {
+		vec3 accumColor0 = rgb_to_ycocg (accumColor + pixelColor) *(1.0f/(accumSPP+1.0f));
+		float ddd2 = dot(accumColor0, accumColor0);
+		
+		float dist = aaa_minDist;
+		float delta_dist = (aaa_maxDist - aaa_minDist) / float(AAA-1);
+		
+		float nbPRC = aaa_nbPRCmax;
+		float nbPRC_dist = (aaa_nbPRCmax - aaa_nbPRCmin) / float(AAA-1);
+
+
+		neightbors = 1;
+		dNeightbors = 1;
+		
+	for(pass=0; pass < AAA; pass++) {
+		//look at neighbor pixels
+#if 1
+		if(neightbors==0 || neightbors==4) {
+			dNeightbors = -dNeightbors;
+			neightbors = 2;			
+		}
+#endif
+
+		startXY = -neightbors;
+		endXY = neightbors+1;
+		startPos = coordsTile - invScreenResolution*neightbors;
+		
+		pxls = 0;
+		sumPixelsValue = vec3(0);
+
+		for(j=startXY;j<endXY;j++) {
+			nowPos = startPos;
+			for(i=startXY;i<endXY;i++) {
+				if(i==0 && j==0) continue;				
+				if(nowPos.x<0 || nowPos.x>=1 || nowPos.y<0 || nowPos.y>=1) continue;
+				
+				pxls++;
+				accumed = texture(accumTexture, nowPos);
+				vec3 accumColorNear = rgb_to_ycocg (accumed.xyz);
+				float accumNearSPP = accumed.w;
+				
+				sumPixelsValue += accumNearSPP > 1 ? accumColorNear * (1.0f/accumNearSPP) : accumColorNear;
+				
+				nowPos += vec2(invScreenResolution.x, 0);
+			}
+			startPos += vec2(0, invScreenResolution.y);
+		}
+		
+		if(pxls>0) {
+			sumPixelsValue *= nbPRC/pxls;
+			sumPixelsValue += rgb_to_ycocg (pixelColor) * ((1.0f - nbPRC)/extraSPP);
+		} else {
+			sumPixelsValue = rgb_to_ycocg (pixelColor) * (1.0f/extraSPP);
+		}
+		
+		dddNear = dot(sumPixelsValue, sumPixelsValue);
+		
+		ddd3210 = ddd2;
+		
+		if(dddNear > ddd3210) {
+			float temp = ddd3210;
+			ddd3210 = dddNear;
+			dddNear = temp;
+		}
+		
+		ddd321 = dddNear / ddd3210;
+		
+		if(ddd321 > dist) 
+		{
+			CreateCamRay();
+			vec3 accumColor1 = PathTrace(ray);
+			
+			pixelColor += accumColor1;
+			accumSPP += 1.0f;
+			extraSPP += 1.0f;
+			
+			ddd2 = dddNear;
+		}
+		
+		dist += delta_dist;
+		
+		neightbors += dNeightbors;
+		nbPRC -= nbPRC_dist;
+	}
+}
+#endif
+	
+	accumSPP += 1.0f;
+    color = vec4(pixelColor + accumColor, accumSPP);
 }

@@ -1,0 +1,1 @@
+  -LC:/msys64/home/user/GLSL-PathTracer-remaster/my/thirdparty/SDL2/lib/x64  -LC:/msys64/home/user/GLSL-PathTracer-remaster/my/thirdparty/oidn/lib  -lopengl32 -lglu32 -lSDL2 -lSDL2main -lOpenImageDenoise -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32    -s -fopenmp -std=c++0x  -static-libgcc -static-libstdc++ -static
