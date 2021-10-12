@@ -51,6 +51,7 @@ struct Material
     float anisotropic;
     float metallic;
     float roughness;
+    float roughness2;
     float subsurface;
     float specularTint;
     float sheen;
@@ -95,7 +96,7 @@ struct Light
 struct State
 {
     int depth;
-    float eta;
+    float eta, eta2;
     float hitDist;
 
     vec3 fhp;

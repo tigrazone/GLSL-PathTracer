@@ -93,7 +93,7 @@ std::string imgDefaultFilenameExt = "png";
 
 bool UIvisible = true;
 bool addspp = false;
-bool oldDefaultMaterial = false;
+bool noRoughSpecDefaultMaterial = false;
 struct LoopData
 {
     SDL_Window*   mWindow    = nullptr;
@@ -906,8 +906,6 @@ int main(int argc, char** argv)
     bool testAjax = false;
     bool testBoy = false;
 	std::string arg;
-	
-    oldDefaultMaterial = true;
 
     for (int i = 1; i < argc; ++i)
     {
@@ -937,6 +935,11 @@ int main(int argc, char** argv)
         {
             testAjax = true;
         }
+        else 
+        if (arg == "-testBoy")
+        {
+            testBoy = true;
+        }
         else
         if (arg == "-saveEverySpp")
         {
@@ -952,20 +955,10 @@ int main(int argc, char** argv)
         {
             addspp = true;
         }
-        else 
-        if (arg == "-testBoy")
-        {
-            testBoy = true;
-        }
         else
-        if (arg == "-oldDefaultMaterial")
+        if (arg == "-noRoughSpecDefMat")
         {
-            oldDefaultMaterial = true;
-        }
-        else
-        if (arg == "-newDefaultMaterial")
-        {
-            oldDefaultMaterial = false;
+            noRoughSpecDefaultMaterial = true;
         }
 		else			
         if (arg == "-o")

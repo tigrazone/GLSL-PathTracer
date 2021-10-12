@@ -89,6 +89,22 @@ Controls
 
 Use Ctrl-Shift for 100x step, Ctrl for 1/10 step, Alt for 1/2 step, Shift for 10x step
 
+Command line parameters
+--------
+| Key                         | Action                                                                                 |
+|-----------------------------|----------------------------------------------------------------------------------------|
+| **-spp nsamples**           | Render nsamples, save file and exit                                                    |
+| **-time nseconds**          | Render nseconds, save file and exit                                                    |
+| **-saveEverySpp nsamples**  | Save image every nsamples                                                              |
+| **-saveEveryTime nseconds** | Save image every nseconds                                                              |
+| **-addspp**                 | Add to filename of image info about samples and time for -saveEverySpp, -saveEveryTime |
+| **-noRoughSpecDefMat**      | Set rougness=0 and specular=0 for default material. Rougness never 0, minimum 0.00025  |
+| **-o filename**             | Set output file name                                                                   |
+| **-s scenename**            | Load scene to render                                                                   |
+| **--scene scenename**       | Load scene to render                                                                   |
+| **-aaa aaaPasses**          | Set adaptive sampling passes                                                           |
+| **-testAjax**               | Create predefined scene with 3 Ajax burstes                                            |
+| **-testBoy**                | Create predefined scene with 4 "boy" objects                                           |
 
 References/Credits
 --------

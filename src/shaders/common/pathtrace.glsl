@@ -45,7 +45,7 @@ void GetMaterials(inout State state, in Ray r)
     mat.anisotropic    = param2.w;
 
     mat.metallic       = param3.x;
-    mat.roughness      = max(param3.y, 0.001);
+    mat.roughness      = max(param3.y, 0.00025);
 
     mat.subsurface     = param3.z;
     mat.specularTint   = param3.w;
@@ -79,8 +79,10 @@ void GetMaterials(inout State state, in Ray r)
         // TODO: Change metallic roughness maps in repo to linear space and remove gamma correction
         matRgh = pow(texture(textureMapsArrayTex, vec3(texUV, int(texIDs.y))).xy, vec2(2.2));
         mat.metallic = matRgh.x;
-        mat.roughness = max(matRgh.y, 0.001);
+        mat.roughness = max(matRgh.y, 0.00025);        
     }
+	
+	mat.roughness2 = mat.roughness * mat.roughness;
 
     // Normal Map
     // FIXME: Output when using a normal map doesn't match up with Cycles (Blender) output
@@ -105,6 +107,7 @@ void GetMaterials(inout State state, in Ray r)
     state.mat = mat;
     state.isBackside = dot(state.normal, state.ffnormal) > 0.0;
     state.eta = state.isBackside ? (1.0 / mat.ior) : mat.ior;
+    state.eta2 = state.eta * state.eta;
 }
 
 //-----------------------------------------------------------------------

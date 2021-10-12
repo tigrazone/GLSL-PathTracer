@@ -145,6 +145,14 @@ float GTR2(float NDotH, float a)
 }
 
 //-----------------------------------------------------------------------
+float GTR22(float NDotH, float a2)
+//-----------------------------------------------------------------------
+{
+    float t = 1.0 + (a2 - 1.0) * NDotH * NDotH;
+    return a2 / (PI * t * t);
+}
+
+//-----------------------------------------------------------------------
 float GTR2_aniso(float NDotH, float HDotX, float HDotY, float ax, float ay)
 //-----------------------------------------------------------------------
 {
@@ -164,13 +172,13 @@ float SmithG_GGX(float NDotV, float alphaG)
 }
 
 //-----------------------------------------------------------------------
-float SmithG_GGX2(float NDotV, float NDotV2, float alphaG)
+float SmithG_GGX2(float NDotV, float NDotV2, float a)
 //-----------------------------------------------------------------------
 {
-	float a = alphaG * alphaG;
-    float b = NDotV * NDotV;
-    float b2 = NDotV2 * NDotV2;
-    return 1.0 / ((NDotV + sqrt(a + b - a * b)) * (NDotV2 + sqrt(a + b2 - a * b2)));
+    //float b = NDotV * NDotV;
+    //float b2 = NDotV2 * NDotV2;
+    //return 1.0 / ((NDotV + sqrt(a + b - a * b)) * (NDotV2 + sqrt(a + b2 - a * b2)));
+    return 1.0 / ((NDotV + sqrt(a + NDotV * NDotV * (1.0 - a))) * (NDotV2 + sqrt(a + NDotV2 * NDotV2 * (1.0 - a))));
 }
 
 //-----------------------------------------------------------------------

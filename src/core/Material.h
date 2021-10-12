@@ -27,7 +27,7 @@
 #include <vector>
 #include <Vec3.h>
 
-extern bool oldDefaultMaterial;
+extern bool noRoughSpecDefaultMaterial;
 
 namespace GLSLPT
 {
@@ -53,7 +53,7 @@ namespace GLSLPT
             clearcoatGloss = 0.0f;
 
             transmission = 0.0f;
-            ior          = 1.5f;
+            ior          = 1.45f;
             atDistance   = 1.0f;
             padding1     = 0.0f;
 
@@ -67,10 +67,9 @@ namespace GLSLPT
 
             padding4               =  0.0f;
 
-            if (oldDefaultMaterial) {
+            if (!noRoughSpecDefaultMaterial) {
                 specular = 0.5f;
                 roughness = 0.5f;
-                ior = 1.45f;
             }
 
             float atDist1 = 1.0f / atDistance;
