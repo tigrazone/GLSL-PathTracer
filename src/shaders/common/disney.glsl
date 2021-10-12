@@ -217,7 +217,7 @@ vec3 DisneySample(inout State state, vec3 V, vec3 N, inout vec3 L, inout float p
     {
 		//if(state.mat.roughness > 0.0) 
 		{
-            vec3 H = ImportanceSampleGTR2(state.mat.roughness, r1, r2);
+            vec3 H = ImportanceSampleGTR2(state.mat.roughness2, r1, r2);
             //GGXVNDF_Sample(float r1, float r2, vec3 n, float rgh, vec3 incoming)
             //vec3 H = GGXVNDF_Sample(r1, r2, N, state.mat.roughness, V);
             H = state.tangent * H.x + state.bitangent * H.y + N * H.z;
@@ -281,7 +281,7 @@ vec3 DisneySample(inout State state, vec3 V, vec3 N, inout vec3 L, inout float p
 				//if(state.mat.roughness > 0.0) 
 				{
 					// TODO: Implement http://jcgt.org/published/0007/04/01/
-					vec3 H = ImportanceSampleGTR2(state.mat.roughness, r1, r2);
+					vec3 H = ImportanceSampleGTR2(state.mat.roughness2, r1, r2);
 					//vec3 H = GGXVNDF_Sample(r1, r2, N, state.mat.roughness, V);
 					H = state.tangent * H.x + state.bitangent * H.y + N * H.z;
 					dotVH = dot(V, H);

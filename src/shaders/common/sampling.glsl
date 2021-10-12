@@ -26,18 +26,17 @@
 vec3 ImportanceSampleGTR1(float rgh, float r1, float r2)
 //----------------------------------------------------------------------
 {
-    float a = max(0.001, rgh);
-    float a2 = a * a;
+    float a2 = rgh * rgh;
 
     float phi = r1 * TWO_PI;
 
-    float cosTheta = sqrt((1.0 - pow(a2, 1.0 - r1)) / (1.0 - a2));
+    float cosTheta2 = ((1.0 - pow(a2, 1.0 - r1)) / (1.0 - a2));
     //float sinTheta = clamp(sqrt(1.0 - (cosTheta * cosTheta)), 0.0, 1.0);
-    float sinTheta = sqrt(1.0 - (cosTheta * cosTheta));
+    float sinTheta = sqrt(1.0 - cosTheta2);
     float sinPhi = sin(phi);
     float cosPhi = cos(phi);
 
-    return vec3(sinTheta * cosPhi, sinTheta * sinPhi, cosTheta);
+    return vec3(sinTheta * cosPhi, sinTheta * sinPhi, sqrt(cosTheta2));
 }
 
 //----------------------------------------------------------------------
@@ -54,20 +53,18 @@ vec3 ImportanceSampleGTR2_aniso(float ax, float ay, float r1, float r2)
 }
 
 //----------------------------------------------------------------------
-vec3 ImportanceSampleGTR2(float rgh, float r1, float r2)
+vec3 ImportanceSampleGTR2(float aa, float r1, float r2)
 //----------------------------------------------------------------------
 {
-    float a = max(0.001, rgh);
-
     float phi = r1 * TWO_PI;
 
-    float cosTheta = sqrt((1.0 - r2) / (1.0 + (a * a - 1.0) * r2));
+    float cosTheta2 = ((1.0 - r2) / (1.0 + (aa - 1.0) * r2));
     //float sinTheta = clamp(sqrt(1.0 - (cosTheta * cosTheta)), 0.0, 1.0);
-    float sinTheta = sqrt(1.0 - (cosTheta * cosTheta));
+    float sinTheta = sqrt(1.0 - cosTheta2);
     float sinPhi = sin(phi);
     float cosPhi = cos(phi);
 
-    return vec3(sinTheta * cosPhi, sinTheta * sinPhi, cosTheta);
+    return vec3(sinTheta * cosPhi, sinTheta * sinPhi, sqrt(cosTheta2));
 }
 
 
