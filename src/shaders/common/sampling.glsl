@@ -106,10 +106,10 @@ float SchlickFresnel(float u)
 }
 
 //-----------------------------------------------------------------------
-float DielectricFresnel(float cos_theta_i, float eta)
+float DielectricFresnel(float cos_theta_i, float eta, float eta2)
 //-----------------------------------------------------------------------
 {
-    float sinThetaTSq = eta * eta * (1.0f - cos_theta_i * cos_theta_i);
+    float sinThetaTSq = eta2 * (1.0f - cos_theta_i * cos_theta_i);
 
     // Total internal reflection
     if (sinThetaTSq > 1.0)

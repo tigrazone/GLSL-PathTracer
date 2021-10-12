@@ -40,7 +40,7 @@ vec3 EvalDielectricReflection(State state, vec3 V, vec3 N, vec3 L, vec3 H, inout
     float dotNH = dot(N, H);
 	
     //float FD = DielectricFresnel(dotVH, state.eta) * GTR2(dotNH, state.mat.roughness);
-    float FD = DielectricFresnel(dotVH, state.eta) * GTR22(dotNH, state.mat.roughness2);
+    float FD = DielectricFresnel(dotVH, state.eta, state.eta2) * GTR22(dotNH, state.mat.roughness2);
     
     pdf = FD * dotNH / (4.0 * abs(dotVH));
 
@@ -62,7 +62,7 @@ vec3 EvalDielectricRefraction(State state, vec3 V, vec3 N, vec3 L, vec3 H, inout
     float denomSqrt = dotLH + dotVH * state.eta;
     //float pdf0 = (1.0 - F) * D * abs(dotLH) / (denomSqrt * denomSqrt);
     //float pdf0 = (1.0 - DielectricFresnel(dotVH, state.eta)) * GTR2(dotNH, state.mat.roughness) * abs(dotLH) / (denomSqrt * denomSqrt);
-    float pdf0 = (1.0 - DielectricFresnel(dotVH, state.eta)) * GTR22(dotNH, state.mat.roughness2) * abs(dotLH) / (denomSqrt * denomSqrt);
+    float pdf0 = (1.0 - DielectricFresnel(dotVH, state.eta, state.eta2)) * GTR22(dotNH, state.mat.roughness2) * abs(dotLH) / (denomSqrt * denomSqrt);
     pdf = dotNH * pdf0;
 
     //float G = SmithG_GGX(abs(dot(N, L)), state.mat.roughness) * SmithG_GGX(abs(dot(N, V)), state.mat.roughness);
@@ -230,7 +230,7 @@ vec3 DisneySample(inout State state, vec3 V, vec3 N, inout vec3 L, inout float p
             }
 
             vec3 R = reflect(-V, H);
-            float F = DielectricFresnel(abs(dot(R, H)), state.eta);
+            float F = DielectricFresnel(abs(dot(R, H)), state.eta, state.eta2);
 
             // Reflection/Total internal reflection
             if (rand() < F)
