@@ -133,6 +133,7 @@ bool ClosestHit(Ray r, inout State state, inout LightSampleRec lightSampleRec)
 
                 vec3 tv = rTrans.origin - v0.xyz;
                 vec3 qv = cross(tv, e0);
+				//15*
 
                 vec4 uvt;
                 uvt.x = dot(tv, pv);
@@ -140,6 +141,7 @@ bool ClosestHit(Ray r, inout State state, inout LightSampleRec lightSampleRec)
                 uvt.z = dot(e1, qv);
                 uvt.xyz *= 1.0f / det;
                 uvt.w = 1.0 - uvt.x - uvt.y;
+				//12* 1/ => 27* 1/
 
                 if (all(greaterThanEqual(uvt, vec4(0.0))) && uvt.z < t)
                 {

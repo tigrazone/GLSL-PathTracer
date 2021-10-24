@@ -29,7 +29,7 @@
 
 #include <unordered_map>
 
-#include <sys\stat.h>
+#include <sys/stat.h>
 #include <string>
 
 #include "hdrloader.h"
@@ -70,6 +70,18 @@ namespace GLSLPT
     {
         int x, y, z;
     };
+	
+	struct TriPrecalcData
+	{
+		Vec3 uu;
+		float delta;
+		
+		Vec3 vv;
+		float padding1;
+		
+		Vec3 normal;
+		float padding2;
+	};	
 
     class Scene
     {
@@ -105,6 +117,7 @@ namespace GLSLPT
 
         // Scene Mesh Data 
         std::vector<Indices> vertIndices;
+        std::vector<TriPrecalcData> triPrecalcs;
         std::vector<Vec4> verticesUVX; // Vertex Data + x coord of uv 
         std::vector<Vec4> normalsUVY;  // Normal Data + y coord of uv
         std::vector<Mat4> transforms;

@@ -191,6 +191,9 @@ vec3 EvalDiffuseSpecularClearcoat(State state, vec3 Csheen, vec3 Cspec0, vec3 V,
 	return f;
 }
 
+vec3 lumDOT = vec3(0.3, 0.6, 0.1);
+#define Cdlin (state.mat.albedo)
+
 //-----------------------------------------------------------------------
 vec3 DisneySample(inout State state, vec3 V, vec3 N, inout vec3 L, inout float pdf)
 //-----------------------------------------------------------------------
@@ -203,11 +206,6 @@ vec3 DisneySample(inout State state, vec3 V, vec3 N, inout vec3 L, inout float p
 
     float diffuseRatio = 0.5 * (1.0 - state.mat.metallic);
     float transWeight = (1.0 - state.mat.metallic) * state.mat.specTrans;
-
-    vec3 Cdlin = state.mat.albedo;
-    float Cdlum = 0.3 * Cdlin.x + 0.6 * Cdlin.y + 0.1 * Cdlin.z; // luminance approx.
-
-    vec3 Ctint = Cdlum > 0.0 ? Cdlin / Cdlum : vec3(1.0f); // normalize lum. to isolate hue+sat
 	
 	float dotNL;
 	float dotVH;
@@ -266,6 +264,9 @@ vec3 DisneySample(inout State state, vec3 V, vec3 N, inout vec3 L, inout float p
 			if (dotNL > 0.0)
 			{
 				vec3 H = normalize(L + V);
+				
+				float Cdlum = dot(lumDOT, Cdlin); // luminance approx.
+				vec3 Ctint = Cdlum > 0.0 ? Cdlin / Cdlum : vec3(1.0f); // normalize lum. to isolate hue+sat
 				vec3 Csheen = mix(vec3(1.0), Ctint, state.mat.sheenTint);
 				f = EvalDiffuse(state, Csheen, V, N, L, H, pdf, dotNL);
 				pdf *= diffuseRatio;
@@ -293,7 +294,9 @@ vec3 DisneySample(inout State state, vec3 V, vec3 N, inout vec3 L, inout float p
 					L = //normalize
 					(reflect(-V, H));
 					if (dot(N, L) > 0.0)
-					{						
+					{
+						float Cdlum = dot(lumDOT, Cdlin); // luminance approx.
+						vec3 Ctint = Cdlum > 0.0 ? Cdlin / Cdlum : vec3(1.0f); // normalize lum. to isolate hue+sat
 						vec3 Cspec0 = mix(state.mat.specular * 0.08 * mix(vec3(1.0), Ctint, state.mat.specularTint), Cdlin, state.mat.metallic);
 						f = EvalSpecular(state, Cspec0, V, N, L, H, pdf, dotVH);
 						pdf *= primarySpecRatio * (1.0 - diffuseRatio);
@@ -376,8 +379,7 @@ vec3 DisneyEval(State state, vec3 V, vec3 N, vec3 L, inout float pdf)
 
     if (transWeight < 1.0 && refl)
     {
-        vec3 Cdlin = state.mat.albedo;
-        float Cdlum = 0.3 * Cdlin.x + 0.6 * Cdlin.y + 0.1 * Cdlin.z; // luminance approx.
+        float Cdlum = dot(lumDOT, Cdlin); // luminance approx.
 
         vec3 Ctint = Cdlum > 0.0 ? Cdlin / Cdlum : vec3(1.0f); // normalize lum. to isolate hue+sat
         vec3 Cspec0 = mix(state.mat.specular * 0.08 * mix(vec3(1.0), Ctint, state.mat.specularTint), Cdlin, state.mat.metallic);

@@ -1,6 +1,7 @@
 #include "Utils.h"
 #include "tinyfiledialogs.h"
 #include <sys/stat.h>
+#include <cstring>
 #include <math.h>
 #include <time.h>
 

@@ -352,6 +352,9 @@ namespace GLSLPT
             }
 		}
 
+		TriPrecalcData triPrecalc;
+		Vec3 pos, normal;
+		
         //Copy mesh data
         for (int i = 0; i < meshes.size(); i++)
         {
@@ -368,6 +371,31 @@ namespace GLSLPT
                 int v3 = (index3 + 2) + verticesCnt;
 
                 vertIndices.push_back(Indices{ v1, v2, v3 });
+				
+				//precalculate triangle data		
+				pos.x = meshes[i]->verticesUVX[v1 - verticesCnt].x;
+				pos.y = meshes[i]->verticesUVX[v1 - verticesCnt].y;
+				pos.z = meshes[i]->verticesUVX[v1 - verticesCnt].z;
+				
+				triPrecalc.uu.x = meshes[i]->verticesUVX[v2 - verticesCnt].x;
+				triPrecalc.uu.y = meshes[i]->verticesUVX[v2 - verticesCnt].y;
+				triPrecalc.uu.z = meshes[i]->verticesUVX[v2 - verticesCnt].z;
+				
+				triPrecalc.vv.x = meshes[i]->verticesUVX[v3 - verticesCnt].x;
+				triPrecalc.vv.y = meshes[i]->verticesUVX[v3 - verticesCnt].y;
+				triPrecalc.vv.z = meshes[i]->verticesUVX[v3 - verticesCnt].z;
+				
+				triPrecalc.uu = triPrecalc.uu - pos;
+				triPrecalc.vv = triPrecalc.vv - pos;
+				
+				triPrecalc.normal = Vec3::Normalize( Vec3::Cross(triPrecalc.uu, triPrecalc.vv) );
+				
+				triPrecalc.uu = triPrecalc.uu * (1.0f / Vec3::Dot(triPrecalc.uu, triPrecalc.uu));
+				triPrecalc.vv = triPrecalc.vv * (1.0f / Vec3::Dot(triPrecalc.vv, triPrecalc.vv));
+				
+				triPrecalc.delta = Vec3::Dot(normal, pos);
+				
+				triPrecalcs.push_back(triPrecalc);
             }
 
             verticesUVX.insert(verticesUVX.end(), meshes[i]->verticesUVX.begin(), meshes[i]->verticesUVX.end());
@@ -498,6 +526,11 @@ namespace GLSLPT
 		convert_mega_giga(sz, sz1, kb_mega_giga);
 		
 		printf("bvh mem: %.2f%c  NODES: %d\n", sz1, kb_mega_giga, bvhTranslator.nodes.size());
+		
+		sz = sizeof(TriPrecalcData) * triPrecalcs.size();
+		convert_mega_giga(sz, sz1, kb_mega_giga);
+		
+		printf("triPrecalcs mem: %.2f%c\n", sz1, kb_mega_giga);
 		
 		printf("-----------------------------\n");		
     }

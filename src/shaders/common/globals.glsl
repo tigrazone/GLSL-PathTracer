@@ -51,7 +51,6 @@ struct Material
     float anisotropic;
     float metallic;
     float roughness;
-    float roughness2;
     float subsurface;
     float specularTint;
     float sheen;
@@ -62,10 +61,12 @@ struct Material
     float ior;
     float atDistance;
     vec3 extinction;
-    vec3 extinction1;
     // Roughness calculated from anisotropic param
     float ax;
-    float ay;
+    float ay;	
+	
+    float roughness2;
+    vec3 extinction1;
 };
 
 struct Camera
@@ -75,6 +76,8 @@ struct Camera
     vec3 forward;
     vec3 position;
     float fov;
+    float fovTAN;
+    float fovTAN1;
     float focalDist;
     float aperture;
 };
@@ -127,6 +130,14 @@ struct LightSampleRec
     vec3 direction;
     float dist;
     float pdf;
+};
+
+struct TriPrecalcData
+{
+	vec3 uu;
+	vec3 vv;
+	vec3 normal;
+    float delta;
 };
 
 uniform Camera camera;

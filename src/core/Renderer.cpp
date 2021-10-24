@@ -134,6 +134,14 @@ namespace GLSLPT
         glBindTexture(GL_TEXTURE_BUFFER, normalsTex);
         glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, normalsBuffer);
 
+        //Create Buffer and Texture for triangle precalculated data
+        glGenBuffers(1, &triPrecalcsBuffer);
+        glBindBuffer(GL_TEXTURE_BUFFER, triPrecalcsBuffer);
+        glBufferData(GL_TEXTURE_BUFFER, sizeof(TriPrecalcData) * scene->triPrecalcs.size(), &scene->triPrecalcs[0], GL_STATIC_DRAW);
+        glGenTextures(1, &triPrecalcsTex);
+        glBindTexture(GL_TEXTURE_BUFFER, triPrecalcsTex);
+        glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, triPrecalcsBuffer);
+
 		/*
 		for(int ii=0;ii<scene->materials.size();ii++) {
 			printf("- %d\n", ii);
