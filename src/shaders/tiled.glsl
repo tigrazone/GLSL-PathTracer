@@ -26,7 +26,6 @@
 
 out vec4 color;
 in vec2 TexCoords;
-uniform int doAAA;
 
 #include common/uniforms.glsl
 #include common/globals.glsl

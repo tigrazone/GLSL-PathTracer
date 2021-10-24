@@ -28,7 +28,7 @@ out vec4 color;
 in vec2 TexCoords;
 
 uniform sampler2D pathTraceTexture;
-
+vec3 lumDOT = vec3(0.3, 0.6, 0.1);
 
 #define one2_2 0.4545454545454545454545454545f
 #define one1_5 0.666666666666666666666666666f
@@ -70,9 +70,16 @@ vec3 reinhardTonemap(vec3 color)
 
 vec4 ToneMap(in vec4 c, float limit1)
 {
+/*
     float luminance = 0.3*c.x + 0.6*c.y + 0.1*c.z;
 
     return c / (1.0 + luminance * limit1);
+*/
+//float luminance = 0.3*c.x + 0.6*c.y + 0.1*c.z;
+    //float luminance = dot(lumDOT, c.xyz);
+
+    //return c / (1.0 + luminance * limit);
+	return c / (1.0 + dot(lumDOT, c.xyz) * limit1);
 }
 
 void main()
