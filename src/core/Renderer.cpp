@@ -134,14 +134,6 @@ namespace GLSLPT
         glBindTexture(GL_TEXTURE_BUFFER, normalsTex);
         glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, normalsBuffer);
 
-        //Create Buffer and Texture for triangle precalculated data
-        glGenBuffers(1, &triPrecalcsBuffer);
-        glBindBuffer(GL_TEXTURE_BUFFER, triPrecalcsBuffer);
-        glBufferData(GL_TEXTURE_BUFFER, sizeof(TriPrecalcData) * scene->triPrecalcs.size(), &scene->triPrecalcs[0], GL_STATIC_DRAW);
-        glGenTextures(1, &triPrecalcsTex);
-        glBindTexture(GL_TEXTURE_BUFFER, triPrecalcsTex);
-        glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, triPrecalcsBuffer);
-
 		/*
 		for(int ii=0;ii<scene->materials.size();ii++) {
 			printf("- %d\n", ii);
@@ -151,6 +143,14 @@ namespace GLSLPT
 			printf("\n");
 		}
 		*/
+
+        //Create texture for triangle precalculated data
+        glGenTextures(1, &triPrecalcsTex);
+        glBindTexture(GL_TEXTURE_2D, triPrecalcsTex);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, (sizeof(TriPrecalcData) / sizeof(Vec4)) * scene->triPrecalcs.size(), 1, 0, GL_RGBA, GL_FLOAT, &scene->triPrecalcs[0]);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glBindTexture(GL_TEXTURE_2D, 0);
 
         //Create texture for Materials
         glGenTextures(1, &materialsTex);

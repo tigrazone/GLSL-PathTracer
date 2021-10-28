@@ -48,7 +48,7 @@ namespace GLSLPT
 
         RadeonRays::Bvh *bvh;
         std::string name;
-		unsigned long tris;
+		unsigned long tris, verts, norms, texcoords;
     };
 
     class MeshInstance

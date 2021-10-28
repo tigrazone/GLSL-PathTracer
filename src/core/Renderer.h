@@ -96,7 +96,6 @@ namespace GLSLPT
         GLuint verticesTex;
         GLuint normalsBuffer;
         GLuint normalsTex;
-        GLuint triPrecalcsBuffer;
         GLuint triPrecalcsTex;
         GLuint materialsTex;
         GLuint transformsTex;

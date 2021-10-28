@@ -270,6 +270,7 @@ namespace GLSLPT
         glUniform1i(glGetUniformLocation(shaderObject, "hdrTex"), 9);
         glUniform1i(glGetUniformLocation(shaderObject, "hdrMarginalDistTex"), 10);
         glUniform1i(glGetUniformLocation(shaderObject, "hdrCondDistTex"), 11);
+        glUniform1i(glGetUniformLocation(shaderObject, "triPrecalcsTex"), 12);
 
         pathTraceShader->StopUsing();
 
@@ -294,6 +295,7 @@ namespace GLSLPT
         glUniform1i(glGetUniformLocation(shaderObject, "hdrTex"), 9);
         glUniform1i(glGetUniformLocation(shaderObject, "hdrMarginalDistTex"), 10);
         glUniform1i(glGetUniformLocation(shaderObject, "hdrCondDistTex"), 11);
+        glUniform1i(glGetUniformLocation(shaderObject, "triPrecalcsTex"), 12);
 
         pathTraceShaderLowRes->StopUsing();
 
@@ -319,6 +321,8 @@ namespace GLSLPT
         glBindTexture(GL_TEXTURE_2D, hdrMarginalDistTex);
         glActiveTexture(GL_TEXTURE11);
         glBindTexture(GL_TEXTURE_2D, hdrConditionalDistTex);
+        glActiveTexture(GL_TEXTURE12);
+        glBindTexture(GL_TEXTURE_2D, triPrecalcsTex);
     }
 
     void TiledRenderer::Finish()

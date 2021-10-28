@@ -123,10 +123,10 @@ bool ClosestHit(Ray r, inout State state, inout LightSampleRec lightSampleRec)
                 ivec3 vertIndices = ivec3(texelFetch(vertexIndicesTex, leftIndex + i).xyz);
 
                 vec4 v0 = texelFetch(verticesTex, vertIndices.x);
-                vec4 v1 = texelFetch(verticesTex, vertIndices.y);
+				vec4 v1 = texelFetch(verticesTex, vertIndices.y);
                 vec4 v2 = texelFetch(verticesTex, vertIndices.z);
-
-                vec3 e0 = v1.xyz - v0.xyz;
+				
+				vec3 e0 = v1.xyz - v0.xyz;
                 vec3 e1 = v2.xyz - v0.xyz;
                 vec3 pv = cross(rTrans.direction, e1);
                 float det = dot(e0, pv);
@@ -152,6 +152,45 @@ bool ClosestHit(Ray r, inout State state, inout LightSampleRec lightSampleRec)
                     texCoords = vec3(v0.w, v1.w, v2.w);
                     transform = transMat;
                 }
+				
+				/*
+				// Fetch triPrecalc Data
+				int idxtri = int(vertIndices.x) * 3;
+				vec4 nrm_d 	= texelFetch(triPrecalcsTex, ivec2(idxtri , 0), 0);
+				vec4 uu1 	= texelFetch(triPrecalcsTex, ivec2(idxtri + 1, 0), 0);
+				vec4 vv1 	= texelFetch(triPrecalcsTex, ivec2(idxtri + 2 , 0), 0);
+				vec3 uu2 = uu1.xyz;
+				vec3 vv2 = vv1.xyz;
+				
+				//vec4 plane = vec4(normal, radius);			
+				//float d = RectIntersect(position, uu, vv, plane, r);
+				vec3 n = nrm_d.xyz;
+				float dt = dot(rTrans.direction, n);
+				float tt = (nrm_d.w - dot(n, rTrans.origin)) / dt;
+				//6* 1/
+				if (tt > EPS)
+				{
+					vec3 p = rTrans.origin + rTrans.direction * tt;
+					vec3 vi = p - v0;
+					float a1 = dot(uu2, vi);
+					if (a1 >= 0.)
+					{
+						float a2 = dot(vv2, vi);
+						//9* => 15* 1/
+						if (a2 >= 0. && a1 + a2 <= 1.)
+						{
+							t = tt;
+							triID = vertIndices;
+							state.matID = currMatID;
+							bary.x = a1;
+							bary.y = a2;
+							bary.z = 1.0 - a2 - a1;
+							texCoords = vec3(v0.w, v1.w, v2.w);
+							transform = transMat;
+						}
+					}
+				}
+				*/
             }
         }
         else if (leaf < 0) // Leaf node of TLAS

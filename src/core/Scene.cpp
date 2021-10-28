@@ -262,6 +262,10 @@ namespace GLSLPT
             printf("Building BVH for %s\n", meshes[i]->name.c_str());
 			meshes[i]->tris = meshes[i]->BuildBVH();
             totalTris += meshes[i]->tris;
+
+            totalVerts += meshes[i]->verts;
+            totalNorms += meshes[i]->norms;
+            totalTexcoords += meshes[i]->texcoords;
 			
         }
 		
@@ -509,21 +513,33 @@ namespace GLSLPT
 		else {
 			printf("%d\n", meshLightTris);
 		}
+
+
+
+        float usedMemTotal = 0;
+        float neeedMemTotal = 0;
 		
 		printf("-----------------------------\n");
 		
 		sz = sizeof(Vec4) * verticesUVX.size();
+		usedMemTotal += sz;
 		convert_mega_giga(sz, sz1, kb_mega_giga);
 		
 		printf("verticesUVX mem: %.2f%c\n", sz1, kb_mega_giga);
 		
 		sz = sizeof(Vec4) * normalsUVY.size();
+		usedMemTotal += sz;
 		convert_mega_giga(sz, sz1, kb_mega_giga);
 		
 		printf("normalsUVY mem: %.2f%c\n", sz1, kb_mega_giga);
 		
 		sz = sizeof(RadeonRays::BvhTranslator::Node) * bvhTranslator.nodes.size();
 		convert_mega_giga(sz, sz1, kb_mega_giga);
+
+		sz = usedMemTotal;
+		convert_mega_giga(sz, sz1, kb_mega_giga);
+		
+		printf("****************\nusedMemTotal: %.2f%c\n\n", sz1, kb_mega_giga);
 		
 		printf("bvh mem: %.2f%c  NODES: %d\n", sz1, kb_mega_giga, bvhTranslator.nodes.size());
 		
@@ -531,6 +547,38 @@ namespace GLSLPT
 		convert_mega_giga(sz, sz1, kb_mega_giga);
 		
 		printf("triPrecalcs mem: %.2f%c\n", sz1, kb_mega_giga);
+
+		
+		sz = sizeof(Vec3) * totalVerts;
+		neeedMemTotal += sz;
+		convert_mega_giga(sz, sz1, kb_mega_giga);
+		
+		printf("verts mem: %.2f%c\n", sz1, kb_mega_giga);
+		
+		sz = sizeof(Vec3) * totalNorms;
+		neeedMemTotal += sz;
+		convert_mega_giga(sz, sz1, kb_mega_giga);
+		
+		printf("norms mem: %.2f%c\n", sz1, kb_mega_giga);
+		
+		sz = sizeof(Vec2) * totalTexcoords;
+		neeedMemTotal += sz;
+		convert_mega_giga(sz, sz1, kb_mega_giga);
+		
+		printf("texcoords mem: %.2f%c\n", sz1, kb_mega_giga);
+		
+		sz = sizeof(Vec4) * totalTris;
+		neeedMemTotal += sz;
+		convert_mega_giga(sz, sz1, kb_mega_giga);
+		
+		printf("tris mem: %.2f%c\n", sz1, kb_mega_giga);
+
+		sz = neeedMemTotal;
+		convert_mega_giga(sz, sz1, kb_mega_giga);
+		
+		printf("****************\ntotal needed mem: %.2f%c\n", sz1, kb_mega_giga);
+
+
 		
 		printf("-----------------------------\n");		
     }

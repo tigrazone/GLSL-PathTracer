@@ -41,6 +41,10 @@ namespace GLSLPT
 		time1 = clock();
 		
         name = filename;
+
+        verts = 0;
+        norms = 0;
+        texcoords = 0;
 		
 		char *subString, *p;
 		std::string format = "obj";
@@ -59,6 +63,10 @@ namespace GLSLPT
 			std::vector<tinyobj::material_t> materials;
 			std::string err;
 			bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &err, filename.c_str(), 0, true);
+
+        	verts += attrib.vertices.size();
+        	norms += attrib.normals.size();
+        	texcoords += attrib.texcoords.size();
 
 			if (!ret)
 			{
@@ -125,11 +133,17 @@ namespace GLSLPT
 			bool calc_normal;
 			
 			if(ok) {
+				/*
 				printf("numIndices=%d\n", trimesh->numIndices);
 				printf("numVerts=%d\n", trimesh->numVerts);
 				printf("pos=%d\n", trimesh->pos != nullptr);
 				printf("normal=%d\n", trimesh->normal != nullptr);
 				printf("uv=%d\n", trimesh->uv != nullptr);
+				*/
+
+        		verts += trimesh->numVerts;
+        		if(trimesh->normal != nullptr) norms += trimesh->numVerts * 3;
+        		if(trimesh->uv != nullptr) texcoords += trimesh->numVerts * 2;
 				
 				//faces
 				if(trimesh->numIndices) 

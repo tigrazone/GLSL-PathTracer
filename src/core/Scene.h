@@ -73,13 +73,13 @@ namespace GLSLPT
 	
 	struct TriPrecalcData
 	{
-		Vec3 uu;
+		Vec3 normal;
 		float delta;
 		
-		Vec3 vv;
+		Vec3 uu;
 		float padding1;
 		
-		Vec3 normal;
+		Vec3 vv;
 		float padding2;
 	};	
 
@@ -88,6 +88,9 @@ namespace GLSLPT
     public:
         Scene() : camera(nullptr), hdrData(nullptr) {
             sceneBvh = new RadeonRays::Bvh(10.0f, 64, false);
+            totalVerts = 0;
+            totalNorms = 0;
+            totalTexcoords = 0;
         }
         ~Scene() { delete camera; delete sceneBvh; delete hdrData; };
 
@@ -153,7 +156,7 @@ namespace GLSLPT
         int texWidth;
         int texHeight; // TODO: allow textures of different sizes
 		
-		size_t totalTris;
+		size_t totalTris, totalVerts, totalNorms, totalTexcoords;
 
     private:
         RadeonRays::Bvh *sceneBvh;
