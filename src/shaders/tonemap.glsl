@@ -28,7 +28,7 @@ out vec4 color;
 in vec2 TexCoords;
 
 uniform sampler2D pathTraceTexture;
-vec3 lumDOT = vec3(0.3, 0.6, 0.1);
+vec3 lumDOT = vec3(0.212671, 0.715160, 0.072169);
 
 #define one2_2 0.4545454545454545454545454545f
 #define one1_5 0.666666666666666666666666666f

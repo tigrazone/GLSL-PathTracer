@@ -191,7 +191,7 @@ vec3 EvalDiffuseSpecularClearcoat(State state, vec3 Csheen, vec3 Cspec0, vec3 V,
 	return f;
 }
 
-vec3 lumDOT = vec3(0.3, 0.6, 0.1);
+vec3 lumDOT = vec3(0.212671, 0.715160, 0.072169);
 #define Cdlin (state.mat.albedo)
 
 //-----------------------------------------------------------------------
